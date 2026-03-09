@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mySUNI 4대 핵심역량 관리 시스템</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+:root{
+  --bg:#F0F4F9;
+  --surface:#FFFFFF;
+  --border:rgba(15,23,42,.08);
+  --border-strong:rgba(15,23,42,.14);
+  --navy:#0A1628;
+  --navy-mid:#1E3A8A;
+  --blue:#2563EB;
+  --blue-light:#EFF6FF;
+  --text:#0F172A;
+  --text-2:#475569;
+  --text-3:#94A3B8;
+  --green:#059669;
+  --orange:#EA580C;
+  --purple:#7C3AED;
+  --red:#DC2626;
+  --teal:#0D9488;
+  --amber:#D97706;
+  --sh-sm:0 1px 2px rgba(15,23,42,.05),0 0 0 1px rgba(15,23,42,.04);
+  --sh-md:0 4px 16px rgba(15,23,42,.08),0 0 0 1px rgba(15,23,42,.04);
+  --sh-lg:0 8px 32px rgba(15,23,42,.12),0 0 0 1px rgba(15,23,42,.05);
+  --r:16px;--r-sm:10px;--r-pill:999px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ────────────────────────────── */
+header{
+  background:var(--navy);
+  position:sticky;top:0;z-index:200;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+header::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 120% at 70% -10%,rgba(37,99,235,.25) 0%,transparent 70%);
+}
+.hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:60px;display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+.hdr-logo{height:40px;display:flex;align-items:center;flex-shrink:0}
+.hdr-logo-img{height:40px;width:auto;object-fit:contain;display:none}
+.hdr-logo-text{
+  background:linear-gradient(135deg,#2563EB,#60A5FA);
+  color:#fff;font-weight:800;font-size:12px;padding:5px 12px;
+  border-radius:8px;letter-spacing:.8px;
+  box-shadow:0 2px 8px rgba(37,99,235,.4);
+}
+.hdr-title{font-size:16px;font-weight:700;color:#fff;flex:1;letter-spacing:-.01em}
+.hdr-sep{width:1px;height:18px;background:rgba(255,255,255,.12)}
+.hdr-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:var(--r-pill);
+  font-size:11px;font-weight:600;letter-spacing:.02em;
+}
+.hdr-badge.data{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);color:#FCD34D}
+.hdr-badge.period{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.hdr-dot{width:6px;height:6px;border-radius:50%;background:#FCD34D;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── TAB NAV ────────────────────────────── */
+.tab-nav{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(15,23,42,.04)}
+.tab-nav-inner{max-width:1360px;margin:0 auto;padding:0 28px;display:flex;gap:4px}
+.tab-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:0 18px;height:50px;border:none;background:none;
+  cursor:pointer;font-size:13.5px;font-weight:500;
+  color:var(--text-3);font-family:inherit;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all .2s;
+  letter-spacing:-.01em;
+}
+.tab-btn .tab-icon{font-size:15px;opacity:.7;transition:opacity .2s}
+.tab-btn:hover{color:var(--text-2);background:rgba(15,23,42,.025)}
+.tab-btn:hover .tab-icon{opacity:1}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.tab-btn.active .tab-icon{opacity:1}
+
+/* ── LAYOUT ────────────────────────────── */
+.main{max-width:1360px;margin:0 auto;padding:28px}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.section{margin-bottom:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+
+/* ── CARD ────────────────────────────── */
+.card{
+  background:var(--surface);border-radius:var(--r);
+  padding:24px;box-shadow:var(--sh-md);
+  border:1px solid var(--border);
+  transition:box-shadow .2s;
+}
+.card:hover{box-shadow:var(--sh-lg)}
+.card-title{
+  font-size:14px;font-weight:700;color:var(--text);
+  margin-bottom:18px;display:flex;align-items:center;gap:10px;
+  letter-spacing:-.01em;
+}
+.card-title .ct-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+.card-title .ct-action{margin-left:auto;font-size:11px;font-weight:500;color:var(--text-3);cursor:pointer}
+
+/* ── KPI CARDS ────────────────────────────── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{
+  background:var(--surface);border-radius:var(--r);
+  padding:0;box-shadow:var(--sh-md);border:1px solid var(--border);
+  overflow:hidden;transition:box-shadow .2s,transform .2s;cursor:default;
+}
+.kpi:hover{box-shadow:var(--sh-lg);transform:translateY(-1px)}
+.kpi-top{height:3px;border-radius:0}
+.kpi-body{padding:20px 22px 18px}
+.kpi-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  margin-bottom:14px;
+}
+.kpi-label{font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
+.kpi-val{font-size:32px;font-weight:800;color:var(--text);line-height:1;margin-bottom:5px;letter-spacing:-.03em}
+.kpi-val span{font-size:14px;font-weight:500;color:var(--text-3);margin-left:2px}
+.kpi-sub{font-size:11px;color:var(--text-3)}
+.kpi-sub strong{color:var(--text-2)}
+
+/* KPI color themes */
+.kpi-blue .kpi-top{background:linear-gradient(90deg,#1E40AF,#60A5FA)}
+.kpi-blue .kpi-icon{background:#EFF6FF;color:#2563EB}
+.kpi-orange .kpi-top{background:linear-gradient(90deg,#C2410C,#FB923C)}
+.kpi-orange .kpi-icon{background:#FFF7ED;color:#EA580C}
+.kpi-green .kpi-top{background:linear-gradient(90deg,#065F46,#34D399)}
+.kpi-green .kpi-icon{background:#ECFDF5;color:#059669}
+.kpi-purple .kpi-top{background:linear-gradient(90deg,#5B21B6,#A78BFA)}
+.kpi-purple .kpi-icon{background:#F5F3FF;color:#7C3AED}
+
+/* ── CHARTS ────────────────────────────── */
+.chart-wrap{position:relative}
+.chart-wrap.h300{height:300px}.chart-wrap.h380{height:380px}.chart-wrap.h420{height:420px}.chart-wrap.h460{height:460px}
+
+/* ── LEGEND ────────────────────────────── */
+.legend{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:14px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-2);font-weight:500}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-dash{width:20px;height:2px;background:currentColor;border-radius:1px;flex-shrink:0}
+
+/* ── TABLE ────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  background:#F8FAFC;padding:10px 14px;
+  text-align:left;font-weight:600;font-size:11.5px;
+  color:var(--text-2);border-bottom:1px solid var(--border-strong);
+  letter-spacing:.01em;
+}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even) td{background:#FAFBFD}
+tbody tr:hover td{background:#EFF6FF}
+.text-center{text-align:center}.text-right{text-align:right}
+
+/* ── SCORE BADGES ────────────────────────────── */
+.sb{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:8px;
+  font-size:13px;font-weight:800;flex-shrink:0;
+}
+.sb1{background:#FEE2E2;color:#B91C1C}
+.sb2{background:#FEF3C7;color:#92400E}
+.sb3{background:#DBEAFE;color:#1D4ED8}
+.sb4{background:#D1FAE5;color:#065F46}
+.sb5{background:#EDE9FE;color:#5B21B6}
+
+/* Small inline badge */
+.sbi{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:700}
+.sbi1{background:#FEE2E2;color:#B91C1C}.sbi2{background:#FEF3C7;color:#92400E}
+.sbi3{background:#DBEAFE;color:#1D4ED8}.sbi4{background:#D1FAE5;color:#065F46}.sbi5{background:#EDE9FE;color:#5B21B6}
+
+/* ── GAP VALUES ────────────────────────── */
+.gap-val{font-weight:800;color:#DC2626;font-size:13px}
+.gap-pos{font-weight:700;color:#059669}
+
+/* ── ORG BUTTONS ────────────────────────── */
+.org-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.org-btn{
+  padding:7px 16px;border:1.5px solid var(--border-strong);
+  background:var(--surface);border-radius:var(--r-pill);
+  cursor:pointer;font-size:12px;font-weight:600;color:var(--text-3);
+  transition:all .2s;font-family:inherit;letter-spacing:.01em;
+}
+.org-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.org-btn.on{color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+
+/* ── SEARCH ────────────────────────────── */
+.search-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-input{
+  flex:1;min-width:160px;padding:10px 16px;
+  border:1.5px solid var(--border-strong);border-radius:var(--r-sm);
+  font-size:13px;outline:none;font-family:inherit;
+  background:var(--surface);transition:border-color .2s,box-shadow .2s;
+}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+select{
+  padding:10px 14px;border:1.5px solid var(--border-strong);
+  border-radius:var(--r-sm);font-size:13px;outline:none;
+  font-family:inherit;background:var(--surface);cursor:pointer;
+  color:var(--text);transition:border-color .2s;
+}
+select:focus{border-color:var(--blue)}
+
+/* ── INDIVIDUAL LAYOUT ────────────────── */
+.ind-layout{display:grid;grid-template-columns:290px 1fr;gap:20px}
+@media(max-width:650px){.ind-layout{grid-template-columns:1fr}}
+.emp-list{
+  border:1.5px solid var(--border-strong);border-radius:var(--r);
+  background:var(--surface);overflow-y:auto;max-height:580px;
+}
+.emp-item{
+  padding:11px 16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);transition:background .15s;
+}
+.emp-item:last-child{border-bottom:none}
+.emp-item:hover{background:#F8FAFF}
+.emp-item.sel{background:#EFF6FF;border-left:3px solid var(--blue)}
+.emp-name{font-weight:700;font-size:13px;color:var(--text)}
+.emp-meta{font-size:11px;color:var(--text-3);margin-top:2px}
+.emp-avg{font-size:13px;color:var(--text-2);font-weight:700;flex-shrink:0;margin-left:10px}
+
+/* ── PROFILE ────────────────────────────── */
+.profile{
+  background:var(--navy);border-radius:var(--r);padding:24px;
+  margin-bottom:18px;position:relative;overflow:hidden;
+}
+.profile::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 100% at 90% -20%,rgba(37,99,235,.5) 0%,transparent 60%);
+}
+.profile::after{
+  content:'';position:absolute;bottom:-40px;right:-40px;
+  width:140px;height:140px;border-radius:50%;
+  background:rgba(37,99,235,.08);pointer-events:none;
+}
+.profile-inner{position:relative;z-index:1}
+.profile-name{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.02em}
+.profile-role{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px}
+.profile-tags{display:flex;flex-wrap:wrap;gap:7px}
+.ptag{
+  background:rgba(255,255,255,.1);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.15);
+  padding:4px 12px;border-radius:var(--r-pill);font-size:11.5px;color:rgba(255,255,255,.85);font-weight:500;
+}
+.ptag.highlight{background:rgba(37,99,235,.4);border-color:rgba(37,99,235,.5)}
+
+/* ── SCORE TABLE ────────────────────────── */
+.score-grid{
+  display:grid;grid-template-columns:140px repeat(6,1fr);
+  border:1px solid var(--border-strong);border-radius:var(--r);overflow:hidden;font-size:12.5px;
+}
+.sgc{padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)}
+.sgc.hdr{background:#F8FAFC;font-weight:700;color:var(--text-2);font-size:11px;letter-spacing:.02em;padding:11px 8px}
+.sgc.lbl{text-align:left;padding-left:14px;font-weight:700;color:var(--text);font-size:13px}
+.sgc.last{border-bottom:none}
+.sgc.alt{background:#FAFBFD}
+
+/* ── PROGRESS ────────────────────────────── */
+.pbar{height:4px;background:rgba(15,23,42,.08);border-radius:2px;margin-top:5px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:2px;background:var(--blue);transition:width .6s ease}
+.pbar-fill.ora{background:var(--orange)}
+.pbar-fill.grn{background:var(--green)}
+
+/* ── AI REPORT ────────────────────────────── */
+.ai-report{
+  background:linear-gradient(140deg,#0A1628 0%,#0F2044 50%,#1E3A8A 100%);
+  border-radius:var(--r);padding:28px;position:relative;overflow:hidden;
+}
+.ai-report::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,130,246,.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+.ai-report::after{
+  content:'';position:absolute;bottom:-30px;left:40%;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.ai-inner{position:relative;z-index:1}
+.ai-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.ai-icon{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,#2563EB,#7C3AED);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;box-shadow:0 4px 12px rgba(37,99,235,.4);
+}
+.ai-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.01em}
+.ai-subtitle{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.ai-sec{margin-bottom:20px}
+.ai-sec:last-child{margin-bottom:0}
+.ai-sec-label{
+  font-size:10px;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;
+}
+.ai-text{font-size:13px;line-height:1.85;color:rgba(255,255,255,.8)}
+.ai-text strong{color:#fff}
+.ai-divider{height:1px;background:rgba(255,255,255,.08);margin:20px 0}
+.ai-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.ai-tag{display:inline-block;padding:4px 12px;border-radius:var(--r-pill);font-size:11.5px;font-weight:700}
+.tag-str{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.3);color:#6EE7B7}
+.tag-dev{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);color:#FCA5A5}
+.tag-neu{background:rgba(37,99,235,.25);border:1px solid rgba(37,99,235,.3);color:#93C5FD}
+.info-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:var(--r-pill);
+  font-size:11.5px;font-weight:700;margin:3px;
+}
+.chip-blue{background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.3);color:#93C5FD}
+.chip-orange{background:rgba(234,88,12,.2);border:1px solid rgba(234,88,12,.3);color:#FDBA74}
+.chip-red{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);color:#FCA5A5}
+.chip-green{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.3);color:#6EE7B7}
+.rec-list{list-style:none;padding:0}
+.rec-list li{
+  padding:8px 0 8px 18px;position:relative;
+  font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.rec-list li:last-child{border-bottom:none}
+.rec-list li::before{content:'›';position:absolute;left:0;color:#60A5FA;font-size:16px;line-height:1.5}
+
+/* ── BUTTONS ────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 20px;border:none;border-radius:var(--r-sm);
+  cursor:pointer;font-size:13px;font-weight:700;
+  font-family:inherit;transition:all .2s;letter-spacing:-.01em;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff;
+  box-shadow:0 2px 8px rgba(37,99,235,.35);
+}
+.btn-primary:hover{background:linear-gradient(135deg,#1E40AF,#1D4ED8);box-shadow:0 4px 16px rgba(37,99,235,.45);transform:translateY(-1px)}
+.btn-dark{
+  background:linear-gradient(135deg,#0F172A,#1E293B);color:#fff;
+  box-shadow:0 2px 8px rgba(15,23,42,.3);
+}
+.btn-dark:hover{background:linear-gradient(135deg,#0A1628,#0F172A);box-shadow:0 4px 16px rgba(15,23,42,.4);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border-strong);color:var(--text-2)}
+.btn-ghost:hover{background:var(--blue-light);border-color:var(--blue);color:var(--blue)}
+
+/* ── EMPTY STATE ────────────────────────── */
+.empty-state{text-align:center;padding:70px 20px;color:var(--text-3)}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:.4}
+.empty-state p{font-size:14px;line-height:1.7}
+
+/* ── ORG TAG ────────────────────────────── */
+.otag{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:700}
+
+/* ── DIVIDER ────────────────────────────── */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* ── COMPANY REPORT ────────────────────── */
+.report-page{
+  background:var(--surface);border-radius:var(--r);
+  padding:48px;box-shadow:var(--sh-md);border:1px solid var(--border);
+}
+.report-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px;
+}
+.report-header h1{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:5px;letter-spacing:-.02em}
+.report-header p{font-size:12px;color:var(--text-3)}
+.report-logo{
+  background:var(--navy);color:#fff;font-weight:800;font-size:11px;
+  padding:5px 12px;border-radius:7px;letter-spacing:.5px;flex-shrink:0;
+}
+.rep-sec{margin-bottom:36px}
+.rep-sec h2{
+  font-size:16px;font-weight:800;color:var(--navy);
+  border-bottom:2px solid var(--navy);padding-bottom:9px;margin-bottom:18px;letter-spacing:-.01em;
+}
+.rep-sec h3{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px}
+.rep-box{
+  background:#F8FAFC;border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:18px;margin-bottom:12px;
+}
+.rep-highlight{
+  background:linear-gradient(135deg,#EFF6FF,#F5F3FF);
+  border:1px solid #BFDBFE;border-radius:var(--r-sm);padding:20px;
+}
+.rep-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.rep-kpi{text-align:center;padding:16px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border)}
+.rep-kpi-name{font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:6px;letter-spacing:.02em}
+.rep-kpi-val{font-size:26px;font-weight:800;color:var(--navy);line-height:1;margin-bottom:4px}
+.rep-kpi-gap{font-size:11px;color:#DC2626;font-weight:700}
+.ins-list{list-style:none;padding:0}
+.ins-list li{
+  padding:9px 0 9px 22px;position:relative;
+  font-size:13px;line-height:1.75;color:var(--text-2);
+  border-bottom:1px solid var(--border);
+}
+.ins-list li:last-child{border-bottom:none}
+.ins-list li::before{content:'◆';position:absolute;left:0;color:var(--blue);font-size:9px;top:13px}
+
+/* ── PRINT ────────────────────────────── */
+@media print{
+  header,.tab-nav,.btn-row,#tab-overview,#tab-org,#tab-individual{display:none!important}
+  #tab-report{display:block!important}
+  body{background:#fff}.main{padding:0}.report-page{box-shadow:none;border:none;padding:20px}
+}
+
+/* ── SECTION HEADER ────────────────────── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:13px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── STAT PILL ────────────────────────── */
+.stat-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:var(--r-pill);
+  font-size:11.5px;font-weight:700;background:var(--blue-light);color:var(--blue);
+}
+</style>
+</head>
+<body>
+
+<!-- ── PASSWORD LOCK ── -->
+<div id="lock-overlay" style="
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0A1628 0%,#0F2044 50%,#1E3A8A 100%);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;
+">
+  <div style="text-align:center;padding:48px 56px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;backdrop-filter:blur(20px);min-width:360px">
+    <div style="margin-bottom:24px">
+      <div style="display:inline-block;background:linear-gradient(135deg,#2563EB,#60A5FA);color:#fff;font-weight:800;font-size:13px;padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">mySUNI</div>
+      <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em">4대 핵심역량 관리 시스템</div>
+      <div style="font-size:13px;color:#64748B;margin-top:6px">접근 권한이 필요합니다</div>
+    </div>
+    <div style="position:relative;margin-bottom:12px">
+      <input id="lock-input" type="password" placeholder="비밀번호를 입력하세요"
+        style="width:100%;padding:12px 16px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;letter-spacing:.05em"
+        onkeydown="if(event.key==='Enter')checkPassword()">
+    </div>
+    <div id="lock-error" style="color:#F87171;font-size:12px;min-height:18px;margin-bottom:10px"></div>
+    <button onclick="checkPassword()" style="width:100%;padding:12px;background:linear-gradient(135deg,#2563EB,#1D4ED8);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-.01em">
+      입장하기
+    </button>
+  </div>
+  <div style="margin-top:20px;font-size:11px;color:#1E3A8A">© 2026 mySUNI · SK</div>
+</div>
+
+<script>
+(function(){
+  if(sessionStorage.getItem('msAuth')==='ok'){
+    document.getElementById('lock-overlay').style.display='none';
+  }
+  document.getElementById('lock-input').focus();
+})();
+function checkPassword(){
+  const v=document.getElementById('lock-input').value;
+  if(v==='mysuni1234'){
+    sessionStorage.setItem('msAuth','ok');
+    const o=document.getElementById('lock-overlay');
+    o.style.transition='opacity .4s';o.style.opacity='0';
+    setTimeout(()=>o.style.display='none',400);
+  } else {
+    const err=document.getElementById('lock-error');
+    err.textContent='비밀번호가 올바르지 않습니다.';
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+    setTimeout(()=>err.textContent='',2500);
+  }
+}
+</script>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="hdr">
+    <div class="hdr-logo">
+      <img src="logo.png" class="hdr-logo-img"
+        onload="this.style.display='block';this.nextElementSibling.style.display='none'"
+        onerror="this.style.display='none'"
+        alt="mySUNI">
+      <span class="hdr-logo-text">mySUNI</span>
+    </div>
+    <div class="hdr-title">4대 핵심역량 관리 시스템</div>
+    <div class="hdr-sep"></div>
+    <div class="hdr-badge data"><div class="hdr-dot"></div>샘플 데이터</div>
+    <div class="hdr-badge period">&#39;26년 연초 기준</div>
+  </div>
+</header>
+
+<!-- ── TAB NAV ── -->
+<div class="tab-nav">
+  <div class="tab-nav-inner">
+    <button class="tab-btn active" data-tab="overview"><span class="tab-icon">◈</span>전체 현황</button>
+    <button class="tab-btn" data-tab="org"><span class="tab-icon">◫</span>조직별 비교</button>
+    <button class="tab-btn" data-tab="individual"><span class="tab-icon">◉</span>개인 레포트</button>
+    <button class="tab-btn" data-tab="report"><span class="tab-icon">◧</span>전사 보고서</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══ TAB 1 : OVERVIEW ══ -->
+<div id="tab-overview" class="tab-pane active">
+  <div class="kpi-grid" id="kpi-area"></div>
+
+  <div class="section grid-2">
+    <div class="card">
+      <div class="card-title"><div class="ct-dot"></div>4대 핵심역량 종합 수준</div>
+      <div class="chart-wrap h420"><canvas id="chart-ov-radar"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>현수준 (연초)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EA580C;opacity:.7"></div>목표수준</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="ct-dot"></div>역량별 점수 분포 (%)</div>
+      <div id="dist-charts"></div>
+    </div>
+  </div>
+
+  <div class="section card">
+    <div class="card-title"><div class="ct-dot"></div>역량별 상세 통계</div>
+    <table id="overview-table">
+      <thead><tr>
+        <th>역량</th><th class="text-center">현수준</th><th class="text-center">표준편차</th>
+        <th class="text-center">목표수준</th><th class="text-center">GAP</th>
+        <th class="text-center">1점</th><th class="text-center">2점</th><th class="text-center">3점</th><th class="text-center">4점</th><th class="text-center">5점</th>
+      </tr></thead>
+      <tbody id="overview-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ TAB 2 : ORG ══ -->
+<div id="tab-org" class="tab-pane">
+  <div class="section card">
+    <div class="card-title"><div class="ct-dot"></div>조직 선택<span style="font-size:11px;color:var(--text-3);font-weight:500;margin-left:6px">— 여러 조직을 동시에 비교할 수 있습니다</span></div>
+    <div class="org-btns" id="org-buttons"></div>
+  </div>
+  <div class="section grid-2">
+    <div class="card">
+      <div class="card-title"><div class="ct-dot"></div>조직별 역량 비교 (레이더)</div>
+      <div class="chart-wrap h460"><canvas id="chart-org-radar"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="ct-dot"></div>조직별 역량 막대 비교</div>
+      <div class="chart-wrap h460"><canvas id="chart-org-bar"></canvas></div>
+    </div>
+  </div>
+  <div class="section card">
+    <div class="card-title"><div class="ct-dot"></div>조직별 상세 현황</div>
+    <table><thead><tr>
+      <th>조직</th><th class="text-center">인원</th>
+      <th class="text-center">Domain 전문성</th><th class="text-center">AI 역량</th>
+      <th class="text-center">Global 역량</th><th class="text-center">리더십</th>
+      <th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th><th class="text-center">GAP</th>
+    </tr></thead><tbody id="org-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- ══ TAB 3 : INDIVIDUAL ══ -->
+<div id="tab-individual" class="tab-pane">
+  <div class="section">
+    <div class="search-row">
+      <input class="search-input" type="text" id="emp-search" placeholder="🔍  이름 검색..." oninput="filterEmployees()">
+      <select id="emp-org-filter" onchange="filterEmployees()">
+        <option value="">전체 조직</option>
+      </select>
+      <select id="emp-role-filter" onchange="filterEmployees()">
+        <option value="">전체 직책</option>
+        <option value="팀장">팀장</option>
+        <option value="RF">RF</option>
+      </select>
+      <select id="emp-year-filter" onchange="filterEmployees()">
+        <option value="">전체 연차</option>
+        <option value="1~2년">1~2년차</option>
+        <option value="3~4년">3~4년차</option>
+        <option value="5년이상">5년 이상</option>
+      </select>
+    </div>
+    <div class="ind-layout">
+      <div>
+        <div style="font-size:11.5px;color:var(--text-3);font-weight:600;margin-bottom:10px;letter-spacing:.02em;text-transform:uppercase">
+          직원 목록 <span id="emp-count" style="color:var(--blue)"></span>
+        </div>
+        <div class="emp-list" id="emp-list"></div>
+      </div>
+      <div id="ind-report">
+        <div class="empty-state card">
+          <div class="empty-icon">◎</div>
+          <p>왼쪽 목록에서 직원을 선택하면<br>개인 역량 레포트가 표시됩니다</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 4 : REPORT ══ -->
+<div id="tab-report" class="tab-pane">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:16px" class="btn-row">
+    <button class="btn btn-dark" onclick="window.print()">⎙&nbsp; 인쇄 / PDF 저장</button>
+  </div>
+  <div class="report-page" id="company-report-content"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════
+const COMP_KEYS=['domain','ai','global','leadership'];
+const COMP_NAMES=['Domain 전문성','AI 역량','Global 역량','리더십'];
+const ORG_LIST=['AI역량육성','경영관리역량','러닝플랫폼','변화추진','SKMS실천','리더십개발'];
+const ORG_COLORS={
+  'AI역량육성':  {b:'#2563EB',bg:'rgba(37,99,235,.18)',tag:'#DBEAFE',tt:'#1D4ED8'},
+  '경영관리역량':{b:'#7C3AED',bg:'rgba(124,58,237,.18)',tag:'#EDE9FE',tt:'#5B21B6'},
+  '러닝플랫폼':  {b:'#059669',bg:'rgba(5,150,105,.18)',tag:'#D1FAE5',tt:'#065F46'},
+  '변화추진':    {b:'#DC2626',bg:'rgba(220,38,38,.18)',tag:'#FEE2E2',tt:'#991B1B'},
+  'SKMS실천':   {b:'#0D9488',bg:'rgba(13,148,136,.18)',tag:'#CCFBF1',tt:'#0F766E'},
+  '리더십개발':  {b:'#D97706',bg:'rgba(217,119,6,.18)',tag:'#FEF3C7',tt:'#92400E'}
+};
+const LEVEL_DESC={
+  domain:{1:'해당 Domain 관련 업무를 수행한 경험은 있으나, 주어진 범위 내에서만 이해하고 실행하는 수준',2:'Domain의 구조/맥락을 이해하고, 일상적 업무는 스스로 처리할 수 있는 수준',3:'Domain 내 주요 이슈/문제를 이해하고, 상황에 맞는 판단과 대응이 가능한 수준',4:'국내 기준에서 Domain 이슈를 해석하고, 대안이나 방향을 제시할 수 있는 전문가 수준',5:'글로벌 기준에서 Domain을 비교·분석하고, 방향성과 인사이트를 제시할 수 있는 전문가 수준'},
+  ai:{1:'AI 도구를 가끔 사용하나, 업무에는 거의 활용하지 않는 수준 (검색·번역·아이디어 참고 수준)',2:'개인 업무에 AI를 활용하나, 활용 범위가 제한적인 수준 (자료 정리·요약·개인 메모 등)',3:'회의록, 보고서 초안, 문서 작성 등 업무 산출물 생성에 AI를 활용하는 수준',4:'에이전트 등을 활용해 반복 업무 자동화 또는 업무 프로세스 개선이 가능한 수준',5:'AI를 활용해 업무 프로세스를 통합/개선하고, 조직 생산성 향상에 기여하며 활용방법을 전수할 수 있는 수준'},
+  global:{1:'업무 관련 영어 소통이 어려운 수준 (A1)',2:'단순한 영어 의사소통은 가능하나 업무 활용에 제약이 있는 수준 (A2)',3:'회의·메일·문서 등 기본적인 업무 소통이 가능한 수준 (B1)',4:'업무·일상 대부분 상황에서 어려움 없이 영어로 소통 가능한 수준 (B2)',5:'복잡한 주제도 유창·정확하게 이해·표현 가능하며, 글로벌 조직에서 즉시 업무 수행 가능한 수준 (C1)'},
+  leadership:{1:'주어진 업무 수행 중심, 타 조직과의 협업 프로젝트 경험이 없는 수준',2:'협업 프로젝트 참여 경험은 있으나 리더 역할 경험이 제한적인 수준',3:'소규모 과제·프로젝트를 리더로 운영한 경험이 있는 수준',4:'과제를 스스로 정의하고 프로젝트를 기획·리딩한 경험이 있는 수준',5:'조직 단위 변화과제를 발굴하고, 프로젝트를 끝까지 완결한 경험이 있는 수준'}
+};
+const DEV_RECS={
+  domain:{1:['기초 Domain 지식 학습 (온라인 강좌·인증 과정 수강)','사내 Domain 전문가와의 교류 및 섀도잉 프로그램 참여'],2:['실무 프로젝트 참여 기회 확대','관련 분야 전문서·리포트 정기 학습 루틴 구축'],3:['외부 컨퍼런스 및 세미나 적극 참여','신규 프로젝트 리딩 기회 탐색 및 도전'],4:['글로벌 Best Practice 벤치마킹 활동','업계 전문가 네트워크 구축 및 외부 발표 활동'],5:['사내 Domain 지식 공유 리더십 발휘','후배 멘토링·코칭 및 조직 내 지식 아카이브 구축']},
+  ai:{1:['AI 기초 개념 및 주요 도구 학습 (ChatGPT, Claude 등)','AI Camp 또는 기초 AI 교육 프로그램 참여'],2:['개인 업무에 AI 도구 적용 실습 강화','AI 활용 우수 사례 학습 및 벤치마킹'],3:['실무 데이터 기반 AI 적용 과제 수행','1:1 AI 코칭·튜터링 프로그램 참여'],4:['AI SUPEX Lab 과제 리딩 역할 수행','업무 자동화 에이전트 직접 개발·운영'],5:['조직 내 AI 활용 가이드 체계화 및 배포','AI 활용 교육 퍼실리테이터 역할 수행']},
+  global:{1:['기초 비즈니스 영어 코스 수강 (화상 영어 등)','영어 소통 빈도를 점진적으로 확대'],2:['1:1 화상 영어 정기 수강','영어 미팅 참여 및 영어 문서 작성 훈련'],3:['글로벌 프로젝트 또는 해외 협업 과제 참여','영어 발표·리포팅 기회 적극 모색'],4:['해외 벤더 미팅 주도적 참여','영어 기반 리포팅 체계 직접 구축'],5:['글로벌 리더십 네트워크 참여','영어 기반 조직 내 지식 공유 활동']},
+  leadership:{1:['소규모 협업 과제부터 참여 시작','팀 내 리더십 역할 기회 적극 모색'],2:['소규모 과제 리더 역할 직접 도전','리더십 코칭·멘토링 프로그램 수강'],3:['중규모 과제 기획부터 리딩까지 전 과정 경험','1:1 리더십 멘토링 요청'],4:['조직 단위 변화과제 발굴 및 추진','경영층 스폰서십을 활용한 과제 완결 경험'],5:['전사 변화과제 챔피언 역할 수행','리더십 Best Practice 조직 내 공유 활동']}
+};
+
+// ══════════════════════════════════════════
+// SEEDED PRNG
+// ══════════════════════════════════════════
+class RNG{
+  constructor(s=42){this.s=s>>>0}
+  next(){this.s^=this.s<<13;this.s^=this.s>>17;this.s^=this.s<<5;return(this.s>>>0)/4294967295}
+  float(a,b){return a+this.next()*(b-a)}
+  int(a,b){return Math.floor(this.float(a,b+.999))}
+  normal(m,s){let u,v,r;do{u=this.next()*2-1;v=this.next()*2-1;r=u*u+v*v}while(r>=1||!r);return m+s*u*Math.sqrt(-2*Math.log(r)/r)}
+  score(m,s){return Math.max(1,Math.min(5,Math.round(this.normal(m,s))))}
+}
+
+// ══════════════════════════════════════════
+// DATA GENERATION
+// ══════════════════════════════════════════
+function generateEmployees(){
+  const rng=new RNG(20260101);
+  const OC=[
+    {name:'AI역량육성',n:13,tl:2,bias:{domain:-.3,ai:.4,global:-.3,leadership:.2}},
+    {name:'경영관리역량',n:10,tl:2,bias:{domain:.1,ai:-.1,global:.6,leadership:.5}},
+    {name:'러닝플랫폼',n:12,tl:2,bias:{domain:0,ai:-.1,global:-.3,leadership:0}},
+    {name:'변화추진',n:13,tl:3,bias:{domain:-.4,ai:-.3,global:-.2,leadership:-.3}},
+    {name:'SKMS실천',n:15,tl:4,bias:{domain:.3,ai:.3,global:.3,leadership:.2}},
+    {name:'리더십개발',n:13,tl:3,bias:{domain:.5,ai:.5,global:-.1,leadership:.2}}
+  ];
+  const BASE={domain:2.99,ai:2.81,global:2.59,leadership:3.13};
+  const BSTD={domain:.85,ai:.90,global:.95,leadership:.92};
+  const TGT={domain:4.22,ai:4.08,global:3.83,leadership:4.18};
+  const TSTD={domain:.73,ai:.66,global:.78,leadership:.75};
+  const SN=['김','이','박','최','정','한','조','윤','장','임','오','서','신','권','황','안','송','류','전','홍'];
+  const GN=['민준','서연','지훈','수진','현우','미래','태양','지원','성민','예진','재원','하은','동현','소영','준호','채원','우진','나연','승현','다은','영호','지혜','민재','수현','기현','유진','상훈','보람','진혁','혜린','지수','민지','재혁','준서','도현','시우','지호','혜진','정민','은지'];
+  const emp=[];let id=1,ni=0;
+  for(const oc of OC){
+    for(let i=0;i<oc.n;i++){
+      const isTL=i<oc.tl;
+      let yrs=isTL?rng.int(5,12):rng.next()<.43?rng.int(1,2):rng.next()<.3?rng.int(3,4):rng.int(5,12);
+      const yb=yrs<=2?{domain:-.4,ai:-.3,global:-.2,leadership:-.3}:yrs<=4?{domain:.1,ai:.4,global:.5,leadership:0}:{domain:.3,ai:.1,global:0,leadership:.3};
+      const rb=isTL?{domain:.5,ai:.2,global:-.3,leadership:.6}:{domain:0,ai:0,global:0,leadership:0};
+      const cur={},tgt={};
+      for(const k of COMP_KEYS){
+        const m=BASE[k]+oc.bias[k]+yb[k]+rb[k];
+        cur[k]=rng.score(m,BSTD[k]);
+        const tm=TGT[k]+(oc.name==='변화추진'?.3:0);
+        tgt[k]=Math.max(1,Math.min(5,Math.max(cur[k]+1,rng.score(tm,TSTD[k]))));
+      }
+      const nm=SN[ni%SN.length]+GN[(ni*3+id)%GN.length];
+      ni++;
+      emp.push({id,name:nm,org:oc.name,role:isTL?'팀장':'RF',years:yrs,current:cur,target:tgt,yearEnd:null});
+      id++;
+    }
+  }
+  return emp;
+}
+
+// ══════════════════════════════════════════
+// STATS HELPERS
+// ══════════════════════════════════════════
+const avg=arr=>arr.reduce((s,v)=>s+v,0)/arr.length;
+const stddev=arr=>{const m=avg(arr);return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0)/arr.length)};
+const fmtN=v=>typeof v==='number'?v.toFixed(2):'-';
+function computeStats(emps){
+  const r={};
+  for(const k of COMP_KEYS){
+    const vals=emps.map(e=>e.current[k]),tvals=emps.map(e=>e.target[k]);
+    r[k]={mean:avg(vals),std:stddev(vals),tmean:avg(tvals),gap:avg(tvals)-avg(vals),
+      dist:[1,2,3,4,5].map(s=>emps.filter(e=>e.current[k]===s).length)};
+  }
+  return r;
+}
+const compAvgObj=emps=>{const r={};for(const k of COMP_KEYS)r[k]=avg(emps.map(e=>e.current[k]));return r};
+const tgtAvgObj=emps=>{const r={};for(const k of COMP_KEYS)r[k]=avg(emps.map(e=>e.target[k]));return r};
+const overallAvg=obj=>avg(COMP_KEYS.map(k=>obj[k]));
+
+// ══════════════════════════════════════════
+// INIT DATA
+// ══════════════════════════════════════════
+const EMPLOYEES=generateEmployees();
+const COMP_STATS=computeStats(EMPLOYEES);
+const COMP_AVG=compAvgObj(EMPLOYEES);
+const TGT_AVG=tgtAvgObj(EMPLOYEES);
+
+const CHARTS={};
+function destroyChart(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
+
+// ══════════════════════════════════════════
+// CHART HELPERS
+// ══════════════════════════════════════════
+function makeRadar(cid,datasets){
+  destroyChart(cid);
+  const ctx=document.getElementById(cid).getContext('2d');
+  CHARTS[cid]=new Chart(ctx,{
+    type:'radar',
+    data:{labels:['Domain 전문성','AI 역량','Global 역량','리더십'],datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10},color:'#94A3B8',backdropColor:'transparent'},
+        pointLabels:{font:{size:11.5,weight:'700'},color:'#0F172A'},
+        grid:{color:'rgba(15,23,42,.06)'},angleLines:{color:'rgba(15,23,42,.06)'}}},
+      plugins:{legend:{position:'bottom',labels:{font:{size:11.5},boxWidth:10,padding:14,color:'#475569'}}}
+    }
+  });
+}
+function hexRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`${r},${g},${b}`}
+function colorDs(label,data,hex,dash=false,alpha=.15){
+  return{label,data,
+    backgroundColor:`rgba(${hexRgb(hex)},${alpha})`,
+    borderColor:hex,borderWidth:2,borderDash:dash?[6,4]:[],
+    pointBackgroundColor:hex,pointRadius:4,pointHoverRadius:6};
+}
+
+// ══════════════════════════════════════════
+// TAB 1 : OVERVIEW
+// ══════════════════════════════════════════
+function renderOverview(){
+  const ca=COMP_AVG,ta=TGT_AVG;
+  const am=overallAvg(ca),at=overallAvg(ta),ag=at-am;
+
+  document.getElementById('kpi-area').innerHTML=`
+    <div class="kpi kpi-blue">
+      <div class="kpi-top"></div>
+      <div class="kpi-body">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">현수준 평균 (연초)</div>
+        <div class="kpi-val">${am.toFixed(2)}<span>/ 5점</span></div>
+        <div class="kpi-sub">4대 역량 전체 평균</div>
+      </div>
+    </div>
+    <div class="kpi kpi-orange">
+      <div class="kpi-top"></div>
+      <div class="kpi-body">
+        <div class="kpi-icon">🎯</div>
+        <div class="kpi-label">목표수준 평균</div>
+        <div class="kpi-val">${at.toFixed(2)}<span>/ 5점</span></div>
+        <div class="kpi-sub">'26년 목표 수준</div>
+      </div>
+    </div>
+    <div class="kpi kpi-green">
+      <div class="kpi-top"></div>
+      <div class="kpi-body">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">평균 성장 GAP</div>
+        <div class="kpi-val">+${ag.toFixed(2)}<span>점</span></div>
+        <div class="kpi-sub">목표 달성까지 필요 성장폭</div>
+      </div>
+    </div>
+    <div class="kpi kpi-purple">
+      <div class="kpi-top"></div>
+      <div class="kpi-body">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">응답 인원</div>
+        <div class="kpi-val">${EMPLOYEES.length}<span>명</span></div>
+        <div class="kpi-sub"><strong>팀장 ${EMPLOYEES.filter(e=>e.role==='팀장').length}명</strong> · RF ${EMPLOYEES.filter(e=>e.role==='RF').length}명</div>
+      </div>
+    </div>
+  `;
+
+  // Radar
+  makeRadar('chart-ov-radar',[
+    colorDs('현수준 (연초)',COMP_KEYS.map(k=>+ca[k].toFixed(2)),'#2563EB',false,.2),
+    colorDs('목표수준',COMP_KEYS.map(k=>+ta[k].toFixed(2)),'#EA580C',true,.1),
+  ]);
+
+  // Distribution
+  const DCOL={domain:'#2563EB',ai:'#7C3AED',global:'#059669',leadership:'#D97706'};
+  const labels=['1점','2점','3점','4점','5점'];
+  let html='';
+  COMP_KEYS.forEach((k,i)=>{
+    html+=`<div style="margin-bottom:${i<3?'18px':'0'}">
+      <div style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:7px">${COMP_NAMES[i]}</div>
+      <div style="height:96px;position:relative"><canvas id="chart-dist-${k}"></canvas></div>
+    </div>`;
+  });
+  document.getElementById('dist-charts').innerHTML=html;
+
+  for(const k of COMP_KEYS){
+    const d=COMP_STATS[k].dist,tot=d.reduce((s,v)=>s+v,0);
+    const pct=d.map(v=>+(v/tot*100).toFixed(1));
+    destroyChart('chart-dist-'+k);
+    const ctx=document.getElementById('chart-dist-'+k).getContext('2d');
+    const grad=ctx.createLinearGradient(0,0,0,96);
+    grad.addColorStop(0,DCOL[k]);grad.addColorStop(1,DCOL[k]+'80');
+    CHARTS['chart-dist-'+k]=new Chart(ctx,{
+      type:'bar',data:{labels,datasets:[{data:pct,backgroundColor:grad,borderRadius:5,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y.toFixed(1)}% (${d[c.dataIndex]}명)`}}},
+        scales:{x:{ticks:{font:{size:10},color:'#94A3B8'},grid:{display:false}},
+          y:{ticks:{font:{size:9},color:'#94A3B8',callback:v=>v+'%'},max:70,grid:{color:'rgba(15,23,42,.04)'}}}
+      }
+    });
+  }
+
+  // Stats table
+  const tbody=document.getElementById('overview-tbody');
+  tbody.innerHTML='';
+  COMP_KEYS.forEach((k,i)=>{
+    const s=COMP_STATS[k],tot=EMPLOYEES.length;
+    tbody.innerHTML+=`<tr>
+      <td><strong>${COMP_NAMES[i]}</strong></td>
+      <td class="text-center"><strong>${s.mean.toFixed(2)}</strong></td>
+      <td class="text-center" style="color:var(--text-3)">${s.std.toFixed(2)}</td>
+      <td class="text-center">${s.tmean.toFixed(2)}</td>
+      <td class="text-center"><span class="gap-val">+${s.gap.toFixed(2)}</span></td>
+      ${s.dist.map((v,si)=>`<td class="text-center"><span class="sbi sbi${si+1}">${(v/tot*100).toFixed(1)}%</span><br><span style="font-size:10px;color:var(--text-3)">${v}명</span></td>`).join('')}
+    </tr>`;
+  });
+}
+
+// ══════════════════════════════════════════
+// TAB 2 : ORG COMPARISON
+// ══════════════════════════════════════════
+let selectedOrgs=[...ORG_LIST];
+let showTotal=true;
+function renderOrgTab(){
+  const btns=document.getElementById('org-buttons');
+  btns.innerHTML='';
+  for(const org of ORG_LIST){
+    const c=ORG_COLORS[org],on=selectedOrgs.includes(org);
+    const btn=document.createElement('button');
+    btn.className='org-btn'+(on?' on':'');
+    btn.textContent=org;
+    if(on){btn.style.background=c.b;btn.style.boxShadow=`0 3px 10px ${c.b}50`;}
+    btn.onclick=()=>{
+      selectedOrgs.includes(org)?selectedOrgs=selectedOrgs.filter(o=>o!==org):selectedOrgs.push(org);
+      renderOrgTab();
+    };
+    btns.appendChild(btn);
+  }
+  // 구분선
+  const sep=document.createElement('span');
+  sep.style.cssText='display:inline-block;width:1px;height:22px;background:rgba(15,23,42,.12);margin:0 6px;vertical-align:middle';
+  btns.appendChild(sep);
+  // 전사 평균 토글
+  const tb=document.createElement('button');
+  tb.className='org-btn total-toggle'+(showTotal?' on':'');
+  tb.innerHTML='◎&nbsp;전사 평균';
+  if(showTotal){tb.style.background='#334155';tb.style.boxShadow='0 3px 10px rgba(51,65,85,.4)';}
+  tb.onclick=()=>{showTotal=!showTotal;renderOrgTab();};
+  btns.appendChild(tb);
+  renderOrgCharts();renderOrgTable();
+}
+function renderOrgCharts(){
+  const ds=[];
+  for(const org of selectedOrgs){
+    const emps=EMPLOYEES.filter(e=>e.org===org);
+    if(!emps.length)continue;
+    const vals=COMP_KEYS.map(k=>+avg(emps.map(e=>e.current[k])).toFixed(2));
+    ds.push(colorDs(org,vals,ORG_COLORS[org].b,false,.15));
+  }
+  if(showTotal){
+    const vals=COMP_KEYS.map(k=>+COMP_AVG[k].toFixed(2));
+    ds.push({
+      label:'전사 평균',data:vals,
+      backgroundColor:'rgba(100,116,139,.08)',
+      borderColor:'#334155',borderWidth:2.5,pointBackgroundColor:'#334155',
+      pointRadius:4,borderDash:[6,3]
+    });
+  }
+  if(!ds.length){destroyChart('chart-org-radar');return;}
+  makeRadar('chart-org-radar',ds);
+  destroyChart('chart-org-bar');
+  const barDs=selectedOrgs.map(org=>{
+    const emps=EMPLOYEES.filter(e=>e.org===org),c=ORG_COLORS[org];
+    return{label:org,data:COMP_KEYS.map(k=>+avg(emps.map(e=>e.current[k])).toFixed(2)),backgroundColor:c.b+'CC',borderRadius:5};
+  });
+  if(showTotal){
+    barDs.push({
+      label:'전사 평균',
+      data:COMP_KEYS.map(k=>+COMP_AVG[k].toFixed(2)),
+      backgroundColor:'rgba(51,65,85,.55)',
+      borderRadius:5,
+      borderWidth:1.5,borderColor:'#334155',
+    });
+  }
+  const ctx=document.getElementById('chart-org-bar').getContext('2d');
+  CHARTS['chart-org-bar']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:COMP_NAMES,datasets:barDs},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:12}}},
+      scales:{y:{min:0,max:5,ticks:{stepSize:1},grid:{color:'rgba(15,23,42,.05)'}},x:{grid:{display:false}}}
+    }
+  });
+}
+function renderOrgTable(){
+  const tbody=document.getElementById('org-tbody');
+  tbody.innerHTML='';
+  for(const org of ORG_LIST){
+    const emps=EMPLOYEES.filter(e=>e.org===org);
+    if(!emps.length)continue;
+    const ca=compAvgObj(emps),ta=tgtAvgObj(emps);
+    const oa=overallAvg(ca),ot=overallAvg(ta);
+    const c=ORG_COLORS[org],sel=selectedOrgs.includes(org);
+    tbody.innerHTML+=`<tr style="${sel?'':'opacity:.35'}">
+      <td><span class="otag" style="background:${c.tag};color:${c.tt}">${org}</span></td>
+      <td class="text-center">${emps.length}명</td>
+      ${COMP_KEYS.map(k=>`<td class="text-center"><span class="sb sb${Math.round(ca[k])}">${ca[k].toFixed(2)}</span></td>`).join('')}
+      <td class="text-center"><strong>${oa.toFixed(2)}</strong></td>
+      <td class="text-center">${ot.toFixed(2)}</td>
+      <td class="text-center"><span class="gap-val">+${(ot-oa).toFixed(2)}</span></td>
+    </tr>`;
+  }
+  if(showTotal){
+    const allOA=overallAvg(COMP_AVG),allOT=overallAvg(TGT_AVG);
+    tbody.innerHTML+=`<tr style="background:var(--blue-light);border-top:2px solid var(--blue)">
+      <td><span class="otag" style="background:#DBEAFE;color:#1E40AF;font-weight:700">◎ 전사 평균</span></td>
+      <td class="text-center" style="font-weight:600">${EMPLOYEES.length}명</td>
+      ${COMP_KEYS.map(k=>`<td class="text-center"><span class="sb sb${Math.round(COMP_AVG[k])}">${COMP_AVG[k].toFixed(2)}</span></td>`).join('')}
+      <td class="text-center"><strong style="color:var(--blue)">${allOA.toFixed(2)}</strong></td>
+      <td class="text-center">${allOT.toFixed(2)}</td>
+      <td class="text-center"><span class="gap-val">+${(allOT-allOA).toFixed(2)}</span></td>
+    </tr>`;
+  }
+}
+
+// ══════════════════════════════════════════
+// TAB 3 : INDIVIDUAL
+// ══════════════════════════════════════════
+let filteredEmps=[...EMPLOYEES],selectedEmp=null;
+function filterEmployees(){
+  const q=document.getElementById('emp-search').value.trim().toLowerCase();
+  const org=document.getElementById('emp-org-filter').value;
+  const role=document.getElementById('emp-role-filter').value;
+  const yr=document.getElementById('emp-year-filter').value;
+  filteredEmps=EMPLOYEES.filter(e=>{
+    if(q&&!e.name.includes(q))return false;
+    if(org&&e.org!==org)return false;
+    if(role&&e.role!==role)return false;
+    if(yr){if(yr==='1~2년'&&e.years>2)return false;if(yr==='3~4년'&&(e.years<3||e.years>4))return false;if(yr==='5년이상'&&e.years<5)return false;}
+    return true;
+  });
+  renderEmpList();
+}
+function renderEmpList(){
+  const list=document.getElementById('emp-list');
+  document.getElementById('emp-count').textContent=`(${filteredEmps.length}명)`;
+  list.innerHTML='';
+  for(const e of filteredEmps){
+    const oa=overallAvg(e.current);
+    const div=document.createElement('div');
+    div.className='emp-item'+(selectedEmp&&selectedEmp.id===e.id?' sel':'');
+    div.innerHTML=`<div><div class="emp-name">${e.name}</div><div class="emp-meta">${e.org} · ${e.role} · ${e.years}년차</div></div>
+    <div class="emp-avg">${oa.toFixed(1)}</div>`;
+    div.onclick=()=>selectEmployee(e);
+    list.appendChild(div);
+  }
+  if(!filteredEmps.length)list.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px">검색 결과 없음</div>';
+}
+function selectEmployee(e){selectedEmp=e;renderEmpList();renderIndividualReport(e);}
+
+function renderIndividualReport(emp){
+  const orgEmps=EMPLOYEES.filter(e=>e.org===emp.org);
+  const orgAvg=compAvgObj(orgEmps),ca=COMP_AVG;
+  const panel=document.getElementById('ind-report');
+  const oa=overallAvg(emp.current),ot=overallAvg(emp.target);
+
+  panel.innerHTML=`
+    <div class="profile">
+      <div class="profile-inner">
+        <div class="profile-name">${emp.name}</div>
+        <div class="profile-role">${emp.org} · ${emp.role} · 근무 ${emp.years}년차</div>
+        <div class="profile-tags">
+          <span class="ptag highlight">현수준 ${oa.toFixed(2)}점</span>
+          <span class="ptag highlight">목표 ${ot.toFixed(2)}점</span>
+          <span class="ptag">GAP +${(ot-oa).toFixed(2)}점</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-title"><div class="ct-dot"></div>역량별 점수 현황</div>
+        <div class="score-grid">
+          <div class="sgc hdr lbl">역량</div>
+          <div class="sgc hdr">연초</div><div class="sgc hdr">목표</div>
+          <div class="sgc hdr">GAP</div><div class="sgc hdr">조직평균</div>
+          <div class="sgc hdr">전사평균</div><div class="sgc hdr">연말</div>
+          ${COMP_KEYS.map((k,i)=>{
+            const c=emp.current[k],t=emp.target[k],g=t-c;
+            const oa2=orgAvg[k].toFixed(2),ca2=ca[k].toFixed(2);
+            const vsOrg=c>orgAvg[k]?'<span style="color:#059669;font-size:10px">▲위</span>':c<orgAvg[k]?'<span style="color:#DC2626;font-size:10px">▼하</span>':'<span style="color:#94A3B8;font-size:10px">─평</span>';
+            const vsAll=c>ca[k]?'<span style="color:#059669;font-size:10px">▲위</span>':c<ca[k]?'<span style="color:#DC2626;font-size:10px">▼하</span>':'<span style="color:#94A3B8;font-size:10px">─평</span>';
+            const alt=i%2===1?'alt':'';
+            return`
+              <div class="sgc lbl last ${alt}">${COMP_NAMES[i]}</div>
+              <div class="sgc last ${alt}">
+                <span class="sb sb${c}">${c}</span>
+                <div class="pbar"><div class="pbar-fill" style="width:${c/5*100}%"></div></div>
+              </div>
+              <div class="sgc last ${alt}">
+                <span class="sb sb${t}" style="background:#FEF3C7;color:#92400E">${t}</span>
+                <div class="pbar"><div class="pbar-fill ora" style="width:${t/5*100}%"></div></div>
+              </div>
+              <div class="sgc last ${alt}"><span class="gap-val">+${g}</span></div>
+              <div class="sgc last ${alt}">${oa2}<br>${vsOrg}</div>
+              <div class="sgc last ${alt}">${ca2}<br>${vsAll}</div>
+              <div class="sgc last ${alt}" style="color:var(--text-3);font-size:11px">미측정</div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="ct-dot"></div>레이더 분석</div>
+        <div class="chart-wrap h300"><canvas id="chart-ind-radar"></canvas></div>
+        <div class="legend" style="margin-top:12px">
+          <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>개인 현수준</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#EA580C"></div>개인 목표</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div>조직 평균</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#94A3B8"></div>전사 평균</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section ai-report">
+      <div class="ai-inner">
+        ${generateAIReport(emp,orgAvg,ca)}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn btn-ghost" onclick="exportToPPT(${emp.id})">⬇&nbsp; PPT 내보내기</button>
+      <button class="btn btn-dark" onclick="printIndividualReport(${emp.id})">⎙&nbsp; 개인 레포트 출력</button>
+    </div>
+  `;
+
+  setTimeout(()=>{
+    makeRadar('chart-ind-radar',[
+      colorDs('개인 현수준',COMP_KEYS.map(k=>emp.current[k]),'#2563EB'),
+      colorDs('개인 목표',COMP_KEYS.map(k=>emp.target[k]),'#EA580C',true),
+      colorDs('조직 평균',COMP_KEYS.map(k=>+orgAvg[k].toFixed(2)),'#7C3AED',false,.1),
+      colorDs('전사 평균',COMP_KEYS.map(k=>+ca[k].toFixed(2)),'#94A3B8',false,.1),
+    ]);
+  },50);
+}
+
+// ══════════════════════════════════════════
+// AI INTERPRETATION ENGINE
+// ══════════════════════════════════════════
+function generateAIReport(emp,orgAvg,compAvg){
+  const{current:cur,target:tgt,name,org,role,years}=emp;
+  const oa=overallAvg(cur),ot=overallAvg(tgt);
+  const ranked=[...COMP_KEYS].map(k=>({k,v:cur[k]})).sort((a,b)=>b.v-a.v);
+  const gaps=COMP_KEYS.map(k=>({k,gap:tgt[k]-cur[k]})).sort((a,b)=>b.gap-a.gap);
+  const strongest=ranked[0],weakest=ranked[ranked.length-1];
+  const topGap=gaps[0];
+  const sIdx=COMP_KEYS.indexOf(strongest.k),wIdx=COMP_KEYS.indexOf(weakest.k),gIdx=COMP_KEYS.indexOf(topGap.k);
+  const aboveAvg=COMP_KEYS.filter(k=>cur[k]>compAvg[k]);
+  const yrLabel=years<=2?'1~2년차':years<=4?'3~4년차':'5년 이상';
+
+  let overallText;
+  if(oa>=3.8)overallText=`${name}님은 4대 핵심역량 전반에서 <strong>안정적이고 높은 수준</strong>을 보여주고 있습니다. 전문가 수준에 근접해 있으며, 조직 내 변화 설계 및 리딩 역할을 충분히 수행할 수 있는 역량 기반을 갖추고 있습니다.`;
+  else if(oa>=3.0)overallText=`${name}님은 4대 핵심역량 전반에서 <strong>실무 독립 수행이 가능한 단계</strong>에 위치하고 있습니다. 일부 영역에서 성장 잠재력이 확인되며, 목표 수준(${ot.toFixed(1)}점) 달성을 위한 집중적인 성장 노력이 필요합니다.`;
+  else if(oa>=2.0)overallText=`${name}님은 현재 <strong>기초~실무 역량 형성 단계</strong>에 있으며, 일부 영역에서 전사 평균을 하회하고 있습니다. 체계적인 학습과 실무 경험 확대를 통해 목표 수준(${ot.toFixed(1)}점)으로의 성장이 기대됩니다.`;
+  else overallText=`${name}님은 현재 <strong>역량 형성 초기 단계</strong>에 위치하고 있습니다. 단계별 체계적 학습 계획 수립과 실무 경험 기회 확보가 최우선 과제입니다.`;
+
+  const vsAvgText=aboveAvg.length>=3?'전반적으로 전사 평균 이상':aboveAvg.length>=2?`${aboveAvg.map(k=>COMP_NAMES[COMP_KEYS.indexOf(k)]).join(', ')} 영역에서 전사 평균 이상`:'전반적으로 전사 평균 이하';
+  const recs=DEV_RECS[topGap.k][Math.min(cur[topGap.k],4)];
+  const recs2=DEV_RECS[gaps[1].k][Math.min(cur[gaps[1].k],4)];
+
+  return`
+    <div class="ai-hdr">
+      <div class="ai-icon">✦</div>
+      <div>
+        <div class="ai-title">AI 역량 해석 리포트</div>
+        <div class="ai-subtitle">데이터 기반 자동 생성 · ${name}님 전용</div>
+      </div>
+    </div>
+
+    <div class="ai-sec">
+      <div class="ai-sec-label">종합 평가</div>
+      <div class="ai-text">${overallText}</div>
+      <div style="margin-top:12px;display:flex;flex-wrap:wrap">
+        <span class="info-chip chip-blue">현수준 ${oa.toFixed(2)}점</span>
+        <span class="info-chip chip-orange">목표 ${ot.toFixed(2)}점</span>
+        <span class="info-chip chip-red">GAP +${(ot-oa).toFixed(2)}점</span>
+        <span class="info-chip chip-green">${yrLabel} · ${role}</span>
+      </div>
+    </div>
+
+    <div class="ai-divider"></div>
+
+    <div class="ai-sec">
+      <div class="ai-sec-label">강점 영역</div>
+      <div class="ai-tags">
+        ${ranked.slice(0,2).map(({k,v})=>`<span class="ai-tag tag-str">${COMP_NAMES[COMP_KEYS.indexOf(k)]} ${v}점</span>`).join('')}
+      </div>
+      <div class="ai-text">현재 가장 강점이 되는 역량은 <strong>${COMP_NAMES[sIdx]} (${strongest.v}점)</strong>으로, ${LEVEL_DESC[strongest.k][strongest.v]} 전사 평균(${compAvg[strongest.k].toFixed(2)}점) 대비 <strong>${strongest.v>compAvg[strongest.k]?'+':''}${(strongest.v-compAvg[strongest.k]).toFixed(2)}점</strong>입니다.</div>
+    </div>
+
+    <div class="ai-sec">
+      <div class="ai-sec-label">성장 필요 영역</div>
+      <div class="ai-tags">
+        ${ranked.slice(-2).map(({k,v})=>`<span class="ai-tag tag-dev">${COMP_NAMES[COMP_KEYS.indexOf(k)]} ${v}점</span>`).join('')}
+      </div>
+      <div class="ai-text">우선 성장이 필요한 영역은 <strong>${COMP_NAMES[wIdx]} (${weakest.v}점)</strong>입니다. ${LEVEL_DESC[weakest.k][weakest.v]} 목표 수준(${tgt[weakest.k]}점)까지 <strong>+${tgt[weakest.k]-weakest.v}점</strong>의 성장이 필요합니다.</div>
+    </div>
+
+    <div class="ai-divider"></div>
+
+    <div class="ai-sec">
+      <div class="ai-sec-label">📌 우선 개발 과제 — ${COMP_NAMES[gIdx]} (GAP +${topGap.gap}점)</div>
+      <ul class="rec-list">
+        ${recs.map(r=>`<li>${r}</li>`).join('')}
+        <li>${recs2[0]}</li>
+      </ul>
+    </div>
+
+    <div class="ai-sec">
+      <div class="ai-sec-label">📊 포지셔닝 요약</div>
+      <div class="ai-text">${name}님은 ${vsAvgText}입니다. <strong>${org}</strong> 조직 내에서 <strong>${oa.toFixed(2)}점</strong> 수준으로, 조직 평균(${overallAvg(orgAvg).toFixed(2)}점) 대비 <strong>${oa>overallAvg(orgAvg)?'+':''}${(oa-overallAvg(orgAvg)).toFixed(2)}점</strong>입니다. '26년 목표 달성을 위해 <strong>${COMP_NAMES[gIdx]}</strong> 역량을 집중 개발하는 것을 권장합니다.</div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
+// PPT EXPORT
+// ══════════════════════════════════════════
+async function exportToPPT(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const orgEmps=EMPLOYEES.filter(e=>e.org===emp.org);
+  const orgAvg=compAvgObj(orgEmps),ca=COMP_AVG;
+  const oa=overallAvg(emp.current),ot=overallAvg(emp.target);
+  const ranked=[...COMP_KEYS].map(k=>({k,v:emp.current[k]})).sort((a,b)=>b.v-a.v);
+  const gaps=COMP_KEYS.map(k=>({k,gap:emp.target[k]-emp.current[k]})).sort((a,b)=>b.gap-a.gap);
+  const strongest=ranked[0],weakest=ranked[ranked.length-1];
+  const topGap=gaps[0];
+  const sIdx=COMP_KEYS.indexOf(strongest.k),wIdx=COMP_KEYS.indexOf(weakest.k),gIdx=COMP_KEYS.indexOf(topGap.k);
+  const recs=DEV_RECS[topGap.k][Math.min(emp.current[topGap.k],4)];
+  const aboveAvg=COMP_KEYS.filter(k=>emp.current[k]>ca[k]);
+  const today=new Date().toLocaleDateString('ko-KR');
+  const KF='맑은 고딕';
+
+  const pptx=new PptxGenJS();
+  pptx.layout='LAYOUT_16x9'; // 10" × 5.625"
+  pptx.title=`${emp.name} 역량 레포트`;
+  pptx.author='mySUNI';
+
+  // ══ 단일 슬라이드 ══════════════════════════
+  const s=pptx.addSlide();
+  s.background={color:'F0F4F9'};
+
+  // ── 상단 헤더 바 (다크 네이비, h=0.92) ──────
+  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:.92,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
+  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:.07,fill:{color:'2563EB'},line:{color:'2563EB',width:0}});
+
+  // 로고
+  s.addText('mySUNI',{x:.18,y:.13,w:1.3,h:.3,fontSize:10,bold:true,color:'FFFFFF',
+    fontFace:KF,align:'center',fill:{color:'1D4ED8'},line:{color:'FFFFFF',width:.5},rectRadius:.06});
+  // 타이틀
+  s.addText('4대 핵심역량 개인 레포트',{x:1.6,y:.12,w:3.2,h:.3,
+    fontSize:13,bold:true,color:'FFFFFF',fontFace:KF});
+  s.addText(`'26년 연초 기준  ·  ${today}`,{x:1.6,y:.46,w:3,h:.22,
+    fontSize:8.5,color:'94A3B8',fontFace:KF});
+
+  // 이름/조직
+  s.addText(emp.name,{x:5.0,y:.1,w:2.4,h:.38,
+    fontSize:20,bold:true,color:'FFFFFF',fontFace:KF});
+  s.addText(`${emp.org}  ·  ${emp.role}  ·  ${emp.years}년차`,{x:5.0,y:.5,w:2.4,h:.22,
+    fontSize:8.5,color:'94A3B8',fontFace:KF});
+
+  // KPI 3 미니 박스
+  const kpiDefs=[
+    {label:'현수준',val:`${oa.toFixed(2)}점`,col:'60A5FA'},
+    {label:'목표',val:`${ot.toFixed(2)}점`,col:'FB923C'},
+    {label:'GAP',val:`+${(ot-oa).toFixed(2)}`,col:'F87171'},
+  ];
+  kpiDefs.forEach((k,i)=>{
+    const x=7.55+i*.82;
+    s.addShape(pptx.ShapeType.rect,{x,y:.1,w:.75,h:.72,
+      fill:{color:'0F2044'},line:{color:k.col,width:.8},rectRadius:.06});
+    s.addText(k.label,{x,y:.12,w:.75,h:.2,fontSize:7,color:'94A3B8',fontFace:KF,align:'center'});
+    s.addText(k.val,{x,y:.32,w:.75,h:.28,fontSize:11,bold:true,color:k.col,fontFace:KF,align:'center'});
+  });
+
+  // ── 가운데 구역 : 왼쪽 점수표 + 오른쪽 레이더 (y:1.0~3.72) ──
+  const midY=1.0,midH=2.72;
+
+  // [왼쪽] 점수표 (x:0.15, w:4.55)
+  s.addShape(pptx.ShapeType.rect,{x:.15,y:midY,w:4.55,h:midH,
+    fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},rectRadius:.1});
+  s.addText('역량별 점수 현황',{x:.3,y:midY+.1,w:4.2,h:.26,
+    fontSize:9.5,bold:true,color:'0A1628',fontFace:KF});
+
+  const th=[
+    {text:'역량',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,valign:'middle'}},
+    {text:'연초',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
+    {text:'목표',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
+    {text:'GAP',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
+    {text:'조직평균',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
+    {text:'전사평균',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
+  ];
+  const tr=COMP_KEYS.map((k,i)=>{
+    const c=emp.current[k],t=emp.target[k],bg=i%2===0?'FFFFFF':'F8FAFC';
+    const vsOrg=c>orgAvg[k]?'▲':c<orgAvg[k]?'▼':'─';
+    const vsAll=c>ca[k]?'▲':c<ca[k]?'▼':'─';
+    const vsOC=c>orgAvg[k]?'059669':c<orgAvg[k]?'DC2626':'94A3B8';
+    const vsAC=c>ca[k]?'059669':c<ca[k]?'DC2626':'94A3B8';
+    return[
+      {text:COMP_NAMES[i],options:{bold:true,fill:{color:bg},fontFace:KF,fontSize:8.5,valign:'middle'}},
+      {text:`${c}`,options:{bold:true,fill:{color:bg},fontFace:KF,fontSize:12,align:'center',color:'1D4ED8',valign:'middle'}},
+      {text:`${t}`,options:{fill:{color:bg},fontFace:KF,fontSize:10,align:'center',color:'92400E',valign:'middle'}},
+      {text:`+${t-c}`,options:{bold:true,fill:{color:bg},fontFace:KF,fontSize:9,align:'center',color:'DC2626',valign:'middle'}},
+      {text:`${orgAvg[k].toFixed(2)} ${vsOrg}`,options:{fill:{color:bg},fontFace:KF,fontSize:8.5,align:'center',color:vsOC,valign:'middle'}},
+      {text:`${ca[k].toFixed(2)} ${vsAll}`,options:{fill:{color:bg},fontFace:KF,fontSize:8.5,align:'center',color:vsAC,valign:'middle'}},
+    ];
+  });
+  s.addTable([th,...tr],{
+    x:.25,y:midY+.42,w:4.35,rowH:.5,
+    border:{pt:.6,color:'E2E8F0'},
+    colW:[1.35,.6,.6,.55,.65,.6],
+  });
+
+  // 역량 수준 설명 (점수표 아래)
+  const descY=midY+.42+4*.5+.1;
+  COMP_KEYS.forEach((k,i)=>{
+    s.addText(`${COMP_NAMES[i]}(${emp.current[k]}점): ${LEVEL_DESC[k][emp.current[k]]}`,{
+      x:.25,y:descY+i*.2,w:4.35,h:.2,
+      fontSize:7.5,color:'64748B',fontFace:KF,wrap:false});
+  });
+
+  // [오른쪽] 레이더 차트 (x:4.82, w:5.03)
+  s.addShape(pptx.ShapeType.rect,{x:4.82,y:midY,w:5.03,h:midH,
+    fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},rectRadius:.1});
+  s.addText('레이더 분석',{x:4.97,y:midY+.1,w:4.7,h:.26,
+    fontSize:9.5,bold:true,color:'0A1628',fontFace:KF});
+
+  const canvas=document.getElementById('chart-ind-radar');
+  if(canvas){
+    s.addImage({data:canvas.toDataURL('image/png'),x:5.1,y:midY+.38,w:4.65,h:2.18});
+  }
+  // 레이더 범례
+  const legItems=[{col:'2563EB',t:'현수준'},{col:'EA580C',t:'목표'},{col:'7C3AED',t:'조직평균'},{col:'94A3B8',t:'전사평균'}];
+  legItems.forEach((l,i)=>{
+    const lx=5.1+i*1.2;
+    s.addShape(pptx.ShapeType.rect,{x:lx,y:midY+midH-.28,w:.14,h:.1,fill:{color:l.col},rectRadius:.02});
+    s.addText(l.t,{x:lx+.18,y:midY+midH-.3,w:1.0,h:.16,fontSize:7.5,color:'475569',fontFace:KF});
+  });
+
+  // ── 하단 AI 섹션 (y:3.82 ~ 5.42) ──────────
+  const aiY=3.82,aiH=1.6;
+  s.addShape(pptx.ShapeType.rect,{x:.15,y:aiY,w:9.7,h:aiH,
+    fill:{color:'0A1628'},line:{color:'1E3A8A',width:.8},rectRadius:.1});
+  s.addShape(pptx.ShapeType.rect,{x:.15,y:aiY,w:9.7,h:.07,
+    fill:{color:'2563EB'},line:{color:'2563EB',width:0},rectRadius:.1});
+
+  s.addText('AI 역량 해석 리포트',{x:.32,y:aiY+.1,w:3,h:.22,
+    fontSize:9,bold:true,color:'60A5FA',fontFace:KF});
+
+  // 종합평가
+  let overallLevel=oa>=3.8?'안정적이고 높은 수준':oa>=3.0?'실무 독립 수행이 가능한 단계':oa>=2.0?'기초~실무 역량 형성 단계':'역량 형성 초기 단계';
+  const summaryText=`${emp.name}님은 현재 "${overallLevel}"에 위치. 현수준 ${oa.toFixed(2)}점, 목표 ${ot.toFixed(2)}점 (GAP +${(ot-oa).toFixed(2)}점). ${aboveAvg.length>=3?'전반적으로 전사 평균 이상':aboveAvg.length>=1?aboveAvg.map(k=>COMP_NAMES[COMP_KEYS.indexOf(k)]).join(', ')+'에서 전사 평균 이상':'전반적으로 전사 평균 이하'}.`;
+  s.addText(summaryText,{x:.32,y:aiY+.34,w:3.15,h:.7,
+    fontSize:8,color:'CBD5E1',fontFace:KF,wrap:true,valign:'top'});
+
+  // 강점 박스
+  s.addShape(pptx.ShapeType.rect,{x:3.6,y:aiY+.1,w:2.05,h:1.38,
+    fill:{color:'052E16'},line:{color:'34D399',width:.8},rectRadius:.08});
+  s.addText('강점 영역',{x:3.73,y:aiY+.14,w:1.8,h:.2,fontSize:8,bold:true,color:'34D399',fontFace:KF});
+  s.addText(`${COMP_NAMES[sIdx]}  ${strongest.v}점`,{x:3.73,y:aiY+.36,w:1.8,h:.2,fontSize:9,bold:true,color:'FFFFFF',fontFace:KF});
+  s.addText(LEVEL_DESC[strongest.k][strongest.v],{x:3.73,y:aiY+.58,w:1.8,h:.82,fontSize:7.5,color:'94A3B8',fontFace:KF,wrap:true,valign:'top'});
+
+  // 성장 박스
+  s.addShape(pptx.ShapeType.rect,{x:5.72,y:aiY+.1,w:2.05,h:1.38,
+    fill:{color:'2D0A0A'},line:{color:'FCA5A5',width:.8},rectRadius:.08});
+  s.addText('성장 필요',{x:5.85,y:aiY+.14,w:1.8,h:.2,fontSize:8,bold:true,color:'FCA5A5',fontFace:KF});
+  s.addText(`${COMP_NAMES[wIdx]}  ${weakest.v}점`,{x:5.85,y:aiY+.36,w:1.8,h:.2,fontSize:9,bold:true,color:'FFFFFF',fontFace:KF});
+  s.addText(`목표(${emp.target[weakest.k]}점)까지 +${emp.target[weakest.k]-weakest.v}점 필요`,{x:5.85,y:aiY+.58,w:1.8,h:.82,fontSize:7.5,color:'94A3B8',fontFace:KF,wrap:true,valign:'top'});
+
+  // 개발 과제 박스
+  s.addShape(pptx.ShapeType.rect,{x:7.84,y:aiY+.1,w:1.88,h:1.38,
+    fill:{color:'0D1629'},line:{color:'FCD34D',width:.8},rectRadius:.08});
+  s.addText(`개발 과제`,{x:7.97,y:aiY+.14,w:1.62,h:.2,fontSize:8,bold:true,color:'FCD34D',fontFace:KF});
+  s.addText(`${COMP_NAMES[gIdx]} (GAP +${topGap.gap})`,{x:7.97,y:aiY+.36,w:1.62,h:.2,fontSize:8,bold:true,color:'FFFFFF',fontFace:KF});
+  recs.slice(0,2).forEach((rec,i)=>{
+    s.addText(`• ${rec}`,{x:7.97,y:aiY+.6+i*.38,w:1.62,h:.36,fontSize:7,color:'CBD5E1',fontFace:KF,wrap:true,valign:'top'});
+  });
+
+  // 푸터
+  s.addText(`mySUNI 4대 핵심역량 관리 시스템  ·  ${today}  ·  ${emp.name} 전용`,{
+    x:.15,y:5.45,w:9.7,h:.17,fontSize:7.5,color:'1E3A8A',fontFace:KF,align:'center'});
+
+  await pptx.writeFile({fileName:`${emp.name}_역량레포트_26년.pptx`});
+}
+
+// ══════════════════════════════════════════
+// INDIVIDUAL PRINT
+// ══════════════════════════════════════════
+function printIndividualReport(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const orgEmps=EMPLOYEES.filter(e=>e.org===emp.org);
+  const orgAvg=compAvgObj(orgEmps),ca=COMP_AVG;
+  const oa=overallAvg(emp.current),ot=overallAvg(emp.target);
+  const today=new Date().toLocaleDateString('ko-KR');
+  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+  <title>${emp.name} 역량 레포트</title>
+  <style>body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#0F172A;font-size:13px}
+  h1{font-size:22px;color:#0A1628;border-bottom:3px solid #0A1628;padding-bottom:10px;margin-bottom:6px}
+  .sub{color:#94A3B8;font-size:12px;margin-bottom:30px}
+  .profile{background:#0A1628;color:#fff;padding:18px 22px;border-radius:10px;margin-bottom:24px}
+  .profile h2{font-size:18px;margin-bottom:5px}
+  .profile p{font-size:12px;opacity:.7}
+  h2{font-size:15px;color:#1E3A8A;border-bottom:1px solid #BFDBFE;padding-bottom:6px;margin:20px 0 10px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:#F8FAFC;padding:8px 10px;border:1px solid #E2E8F0;font-weight:600;color:#475569}
+  td{padding:8px 10px;border:1px solid #E2E8F0;text-align:center}
+  .red{color:#DC2626;font-weight:700}.green{color:#059669;font-weight:700}
+  ul{padding-left:18px}li{padding:3px 0;line-height:1.7}
+  p{margin-bottom:8px;line-height:1.75}
+  @media print{body{padding:20px}}</style>
+  </head><body>
+  <h1>mySUNI 4대 핵심역량 개인 레포트</h1>
+  <div class="sub">발행일: ${today} · '26년 연초 기준</div>
+  <div class="profile"><h2>${emp.name}</h2><p>${emp.org} · ${emp.role} · 근무 ${emp.years}년차 · 현수준 ${oa.toFixed(2)}점 / 목표 ${ot.toFixed(2)}점</p></div>
+  <h2>역량별 점수 현황</h2>
+  <table><tr><th>역량</th><th>연초 현수준</th><th>목표수준</th><th>GAP</th><th>조직평균</th><th>전사평균</th><th>연말 수준</th></tr>
+  ${COMP_KEYS.map((k,i)=>{const c=emp.current[k],t=emp.target[k];return`<tr><td style="text-align:left;font-weight:700">${COMP_NAMES[i]}</td><td><strong>${c}점</strong></td><td>${t}점</td><td class="red">+${t-c}점</td><td>${orgAvg[k].toFixed(2)}점</td><td>${ca[k].toFixed(2)}점</td><td style="color:#94A3B8">미측정</td></tr>`;}).join('')}
+  </table>
+  <h2>역량 수준 설명</h2>
+  ${COMP_KEYS.map((k,i)=>`<p><strong>${COMP_NAMES[i]} (${emp.current[k]}점):</strong> ${LEVEL_DESC[k][emp.current[k]]}</p>`).join('')}
+  <h2>AI 기반 개발 권고사항</h2>
+  ${(()=>{const ranked=[...COMP_KEYS].map(k=>({k,v:emp.current[k]})).sort((a,b)=>b.v-a.v);const gaps=COMP_KEYS.map(k=>({k,gap:emp.target[k]-emp.current[k]})).sort((a,b)=>b.gap-a.gap);const topGap=gaps[0];const idx=COMP_KEYS.indexOf(topGap.k);const recs=DEV_RECS[topGap.k][Math.min(emp.current[topGap.k],4)];return`<p><strong>종합:</strong> 현수준 평균 ${oa.toFixed(2)}점, 목표 ${ot.toFixed(2)}점 (GAP +${(ot-oa).toFixed(2)}점).</p><p><strong>강점:</strong> ${COMP_NAMES[COMP_KEYS.indexOf(ranked[0].k)]}(${ranked[0].v}점) — ${LEVEL_DESC[ranked[0].k][ranked[0].v]}</p><p><strong>우선 개발:</strong> ${COMP_NAMES[idx]}(현재 ${emp.current[topGap.k]}점 → 목표 ${emp.target[topGap.k]}점)</p><ul>${recs.map(r=>`<li>${r}</li>`).join('')}</ul>`;})()}
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),400);
+}
+
+// ══════════════════════════════════════════
+// TAB 4 : COMPANY REPORT
+// ══════════════════════════════════════════
+function renderCompanyReport(){
+  const today=new Date().toLocaleDateString('ko-KR');
+  const stats=COMP_STATS,ca=COMP_AVG,ta=TGT_AVG;
+  const allMean=overallAvg(ca),allTgt=overallAvg(ta);
+  const tls=EMPLOYEES.filter(e=>e.role==='팀장'),rfs=EMPLOYEES.filter(e=>e.role==='RF');
+  const yr12=EMPLOYEES.filter(e=>e.years<=2),yr34=EMPLOYEES.filter(e=>e.years>=3&&e.years<=4),yr5p=EMPLOYEES.filter(e=>e.years>=5);
+  const hiGap=COMP_KEYS.map(k=>({k,gap:stats[k].gap})).sort((a,b)=>b.gap-a.gap)[0];
+  const loComp=COMP_KEYS.map(k=>({k,m:stats[k].mean})).sort((a,b)=>a.m-b.m)[0];
+  const hiGapIdx=COMP_KEYS.indexOf(hiGap.k),loIdx=COMP_KEYS.indexOf(loComp.k);
+
+  let orgRows='';
+  for(const org of ORG_LIST){
+    const emps=EMPLOYEES.filter(e=>e.org===org);
+    const oa2=compAvgObj(emps),ta2=tgtAvgObj(emps);
+    const m=overallAvg(oa2),t=overallAvg(ta2);
+    const c=ORG_COLORS[org];
+    orgRows+=`<tr><td><span class="otag" style="background:${c.tag};color:${c.tt}">${org}</span></td><td class="text-center">${emps.length}명</td>
+    ${COMP_KEYS.map(k=>`<td class="text-center">${oa2[k].toFixed(2)}</td>`).join('')}
+    <td class="text-center"><strong>${m.toFixed(2)}</strong></td><td class="text-center">${t.toFixed(2)}</td>
+    <td class="text-center" style="color:#DC2626;font-weight:700">+${(t-m).toFixed(2)}</td></tr>`;
+  }
+
+  const groups=[{l:'팀장',e:tls},{l:'RF',e:rfs},{l:'1~2년차',e:yr12},{l:'3~4년차',e:yr34},{l:'5년 이상',e:yr5p}];
+  const demoRows=groups.map(g=>{const oa2=compAvgObj(g.e);return`<tr><td>${g.l} (${g.e.length}명)</td>${COMP_KEYS.map(k=>`<td class="text-center">${oa2[k].toFixed(2)}</td>`).join('')}<td class="text-center"><strong>${overallAvg(oa2).toFixed(2)}</strong></td></tr>`;}).join('');
+
+  document.getElementById('company-report-content').innerHTML=`
+    <div class="report-header">
+      <div>
+        <h1>mySUNI 구성원 4대 핵심역량 현황 보고서</h1>
+        <p>'26년 연초 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${EMPLOYEES.length}명 (팀장 ${tls.length}명 / RF ${rfs.length}명)</p>
+      </div>
+      <div class="report-logo">mySUNI</div>
+    </div>
+
+    <div class="rep-sec">
+      <h2>1. 요약 (Executive Summary)</h2>
+      <div class="rep-highlight">
+        <div class="rep-kpi-row">
+          ${COMP_KEYS.map((k,i)=>`<div class="rep-kpi">
+            <div class="rep-kpi-name">${COMP_NAMES[i]}</div>
+            <div class="rep-kpi-val">${stats[k].mean.toFixed(2)}</div>
+            <div class="rep-kpi-gap">목표 ${stats[k].tmean.toFixed(2)} (GAP +${stats[k].gap.toFixed(2)})</div>
+          </div>`).join('')}
+        </div>
+        <p style="font-size:13px;line-height:1.85;color:#334155">
+          전체 역량 평균은 <strong>${allMean.toFixed(2)}점</strong>으로, 개인이 주어진 과제를 이해하고 독립적으로 수행 가능한 단계(3점)에 근접한 수준입니다.
+          '26년 목표 평균은 <strong>${allTgt.toFixed(2)}점</strong>으로 변화 설계·리딩이 가능한 수준을 지향하며, 전사 평균 <strong>+${(allTgt-allMean).toFixed(2)}점</strong>의 성장이 필요합니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="rep-sec">
+      <h2>2. 역량별 상세 현황</h2>
+      <table>
+        <tr><th>역량</th><th class="text-center">현수준</th><th class="text-center">표준편차</th><th class="text-center">목표수준</th><th class="text-center">GAP</th><th class="text-center">1점(%)</th><th class="text-center">2점(%)</th><th class="text-center">3점(%)</th><th class="text-center">4점(%)</th><th class="text-center">5점(%)</th></tr>
+        ${COMP_KEYS.map((k,i)=>{const s=stats[k],tot=EMPLOYEES.length;return`<tr><td><strong>${COMP_NAMES[i]}</strong></td><td class="text-center"><strong>${s.mean.toFixed(2)}</strong></td><td class="text-center">${s.std.toFixed(2)}</td><td class="text-center">${s.tmean.toFixed(2)}</td><td class="text-center" style="color:#DC2626;font-weight:700">+${s.gap.toFixed(2)}</td>${s.dist.map(v=>`<td class="text-center">${(v/tot*100).toFixed(1)}%</td>`).join('')}</tr>`;}).join('')}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>3. 조직별 역량 현황</h2>
+      <table>
+        <tr><th>조직</th><th class="text-center">인원</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th><th class="text-center">목표</th><th class="text-center">GAP</th></tr>
+        ${orgRows}
+        <tr style="background:#EFF6FF;font-weight:700"><td>전사 평균</td><td class="text-center">${EMPLOYEES.length}명</td>${COMP_KEYS.map(k=>`<td class="text-center">${ca[k].toFixed(2)}</td>`).join('')}<td class="text-center">${allMean.toFixed(2)}</td><td class="text-center">${allTgt.toFixed(2)}</td><td class="text-center" style="color:#DC2626">+${(allTgt-allMean).toFixed(2)}</td></tr>
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>4. Demo별 역량 특성 (직책·연차)</h2>
+      <table>
+        <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
+        ${demoRows}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>5. 핵심 시사점 및 육성 방향</h2>
+      <div class="rep-box">
+        <h3>① 성장 GAP 최대 전략 영역: ${COMP_NAMES[hiGapIdx]}</h3>
+        <ul class="ins-list">
+          <li>${COMP_NAMES[hiGapIdx]} 역량은 현수준 ${stats[hiGap.k].mean.toFixed(2)}점 대비 목표 ${stats[hiGap.k].tmean.toFixed(2)}점으로, <strong>+${stats[hiGap.k].gap.toFixed(2)}점</strong>의 최대 GAP을 기록하고 있습니다.</li>
+          <li>전체 구성원의 ${((stats[hiGap.k].dist[0]+stats[hiGap.k].dist[1])/EMPLOYEES.length*100).toFixed(1)}%가 2점 이하에 분포하고 있어 집중 육성이 필요합니다.</li>
+          <li>실무 데이터 기반 실습과 1:1 맞춤형 코칭 등 실전형 지원이 효과적입니다.</li>
+        </ul>
+      </div>
+      <div class="rep-box">
+        <h3>② 현수준 최저 영역: ${COMP_NAMES[loIdx]}</h3>
+        <ul class="ins-list">
+          <li>${COMP_NAMES[loIdx]} 영역의 현수준 평균은 <strong>${stats[loComp.k].mean.toFixed(2)}점</strong>으로 4대 역량 중 가장 낮은 수준입니다.</li>
+          <li>표준편차 ${stats[loComp.k].std.toFixed(2)}로 개인 간 편차가 크며, 하위 구간 구성원 대상 기초 역량 강화가 우선 필요합니다.</li>
+        </ul>
+      </div>
+      <div class="rep-box">
+        <h3>③ 조직·직책별 차별화 육성 전략</h3>
+        <ul class="ins-list">
+          <li>팀장 vs RF, 연차별 역량 구조가 상이하여 획일적 육성 방식에 한계가 있습니다.</li>
+          <li>고성장 목표 조직(변화추진 등)에는 실행 지원 및 환경 조성이 병행되어야 합니다.</li>
+          <li>전문가 Pool(4점 이상)이 확보된 Domain·리더십 역량은 코칭 역할 및 지식 공유 체계 활용을 권장합니다.</li>
+        </ul>
+      </div>
+      <div class="rep-box">
+        <h3>④ 향후 추진 계획</h3>
+        <ul class="ins-list">
+          <li>개인별 CDP(Career Development Plan) 수립 및 1:1 리더 면담을 통한 목표 확정</li>
+          <li>AI SUPEX Lab 과제 실행, AI Tool 구독 지원, 학습 커뮤니티 운영 등 성장 기반 조성</li>
+          <li>Global 역량 강화를 위한 OPIC 진행 및 어학 코칭 프로그램 시행</li>
+          <li>'26년 연말 재진단을 통한 성장 GAP 모니터링 및 육성 계획 갱신</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="text-align:center;color:#94A3B8;font-size:11px;margin-top:40px;padding-top:16px;border-top:1px solid #E2E8F0">
+      본 보고서는 mySUNI 4대 핵심역량 관리 시스템에서 자동 생성되었습니다 · ${today}
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function initFilters(){
+  const sel=document.getElementById('emp-org-filter');
+  for(const org of ORG_LIST){const o=document.createElement('option');o.value=o.textContent=org;sel.appendChild(o);}
+}
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
+  if(tab==='overview')renderOverview();
+  else if(tab==='org')renderOrgTab();
+  else if(tab==='individual')renderEmpList();
+  else if(tab==='report')renderCompanyReport();
+}
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+initFilters();
+renderOverview();
+</script>
+</body>
+</html>
