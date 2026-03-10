@@ -2274,8 +2274,6 @@ function addExecutivePptSlide(pptx,emp){
   const areaPoints=buildAreaDevelopmentPoints(emp,ca);
   const radarData=createRadarImageData(emp,orgAvg,ca);
   const focusQual=qual[topGap.k]||{};
-  const radarLine1=`D ${emp.current.domain}/${emp.target.domain}/${orgAvg.domain.toFixed(1)}/${ca.domain.toFixed(1)} | AI ${emp.current.ai}/${emp.target.ai}/${orgAvg.ai.toFixed(1)}/${ca.ai.toFixed(1)}`;
-  const radarLine2=`G ${emp.current.global}/${emp.target.global}/${orgAvg.global.toFixed(1)}/${ca.global.toFixed(1)} | L ${emp.current.leadership}/${emp.target.leadership}/${orgAvg.leadership.toFixed(1)}/${ca.leadership.toFixed(1)}`;
   const fitMemo=(label,text,maxLen=58,maxLines=1)=>{
     const wrapped=wrapTextForPpt(`${label}${textOrEmpty(text)||'응답 없음'}`,maxLen).slice(0,maxLines);
     if(!wrapped.length)return `${label}응답 없음`;
@@ -2334,9 +2332,6 @@ function addExecutivePptSlide(pptx,emp){
 
   addTxt('레이더 분석',{x:4.86,y:2.0,w:2.1,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   if(radarData)s.addImage({data:radarData,x:4.82,y:2.27,w:2.34,h:2.62});
-  addTxt('범례: 현재/목표/조직/전사',{x:4.84,y:4.82,w:2.28,h:.18,fontFace:KF,fontSize:8,color:'64748B',align:'center'});
-  addTxt(radarLine1,{x:4.84,y:5.0,w:2.28,h:.16,fontFace:KF,fontSize:7.8,color:'#334155',align:'center'});
-  addTxt(radarLine2,{x:4.84,y:5.15,w:2.28,h:.16,fontFace:KF,fontSize:7.8,color:'#334155',align:'center'});
 
   addTxt('영역별 개발 포인트',{x:.34,y:5.34,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   areaPoints.forEach((p,i)=>{
@@ -2464,13 +2459,6 @@ function printIndividualReport(empId){
   const recs=DEV_RECS[topGap.k][Math.min(emp.current[topGap.k],4)];
   const areaPoints=buildAreaDevelopmentPoints(emp,ca);
   const radarData=createRadarImageData(emp,orgAvg,ca,900,760);
-  const radarSummaryRows=COMP_KEYS.map((k,i)=>`<tr>
-    <td>${COMP_NAMES[i]}</td>
-    <td>${emp.current[k]}</td>
-    <td>${emp.target[k]}</td>
-    <td>${orgAvg[k].toFixed(2)}</td>
-    <td>${ca[k].toFixed(2)}</td>
-  </tr>`).join('');
   const today=new Date().toLocaleDateString('ko-KR');
   const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
   <title>${emp.name} 역량 레포트</title>
@@ -2495,11 +2483,6 @@ function printIndividualReport(empId){
   .g{color:#DC2626;font-weight:700}
   .radar{width:100%;height:250px;display:flex;align-items:center;justify-content:center;background:#fff}
   .radar img{max-width:100%;max-height:100%;object-fit:contain}
-  .radar-legend{font-size:10px;color:#64748B;text-align:center;margin-top:4px}
-  .radar-mini{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px}
-  .radar-mini th,.radar-mini td{border:1px solid var(--line);padding:4px 5px;text-align:center}
-  .radar-mini th{background:#F8FAFC;color:#475569;font-weight:700}
-  .radar-mini td:first-child{text-align:left;font-weight:700}
   .pts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
   .pt{border:1px solid var(--line);background:#FAFCFF;border-radius:10px;padding:8px 9px}
   .pt h3{font-size:12px;margin:0 0 5px 0;color:#0F172A}
@@ -2539,11 +2522,6 @@ function printIndividualReport(empId){
       <div class="card">
         <h2>레이더 분석</h2>
         <div class="radar"><img src="${radarData}" alt="radar"></div>
-        <div class="radar-legend">범례: 현재(파랑) / 목표(주황) / 조직(보라) / 전사(회색)</div>
-        <table class="radar-mini">
-          <tr><th>역량</th><th>현재</th><th>목표</th><th>조직</th><th>전사</th></tr>
-          ${radarSummaryRows}
-        </table>
       </div>
     </div>
     <div class="pts">
