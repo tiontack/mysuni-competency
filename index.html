@@ -3656,7 +3656,11 @@ function switchTab(tab){
   else if(tab==='org')renderOrgTab();
   else if(tab==='competency')renderCompetencyTab();
   else if(tab==='individual')renderEmpList();
-  else if(tab==='oneonone')renderOneOnOneTab();
+  else if(tab==='oneonone'){
+    ONEONONE_SESSION={org:'',empId:null};
+    persistOneOnOneData();
+    renderOneOnOneTab();
+  }
   else if(tab==='report')renderCompanyReport();
   else if(tab==='admin')renderAdminTab();
 }
