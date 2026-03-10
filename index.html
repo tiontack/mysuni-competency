@@ -63,7 +63,7 @@ header::after{
 }
 .hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:nowrap}
 .hdr-logo{height:34px;display:flex;align-items:center;flex-shrink:0}
-.hdr-logo-img{height:30px;width:auto;object-fit:contain;display:none}
+.hdr-logo-img{height:30px;width:auto;object-fit:contain;display:block}
 .hdr-logo,.hdr-title{cursor:pointer}
 .hdr-logo-text{
   background:linear-gradient(135deg,#2563EB,#60A5FA);
@@ -545,8 +545,7 @@ select:focus{border-color:var(--blue)}
   <div style="text-align:center;padding:48px 56px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;backdrop-filter:blur(20px);min-width:360px">
     <div style="margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:rgba(10,22,40,.72);border:1px solid rgba(255,255,255,.25);padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">
-        <img src="mysuni-wordmark-white.png" alt="mySUNI" style="height:22px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
-        <span style="display:none;color:#fff;font-weight:800;font-size:15px">mySUNI</span>
+        <img src="mysuni-wordmark-white.png" alt="mySUNI" style="height:22px;width:auto">
       </div>
       <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em">4대 핵심역량 관리 시스템</div>
       <div style="font-size:13px;color:#64748B;margin-top:6px">접근 권한이 필요합니다</div>
@@ -604,11 +603,7 @@ function showLoginScreen(){
 <header>
   <div class="hdr">
     <div class="hdr-logo" onclick="showLoginScreen()" title="로그인 화면으로 이동">
-      <img src="mysuni-wordmark-white.png" class="hdr-logo-img"
-        onload="this.style.display='block';this.nextElementSibling.style.display='none'"
-        onerror="this.style.display='none'"
-        alt="mySUNI">
-      <span class="hdr-logo-text">mySUNI</span>
+      <img src="mysuni-wordmark-white.png" class="hdr-logo-img" alt="mySUNI">
     </div>
     <div class="hdr-title" onclick="showLoginScreen()" title="로그인 화면으로 이동">4대 핵심역량 관리 시스템</div>
     <div class="hdr-sep"></div>
@@ -2844,7 +2839,7 @@ function renderCompanyReport(){
         <h1>mySUNI 구성원 4대 핵심역량 현황 보고서</h1>
         <p>${displayPeriod(ACTIVE_PERIOD)} 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${snap.total}명 (팀장 ${snap.lead}명 / RF ${snap.rf}명) ${DATA_MODE==='demo'?'&nbsp;|&nbsp; 개인/조직 상세는 데모 데이터':''}</p>
       </div>
-      <div class="report-logo"><img src="mysuni-wordmark-white.png" alt="mySUNI" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">mySUNI</span></div>
+      <div class="report-logo"><img src="mysuni-wordmark-white.png" alt="mySUNI"></div>
     </div>
 
     <div class="rep-sec">
