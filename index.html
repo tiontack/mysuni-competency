@@ -495,7 +495,7 @@ select:focus{border-color:var(--blue)}
 
 /* ── PRINT ────────────────────────────── */
 @media print{
-  header,.tab-nav,.btn-row,#tab-overview,#tab-org,#tab-competency,#tab-individual{display:none!important}
+  header,.tab-nav,.btn-row,#tab-overview,#tab-org,#tab-competency,#tab-individual,#tab-oneonone{display:none!important}
   #tab-report{display:block!important}
   body{background:#fff}.main{padding:0}.report-page{box-shadow:none;border:none;padding:20px}
 }
@@ -544,6 +544,35 @@ select:focus{border-color:var(--blue)}
 .ind-tab-btn.active{background:#EFF6FF;border-color:#93C5FD;color:#1E40AF}
 .ind-tab-pane{display:none}
 .ind-tab-pane.active{display:block}
+.one-layout{display:grid;grid-template-columns:320px 1fr;gap:14px}
+.one-list{max-height:720px;overflow:auto;border:1px solid var(--border);border-radius:12px;background:#fff}
+.one-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 13px;border-bottom:1px solid #F1F5F9;cursor:pointer}
+.one-item:last-child{border-bottom:none}
+.one-item:hover{background:#F8FAFC}
+.one-item.sel{background:#EFF6FF}
+.one-name{font-size:14px;font-weight:700;color:var(--text-1)}
+.one-meta{font-size:12px;color:var(--text-3);margin-top:2px}
+.one-last{font-size:11px;color:#64748B;text-align:right;white-space:nowrap}
+.one-panel{border:1px solid var(--border);border-radius:12px;background:#fff;padding:14px}
+.one-login{max-width:540px;margin:20px auto;border:1px solid var(--border);border-radius:14px;background:#fff;padding:18px}
+.one-login-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.one-sec{border:1px solid var(--border);border-radius:10px;background:#F8FAFC;padding:12px;margin-top:12px}
+.one-sec h4{margin:0 0 8px 0;font-size:13px;color:#0F172A}
+.one-text{width:100%;min-height:88px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:10px;font-family:inherit;font-size:13px;line-height:1.6}
+.one-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.one-hist{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px;max-height:280px;overflow:auto}
+.one-hist-card{border:1px solid #E2E8F0;border-radius:10px;padding:10px;background:#fff}
+.one-hist-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.one-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700}
+.one-ai{font-size:13px;line-height:1.7;color:#334155}
+.one-ai ul{margin:6px 0 0 18px;padding:0}
+.one-empty{padding:16px;border:1px dashed #CBD5E1;border-radius:10px;background:#fff;color:#64748B;font-size:13px;text-align:center}
+.admin-pass{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace}
+@media(max-width:1024px){
+  .one-layout{grid-template-columns:1fr}
+  .one-list{max-height:300px}
+  .one-login-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -632,6 +661,7 @@ function showLoginScreen(){
     <button class="tab-btn" data-tab="org"><span class="tab-icon">◫</span>조직별 현황</button>
     <button class="tab-btn" data-tab="competency"><span class="tab-icon">◍</span>역량별 현황</button>
     <button class="tab-btn" data-tab="individual"><span class="tab-icon">◉</span>개인 레포트</button>
+    <button class="tab-btn" data-tab="oneonone"><span class="tab-icon">◌</span>1on1 관리</button>
     <button class="tab-btn" data-tab="report"><span class="tab-icon">◧</span>전사 보고서</button>
     <button class="tab-btn" data-tab="admin"><span class="tab-icon">◬</span>Admin</button>
   </div>
@@ -769,6 +799,13 @@ function showLoginScreen(){
   </div>
 </div>
 
+<!-- ══ TAB : 1on1 ══ -->
+<div id="tab-oneonone" class="tab-pane">
+  <div class="section">
+    <div id="oneonone-root"></div>
+  </div>
+</div>
+
 <!-- ══ TAB 4 : REPORT ══ -->
 <div id="tab-report" class="tab-pane">
   <div style="display:flex;justify-content:flex-end;margin-bottom:16px" class="btn-row">
@@ -812,6 +849,10 @@ function showLoginScreen(){
       <div class="card-title"><div class="ct-dot"></div>선택 구성원 상세 편집</div>
       <div id="admin-editor"></div>
     </div>
+  </div>
+  <div class="section card">
+    <div class="card-title"><div class="ct-dot"></div>1on1 담당 임원 계정 설정 (조직별)</div>
+    <div id="admin-1on1-accounts"></div>
   </div>
 </div>
 
@@ -1231,6 +1272,7 @@ function changeActivePeriod(period){
   if(document.getElementById('tab-org').classList.contains('active'))renderOrgTab();
   if(document.getElementById('tab-competency').classList.contains('active'))renderCompetencyTab();
   if(document.getElementById('tab-individual').classList.contains('active'))renderEmpList();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
   if(document.getElementById('tab-report').classList.contains('active'))renderCompanyReport();
   if(document.getElementById('tab-admin').classList.contains('active'))renderAdminTab();
 }
@@ -1279,6 +1321,60 @@ function updateDataModeUI(){
 
 const EMP_STORAGE_KEY='mysuni_competency_surveys_v3';
 const ACTIVE_PERIOD_KEY='mysuni_competency_active_period_v1';
+const ONEONONE_STORAGE_KEY='mysuni_competency_1on1_v1';
+const ONEONONE_SESSION_KEY='mysuni_competency_1on1_session_v1';
+let ONEONONE_DATA={accounts:{},records:{}};
+let ONEONONE_SESSION={org:'',empId:null};
+function normalizeOneOnOneData(raw){
+  const d=(raw&&typeof raw==='object')?raw:{};
+  if(!d.accounts||typeof d.accounts!=='object')d.accounts={};
+  if(!d.records||typeof d.records!=='object')d.records={};
+  return d;
+}
+function ensureOneOnOneAccount(org){
+  const key=textOrEmpty(org);
+  if(!key)return{execName:'',password:''};
+  if(!ONEONONE_DATA.accounts[key]){
+    ONEONONE_DATA.accounts[key]={execName:'',password:''};
+  }
+  return ONEONONE_DATA.accounts[key];
+}
+function ensureOneOnOneEmpRecord(period,org,empId){
+  const p=textOrEmpty(period)||ACTIVE_PERIOD;
+  const o=textOrEmpty(org)||'미분류';
+  const eid=String(empId);
+  if(!ONEONONE_DATA.records[p])ONEONONE_DATA.records[p]={};
+  if(!ONEONONE_DATA.records[p][o])ONEONONE_DATA.records[p][o]={};
+  if(!ONEONONE_DATA.records[p][o][eid]){
+    ONEONONE_DATA.records[p][o][eid]={prepMemo:'',history:[]};
+  }
+  const rec=ONEONONE_DATA.records[p][o][eid];
+  if(!Array.isArray(rec.history))rec.history=[];
+  if(rec.prepMemo===undefined||rec.prepMemo===null)rec.prepMemo='';
+  return rec;
+}
+function persistOneOnOneData(){
+  try{
+    localStorage.setItem(ONEONONE_STORAGE_KEY,JSON.stringify(ONEONONE_DATA));
+    sessionStorage.setItem(ONEONONE_SESSION_KEY,JSON.stringify(ONEONONE_SESSION));
+  }catch(_){}
+}
+function loadOneOnOneData(){
+  try{
+    const raw=localStorage.getItem(ONEONONE_STORAGE_KEY);
+    ONEONONE_DATA=normalizeOneOnOneData(raw?JSON.parse(raw):{accounts:{},records:{}});
+  }catch(_){
+    ONEONONE_DATA={accounts:{},records:{}};
+  }
+  try{
+    const sraw=sessionStorage.getItem(ONEONONE_SESSION_KEY);
+    const s=sraw?JSON.parse(sraw):null;
+    if(s&&typeof s==='object'){
+      ONEONONE_SESSION={org:textOrEmpty(s.org),empId:s.empId??null};
+    }
+  }catch(_){}
+  ORG_LIST.forEach(org=>ensureOneOnOneAccount(org));
+}
 function toSafeInt(v,min=1,max=5){
   const n=Math.round(Number(v));
   if(!Number.isFinite(n))return min;
@@ -1344,6 +1440,7 @@ function syncAfterEmployeeChange(updateStore=true){
   EMPLOYEES=EMPLOYEES.map((e,idx)=>normalizeEmployeeObject(e,idx));
   SURVEY_STORE[ACTIVE_PERIOD]=EMPLOYEES;
   ORG_LIST=sortOrgsForDisplay(EMPLOYEES.map(e=>e.org));
+  ORG_LIST.forEach(org=>ensureOneOnOneAccount(org));
   selectedOrgs=selectedOrgs.filter(o=>ORG_LIST.includes(o));
   if(!selectedOrgs.length)selectedOrgs=[...ORG_LIST];
   recalcStatsFromEmployees();
@@ -1963,6 +2060,244 @@ function renderIndividualReport(emp){
 }
 
 // ══════════════════════════════════════════
+// TAB : 1on1 MANAGEMENT
+// ══════════════════════════════════════════
+function fmtYmd(v){
+  if(!v)return '';
+  const d=new Date(v);
+  if(Number.isNaN(d.getTime()))return textOrEmpty(v).slice(0,10);
+  const yy=d.getFullYear();
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  return `${yy}-${mm}-${dd}`;
+}
+function oneOnOneOrgEmployees(){
+  if(!ONEONONE_SESSION.org)return [];
+  return EMPLOYEES.filter(e=>e.org===ONEONONE_SESSION.org).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+}
+function oneOnOneSelectedEmp(){
+  const list=oneOnOneOrgEmployees();
+  if(!list.length)return null;
+  const found=list.find(e=>e.id===ONEONONE_SESSION.empId);
+  if(found)return found;
+  ONEONONE_SESSION.empId=list[0].id;
+  persistOneOnOneData();
+  return list[0];
+}
+function executiveCoachingAdvice(emp){
+  const orgAvg=compAvgObj(EMPLOYEES.filter(e=>e.org===emp.org));
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  const gaps=COMP_KEYS.map(k=>({k,gap:emp.target[k]-emp.current[k]})).sort((a,b)=>b.gap-a.gap);
+  const weak=[...COMP_KEYS].sort((a,b)=>emp.current[a]-emp.current[b])[0];
+  const top=gaps[0];
+  const weakIdx=COMP_KEYS.indexOf(weak);
+  const topIdx=COMP_KEYS.indexOf(top.k);
+  const recs=DEV_RECS[top.k][Math.min(emp.current[top.k],4)];
+  const weakQual=qual[weak]||{};
+  const concern=textOrEmpty(qual.change?.globalConcern)||textOrEmpty(qual.change?.aiConcern)||'응답 없음';
+  return `
+    <div class="one-ai">
+      <div><strong>${emp.name}</strong> 구성원은 <strong>${COMP_NAMES[topIdx]}</strong>의 목표 GAP이 가장 큽니다 (+${top.gap}). 면담 시 먼저 목표와 현재의 차이를 1~2개 행동 단위로 구체화해 주세요.</div>
+      <ul>
+        <li><strong>코칭 포인트 1:</strong> ${COMP_NAMES[weakIdx]} 현수준 ${emp.current[weak]}점은 조직 평균 ${orgAvg[weak].toFixed(2)}점 대비 ${emp.current[weak]-orgAvg[weak]>=0?'+':''}${(emp.current[weak]-orgAvg[weak]).toFixed(2)}점입니다. ${LEVEL_DESC[weak][emp.current[weak]]}</li>
+        <li><strong>코칭 포인트 2:</strong> 실행 과제는 "${escHtml(recs[0])}"를 우선 적용하고, 2주 후 결과를 확인하는 방식이 효과적입니다.</li>
+        <li><strong>코칭 포인트 3:</strong> 본인 응답 기준 핵심 의견은 "${escHtml(textOrEmpty(weakQual.plan)||textOrEmpty(weakQual.current)||'응답 없음')}"이며, 변화 관련 우려는 "${escHtml(concern)}" 입니다.</li>
+      </ul>
+    </div>
+  `;
+}
+function oneOnOneLogin(){
+  const org=document.getElementById('one-login-org')?.value||'';
+  const pw=document.getElementById('one-login-pass')?.value||'';
+  const err=document.getElementById('one-login-err');
+  const acc=ensureOneOnOneAccount(org);
+  if(!org){if(err)err.textContent='조직을 선택해 주세요.';return;}
+  if(!acc.password){if(err)err.textContent='해당 조직 비밀번호가 설정되지 않았습니다. Admin에서 먼저 설정해 주세요.';return;}
+  if(pw!==acc.password){if(err)err.textContent='비밀번호가 올바르지 않습니다.';return;}
+  ONEONONE_SESSION={org,empId:null};
+  persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneLogout(){
+  ONEONONE_SESSION={org:'',empId:null};
+  persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneSelectEmp(empId){
+  ONEONONE_SESSION.empId=empId;
+  persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneSavePrep(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);
+  if(!emp)return;
+  const val=document.getElementById('one-prep')?.value||'';
+  const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+  rec.prepMemo=val;
+  persistOneOnOneData();
+  alert('사전 메모를 저장했습니다.');
+}
+function oneOnOneAddHistory(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);
+  if(!emp)return;
+  const date=fmtYmd(document.getElementById('one-h-date')?.value||new Date());
+  const discussed=textOrEmpty(document.getElementById('one-h-discussed')?.value||'');
+  const coaching=textOrEmpty(document.getElementById('one-h-coaching')?.value||'');
+  const next=textOrEmpty(document.getElementById('one-h-next')?.value||'');
+  if(!discussed&&!coaching&&!next){alert('면담 내용을 입력해 주세요.');return;}
+  const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+  rec.history.unshift({
+    id:`h_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    date:date||fmtYmd(new Date()),
+    discussed,coaching,next,createdAt:new Date().toISOString()
+  });
+  persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneDeleteHistory(empId,hid){
+  const emp=EMPLOYEES.find(e=>e.id===empId);
+  if(!emp)return;
+  const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+  rec.history=rec.history.filter(h=>h.id!==hid);
+  persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneOpenIndividual(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);
+  if(!emp)return;
+  selectedEmp=emp;
+  filteredEmps=[...EMPLOYEES];
+  const orgSel=document.getElementById('emp-org-filter');
+  if(orgSel)orgSel.value=emp.org;
+  const q=document.getElementById('emp-search');
+  if(q)q.value='';
+  filterEmployees();
+  switchTab('individual');
+  selectEmployee(emp);
+}
+function renderOneOnOneTab(){
+  const root=document.getElementById('oneonone-root');
+  if(!root)return;
+  ORG_LIST.forEach(org=>ensureOneOnOneAccount(org));
+  if(ONEONONE_SESSION.org&&!ORG_LIST.includes(ONEONONE_SESSION.org)){
+    ONEONONE_SESSION={org:'',empId:null};
+    persistOneOnOneData();
+  }
+  if(!ONEONONE_SESSION.org){
+    root.innerHTML=`
+      <div class="one-login">
+        <div class="card-title" style="margin-bottom:14px"><div class="ct-dot"></div>조직별 담당 임원 로그인</div>
+        <div class="one-login-grid">
+          <div class="fgrp" style="margin:0">
+            <label class="flabel">조직</label>
+            <select class="finput" id="one-login-org">
+              <option value="">조직 선택</option>
+              ${ORG_LIST.map(org=>`<option value="${escHtml(org)}">${escHtml(org)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fgrp" style="margin:0">
+            <label class="flabel">비밀번호</label>
+            <input class="finput admin-pass" id="one-login-pass" type="password" placeholder="조직 비밀번호">
+          </div>
+          <button class="btn btn-dark" onclick="oneOnOneLogin()">로그인</button>
+        </div>
+        <div id="one-login-err" style="margin-top:8px;color:#B91C1C;font-size:12px;min-height:18px"></div>
+        <div style="margin-top:10px;font-size:12px;color:#64748B">조직별 비밀번호는 Admin 탭에서 설정할 수 있습니다.</div>
+      </div>
+    `;
+    return;
+  }
+  const org=ONEONONE_SESSION.org;
+  const acc=ensureOneOnOneAccount(org);
+  const members=oneOnOneOrgEmployees();
+  const emp=oneOnOneSelectedEmp();
+  const listHtml=members.length?members.map(m=>{
+    const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,m.org,m.id);
+    const last=rec.history[0]?.date||'기록 없음';
+    return`<div class="one-item${emp&&emp.id===m.id?' sel':''}" onclick="oneOnOneSelectEmp(${m.id})">
+      <div><div class="one-name">${escHtml(m.name)}</div><div class="one-meta">${escHtml(m.role)} · ${m.years}년차</div></div>
+      <div class="one-last">최근 1on1<br><strong>${escHtml(last)}</strong></div>
+    </div>`;
+  }).join(''):`<div class="one-empty">선택한 조직에 구성원 데이터가 없습니다.</div>`;
+  const rightHtml=(()=>{
+    if(!emp)return `<div class="one-empty">구성원을 선택해 주세요.</div>`;
+    const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+    const history=[...rec.history].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    return `
+      <div class="one-panel">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+          <div>
+            <div class="profile-name" style="font-size:22px">${escHtml(emp.name)}</div>
+            <div class="profile-role" style="font-size:14px">${escHtml(emp.org)} · ${escHtml(emp.role)} · ${emp.years}년차</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="one-chip">현수준 ${overallAvg(emp.current).toFixed(2)}</span>
+            <span class="one-chip" style="background:#FFEDD5;color:#9A3412">목표 ${overallAvg(emp.target).toFixed(2)}</span>
+            <button class="btn btn-ghost" onclick="oneOnOneOpenIndividual(${emp.id})">개인 레포트 보기</button>
+          </div>
+        </div>
+
+        <div class="one-sec">
+          <h4>AI 코칭 제안 (임원 면담용)</h4>
+          ${executiveCoachingAdvice(emp)}
+        </div>
+
+        <div class="one-grid-2">
+          <div class="one-sec">
+            <h4>다음 1on1 사전 메모</h4>
+            <textarea id="one-prep" class="one-text" placeholder="다음 면담에서 확인할 항목, 질문, 피드백 포인트를 메모하세요">${escHtml(rec.prepMemo||'')}</textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneSavePrep(${emp.id})">사전 메모 저장</button></div>
+          </div>
+          <div class="one-sec">
+            <h4>1on1 기록 추가</h4>
+            <div class="fgrp" style="margin:0 0 8px 0">
+              <label class="flabel">면담 일자</label>
+              <input id="one-h-date" type="date" class="finput" value="${fmtYmd(new Date())}">
+            </div>
+            <textarea id="one-h-discussed" class="one-text" style="min-height:60px" placeholder="논의한 핵심 내용"></textarea>
+            <textarea id="one-h-coaching" class="one-text" style="min-height:60px;margin-top:8px" placeholder="임원 코칭/피드백"></textarea>
+            <textarea id="one-h-next" class="one-text" style="min-height:60px;margin-top:8px" placeholder="다음 액션/합의사항"></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneAddHistory(${emp.id})">기록 저장</button></div>
+          </div>
+        </div>
+
+        <div class="one-sec">
+          <h4>면담 이력</h4>
+          <div class="one-hist">
+            ${history.length?history.map(h=>`
+              <div class="one-hist-card">
+                <div class="one-hist-top">
+                  <div style="font-size:12px;font-weight:700;color:#1E3A8A">${escHtml(h.date||'날짜 없음')}</div>
+                  <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px;border-color:#fecaca;color:#b91c1c" onclick="oneOnOneDeleteHistory(${emp.id},'${h.id}')">삭제</button>
+                </div>
+                <div class="qual-row"><b>논의:</b> ${escHtml(h.discussed||'-')}</div>
+                <div class="qual-row"><b>코칭:</b> ${escHtml(h.coaching||'-')}</div>
+                <div class="qual-row"><b>다음 액션:</b> ${escHtml(h.next||'-')}</div>
+              </div>
+            `).join(''):`<div class="one-empty">저장된 면담 이력이 없습니다.</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  })();
+  root.innerHTML=`
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div class="card-title" style="margin-bottom:6px"><div class="ct-dot"></div>1on1 관리 · ${escHtml(org)}</div>
+          <div style="font-size:12px;color:#64748B">담당 임원: <strong style="color:#0F172A">${escHtml(acc.execName||'미지정')}</strong> · ${displayPeriod(ACTIVE_PERIOD)} 기준</div>
+        </div>
+        <button class="btn btn-ghost" onclick="oneOnOneLogout()">로그아웃</button>
+      </div>
+    </div>
+    <div class="one-layout">
+      <div class="one-list">${listHtml}</div>
+      <div>${rightHtml}</div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════
 // TAB 5 : ADMIN
 // ══════════════════════════════════════════
 let adminSelectedId=null;
@@ -1970,6 +2305,7 @@ function adminGetSelected(){return EMPLOYEES.find(e=>e.id===adminSelectedId)||nu
 function renderAdminTab(){
   renderAdminTable();
   renderAdminEditor();
+  renderOneOnOneAdmin();
 }
 function renderAdminTable(){
   const tb=document.getElementById('admin-tbody'); if(!tb)return;
@@ -2005,6 +2341,7 @@ function adminDelete(id){
   syncAfterEmployeeChange();
   persistEmployees();
   renderOverview();renderOrgTab();renderEmpList();renderCompanyReport();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
   renderAdminTab();
 }
 function adminAddEmployee(){
@@ -2020,6 +2357,7 @@ function adminAddEmployee(){
   syncAfterEmployeeChange();
   persistEmployees();
   renderOverview();renderOrgTab();renderEmpList();renderCompanyReport();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
   renderAdminTab();
 }
 function renderAdminEditor(){
@@ -2087,6 +2425,7 @@ function adminSaveOne(){
   syncAfterEmployeeChange();
   persistEmployees();
   renderOverview();renderOrgTab();filterEmployees();renderCompanyReport();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
   renderAdminTab();
   if(selectedEmp?.id===emp.id)renderIndividualReport(emp);
 }
@@ -2095,7 +2434,50 @@ function adminSaveAll(){
   syncAfterEmployeeChange();
   persistEmployees();
   renderOverview();renderOrgTab();filterEmployees();renderCompanyReport();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
   renderAdminTab();
+}
+function renderOneOnOneAdmin(){
+  const box=document.getElementById('admin-1on1-accounts');
+  if(!box)return;
+  ORG_LIST.forEach(org=>ensureOneOnOneAccount(org));
+  box.innerHTML=`
+    <table>
+      <thead>
+        <tr>
+          <th>조직</th>
+          <th>담당 임원명</th>
+          <th>조직 비밀번호</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${ORG_LIST.map((org,idx)=>{
+          const acc=ensureOneOnOneAccount(org);
+          return`
+            <tr>
+              <td>${escHtml(org)}</td>
+              <td><input id="o1-exec-${idx}" class="finput" value="${escHtml(acc.execName||'')}" placeholder="담당 임원명"></td>
+              <td><input id="o1-pass-${idx}" class="finput admin-pass" value="${escHtml(acc.password||'')}" placeholder="조직 비밀번호"></td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <div style="font-size:12px;color:#64748B">비밀번호는 조직별 1on1 관리 탭 로그인에 사용됩니다.</div>
+      <button class="btn btn-dark" onclick="adminSaveOneOnOneAccounts()">1on1 계정 저장</button>
+    </div>
+  `;
+}
+function adminSaveOneOnOneAccounts(){
+  ORG_LIST.forEach((org,idx)=>{
+    const execName=textOrEmpty(document.getElementById(`o1-exec-${idx}`)?.value||'');
+    const password=textOrEmpty(document.getElementById(`o1-pass-${idx}`)?.value||'');
+    ONEONONE_DATA.accounts[org]={execName,password};
+  });
+  persistOneOnOneData();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
+  alert('1on1 계정 정보를 저장했습니다.');
 }
 
 // ══════════════════════════════════════════
@@ -2819,6 +3201,7 @@ async function handleEmployeeFile(ev){
     if(document.getElementById('tab-org').classList.contains('active'))renderOrgTab();
     if(document.getElementById('tab-competency').classList.contains('active'))renderCompetencyTab();
     if(document.getElementById('tab-individual').classList.contains('active'))renderEmpList();
+    if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
     if(document.getElementById('tab-report').classList.contains('active'))renderCompanyReport();
     if(document.getElementById('tab-admin').classList.contains('active'))renderAdminTab();
   }catch(err){
@@ -3164,6 +3547,7 @@ function switchTab(tab){
   else if(tab==='org')renderOrgTab();
   else if(tab==='competency')renderCompetencyTab();
   else if(tab==='individual')renderEmpList();
+  else if(tab==='oneonone')renderOneOnOneTab();
   else if(tab==='report')renderCompanyReport();
   else if(tab==='admin')renderAdminTab();
 }
@@ -3174,6 +3558,7 @@ try{
   localStorage.removeItem(ACTIVE_PERIOD_KEY);
 }catch(_){}
 initFilters();
+loadOneOnOneData();
 updateDataModeUI();
 renderPeriodSelector();
 renderOverview();
