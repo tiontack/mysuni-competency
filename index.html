@@ -1153,6 +1153,32 @@ function orgCharacteristicRows(){
   }
   return rows;
 }
+function demographicInsightRows(allMean){
+  const rows=[];
+  const push=(groupType,label,emps)=>{
+    if(!emps||!emps.length)return;
+    const ca=compAvgObj(emps),avgScore=overallAvg(ca);
+    const byComp=[...COMP_KEYS].map(k=>({k,v:ca[k]})).sort((a,b)=>b.v-a.v);
+    const strong=byComp[0],weak=byComp[byComp.length-1];
+    const delta=avgScore-allMean;
+    const interpret=`${label} 그룹은 전사 평균 대비 ${delta>=0?'+':''}${delta.toFixed(2)}점 (${avgScore.toFixed(2)}점)이며, 강점은 ${COMP_NAMES[COMP_KEYS.indexOf(strong.k)]}, 보완은 ${COMP_NAMES[COMP_KEYS.indexOf(weak.k)]}입니다.`;
+    const plan=`${COMP_NAMES[COMP_KEYS.indexOf(weak.k)]} 중심의 맞춤형 학습과 ${COMP_NAMES[COMP_KEYS.indexOf(strong.k)]} 우수 사례 확산을 병행 권장합니다.`;
+    rows.push({groupType,label,count:emps.length,avgScore,delta,strong:COMP_NAMES[COMP_KEYS.indexOf(strong.k)],weak:COMP_NAMES[COMP_KEYS.indexOf(weak.k)],interpret,plan});
+  };
+  push('직책','팀장',EMPLOYEES.filter(e=>e.role==='팀장'));
+  push('직책','RF',EMPLOYEES.filter(e=>e.role==='RF'));
+  push('연차','1~2년차',EMPLOYEES.filter(e=>e.years<=2));
+  push('연차','3~4년차',EMPLOYEES.filter(e=>e.years>=3&&e.years<=4));
+  push('연차','5년 이상',EMPLOYEES.filter(e=>e.years>=5));
+  const ageMap={};
+  EMPLOYEES.forEach(e=>{
+    const label=ageBandLabel(calcAge(e.birth));
+    if(!ageMap[label])ageMap[label]=[];
+    ageMap[label].push(e);
+  });
+  ['29세 이하','30~34세','35~39세','40~44세','45세 이상','미확인'].forEach(l=>push('연령',l,ageMap[l]||[]));
+  return rows;
+}
 
 // ══════════════════════════════════════════
 // INIT DATA
@@ -2889,6 +2915,16 @@ function renderCompanyReport(){
     <td>${r.aiInterpret}</td>
     <td>${r.plan}</td>
   </tr>`).join('');
+  const demoRows=demographicInsightRows(allMean).map(r=>`<tr>
+    <td>${r.groupType}</td>
+    <td>${r.label}</td>
+    <td class="text-center">${r.count}명</td>
+    <td class="text-center"><strong>${r.avgScore.toFixed(2)}</strong> (${r.delta>=0?'+':''}${r.delta.toFixed(2)})</td>
+    <td>${r.strong}</td>
+    <td>${r.weak}</td>
+    <td>${r.interpret}</td>
+    <td>${r.plan}</td>
+  </tr>`).join('');
 
   document.getElementById('company-report-content').innerHTML=`
     <div class="report-header">
@@ -3062,6 +3098,23 @@ function renderCompanyReport(){
           <li>반기/연말 재진단을 통한 기간별 성장 GAP 모니터링 및 육성 계획 갱신</li>
         </ul>
       </div>
+    </div>
+
+    <div class="rep-sec">
+      <h2>13. Demo 분석 (직책·연차·연령)</h2>
+      <table>
+        <tr>
+          <th>구분</th>
+          <th>세그먼트</th>
+          <th class="text-center">인원</th>
+          <th class="text-center">평균(전사 대비)</th>
+          <th>강점 역량</th>
+          <th>보완 역량</th>
+          <th>AI 해석</th>
+          <th>권장 개발 계획</th>
+        </tr>
+        ${demoRows}
+      </table>
     </div>
 
     <div style="text-align:center;color:#94A3B8;font-size:11px;margin-top:40px;padding-top:16px;border-top:1px solid #E2E8F0">
