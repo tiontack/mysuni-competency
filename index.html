@@ -1674,15 +1674,16 @@ function renderOrgCharts(){
     type:'bar',
     data:{labels:COMP_NAMES,datasets:barDs},
     options:{responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:24}},
       plugins:{
         legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:12}},
         datalabels:{
           formatter:v=>Number(v).toFixed(2),
-          color:'#0F172A',anchor:'end',align:'end',offset:2,clamp:true,
+          color:'#0F172A',anchor:'end',align:'end',offset:2,clamp:true,clip:false,
           font:{size:12,weight:'800'}
         }
       },
-      scales:{y:{min:0,max:5,ticks:{stepSize:1},grid:{color:'rgba(15,23,42,.05)'}},x:{grid:{display:false}}}
+      scales:{y:{min:0,max:5.6,ticks:{stepSize:1,callback:v=>v<=5?String(v):''},grid:{color:'rgba(15,23,42,.05)'}},x:{grid:{display:false}}}
     }
   });
 }
