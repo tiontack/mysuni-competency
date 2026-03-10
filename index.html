@@ -7,7 +7,10 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="preloaded-survey-data.js"></script>
 <style>
 :root{
   --bg:#F0F4F9;
@@ -33,7 +36,11 @@
   --r:16px;--r-sm:10px;--r-pill:999px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+body{
+  font-family:'돋움','Dotum','Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  font-size:16px;line-height:1.55;word-break:keep-all;line-break:strict;
+}
 
 /* ── HEADER ────────────────────────────── */
 header{
@@ -45,7 +52,7 @@ header::after{
   content:'';position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 60% 120% at 70% -10%,rgba(37,99,235,.25) 0%,transparent 70%);
 }
-.hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:60px;display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+.hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:nowrap}
 .hdr-logo{height:40px;display:flex;align-items:center;flex-shrink:0}
 .hdr-logo-img{height:40px;width:auto;object-fit:contain;display:none}
 .hdr-logo-text{
@@ -54,7 +61,7 @@ header::after{
   border-radius:8px;letter-spacing:.8px;
   box-shadow:0 2px 8px rgba(37,99,235,.4);
 }
-.hdr-title{font-size:16px;font-weight:700;color:#fff;flex:1;letter-spacing:-.01em}
+.hdr-title{font-size:18px;font-weight:700;color:#fff;flex:1;letter-spacing:-.01em;white-space:nowrap}
 .hdr-sep{width:1px;height:18px;background:rgba(255,255,255,.12)}
 .hdr-badge{
   display:flex;align-items:center;gap:6px;
@@ -63,16 +70,22 @@ header::after{
 }
 .hdr-badge.data{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);color:#FCD34D}
 .hdr-badge.period{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7)}
+.hdr-period{
+  height:30px;min-width:170px;padding:0 10px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);
+  color:#E2E8F0;font-size:12px;font-weight:600;
+}
+.hdr-period option{color:#0F172A;background:#fff}
 .hdr-dot{width:6px;height:6px;border-radius:50%;background:#FCD34D;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ── TAB NAV ────────────────────────────── */
 .tab-nav{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(15,23,42,.04)}
-.tab-nav-inner{max-width:1360px;margin:0 auto;padding:0 28px;display:flex;gap:4px}
+.tab-nav-inner{max-width:1360px;margin:0 auto;padding:0 28px;display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;white-space:nowrap}
 .tab-btn{
   display:flex;align-items:center;gap:7px;
-  padding:0 18px;height:50px;border:none;background:none;
-  cursor:pointer;font-size:13.5px;font-weight:500;
+  padding:0 18px;height:54px;border:none;background:none;
+  cursor:pointer;font-size:15px;font-weight:600;
   color:var(--text-3);font-family:inherit;white-space:nowrap;
   border-bottom:2px solid transparent;transition:all .2s;
   letter-spacing:-.01em;
@@ -84,7 +97,7 @@ header::after{
 .tab-btn.active .tab-icon{opacity:1}
 
 /* ── LAYOUT ────────────────────────────── */
-.main{max-width:1360px;margin:0 auto;padding:28px}
+.main{max-width:1360px;margin:0 auto;padding:30px}
 .tab-pane{display:none}.tab-pane.active{display:block}
 .section{margin-bottom:24px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -100,7 +113,7 @@ header::after{
 }
 .card:hover{box-shadow:var(--sh-lg)}
 .card-title{
-  font-size:14px;font-weight:700;color:var(--text);
+  font-size:16px;font-weight:800;color:var(--text);
   margin-bottom:18px;display:flex;align-items:center;gap:10px;
   letter-spacing:-.01em;
 }
@@ -126,10 +139,10 @@ header::after{
   display:flex;align-items:center;justify-content:center;font-size:18px;
   margin-bottom:14px;
 }
-.kpi-label{font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
+.kpi-label{font-size:12px;color:var(--text-3);font-weight:700;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
 .kpi-val{font-size:32px;font-weight:800;color:var(--text);line-height:1;margin-bottom:5px;letter-spacing:-.03em}
-.kpi-val span{font-size:14px;font-weight:500;color:var(--text-3);margin-left:2px}
-.kpi-sub{font-size:11px;color:var(--text-3)}
+.kpi-val span{font-size:15px;font-weight:600;color:var(--text-3);margin-left:2px}
+.kpi-sub{font-size:12px;color:var(--text-3)}
 .kpi-sub strong{color:var(--text-2)}
 
 /* KPI color themes */
@@ -153,13 +166,15 @@ header::after{
 .legend-dash{width:20px;height:2px;background:currentColor;border-radius:1px;flex-shrink:0}
 
 /* ── TABLE ────────────────────────────── */
-table{width:100%;border-collapse:collapse;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
 th{
   background:#F8FAFC;padding:10px 14px;
-  text-align:left;font-weight:600;font-size:11.5px;
+  text-align:left;font-weight:700;font-size:12.5px;
   color:var(--text-2);border-bottom:1px solid var(--border-strong);
   letter-spacing:.01em;
 }
+.sortable-th{cursor:pointer;user-select:none;white-space:nowrap}
+.sort-ind{margin-left:4px;font-size:11px;color:#94A3B8}
 td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tbody tr:nth-child(even) td{background:#FAFBFD}
@@ -203,20 +218,28 @@ tbody tr:hover td{background:#EFF6FF}
 .search-input{
   flex:1;min-width:160px;padding:10px 16px;
   border:1.5px solid var(--border-strong);border-radius:var(--r-sm);
-  font-size:13px;outline:none;font-family:inherit;
+  font-size:14px;outline:none;font-family:inherit;
   background:var(--surface);transition:border-color .2s,box-shadow .2s;
 }
 .search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 select{
   padding:10px 14px;border:1.5px solid var(--border-strong);
-  border-radius:var(--r-sm);font-size:13px;outline:none;
+  border-radius:var(--r-sm);font-size:14px;outline:none;
   font-family:inherit;background:var(--surface);cursor:pointer;
   color:var(--text);transition:border-color .2s;
 }
 select:focus{border-color:var(--blue)}
 
 /* ── INDIVIDUAL LAYOUT ────────────────── */
-.ind-layout{display:grid;grid-template-columns:290px 1fr;gap:20px}
+.ind-layout{display:grid;grid-template-columns:290px 1fr;gap:20px;align-items:start}
+.ind-layout>div{min-width:0}
+#ind-report{min-width:0}
+#ind-report .section{margin-bottom:16px}
+#ind-report .card,#ind-report .profile,#ind-report .ai-report{max-width:100%}
+.ind-report-top{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:16px}
+.score-grid-wrap{overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
+.score-grid-wrap::-webkit-scrollbar{height:8px}
+.score-grid-wrap::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:999px}
 @media(max-width:650px){.ind-layout{grid-template-columns:1fr}}
 .emp-list{
   border:1.5px solid var(--border-strong);border-radius:var(--r);
@@ -230,43 +253,41 @@ select:focus{border-color:var(--blue)}
 .emp-item:last-child{border-bottom:none}
 .emp-item:hover{background:#F8FAFF}
 .emp-item.sel{background:#EFF6FF;border-left:3px solid var(--blue)}
-.emp-name{font-weight:700;font-size:13px;color:var(--text)}
-.emp-meta{font-size:11px;color:var(--text-3);margin-top:2px}
-.emp-avg{font-size:13px;color:var(--text-2);font-weight:700;flex-shrink:0;margin-left:10px}
+.emp-name{font-weight:700;font-size:14px;color:var(--text)}
+.emp-meta{font-size:12px;color:var(--text-3);margin-top:2px}
+.emp-avg{font-size:14px;color:var(--text-2);font-weight:700;flex-shrink:0;margin-left:10px}
 
 /* ── PROFILE ────────────────────────────── */
 .profile{
-  background:var(--navy);border-radius:var(--r);padding:24px;
+  background:#fff;border:1px solid var(--border);box-shadow:var(--sh-md);
+  border-radius:var(--r);padding:22px;
   margin-bottom:18px;position:relative;overflow:hidden;
 }
 .profile::before{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(ellipse 80% 100% at 90% -20%,rgba(37,99,235,.5) 0%,transparent 60%);
+  content:'';position:absolute;left:0;top:0;right:0;height:4px;pointer-events:none;
+  background:linear-gradient(90deg,#1D4ED8,#60A5FA);
 }
 .profile::after{
-  content:'';position:absolute;bottom:-40px;right:-40px;
-  width:140px;height:140px;border-radius:50%;
-  background:rgba(37,99,235,.08);pointer-events:none;
+  content:'';position:absolute;inset:auto 0 0 0;height:1px;background:var(--border);pointer-events:none;
 }
 .profile-inner{position:relative;z-index:1}
-.profile-name{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.02em}
-.profile-role{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px}
+.profile-name{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:4px;letter-spacing:-.02em}
+.profile-role{font-size:12px;color:var(--text-3);margin-bottom:14px}
 .profile-tags{display:flex;flex-wrap:wrap;gap:7px}
 .ptag{
-  background:rgba(255,255,255,.1);backdrop-filter:blur(4px);
-  border:1px solid rgba(255,255,255,.15);
-  padding:4px 12px;border-radius:var(--r-pill);font-size:11.5px;color:rgba(255,255,255,.85);font-weight:500;
+  background:#F8FAFC;border:1px solid #E2E8F0;
+  padding:4px 12px;border-radius:var(--r-pill);font-size:11.5px;color:var(--text-2);font-weight:600;
 }
-.ptag.highlight{background:rgba(37,99,235,.4);border-color:rgba(37,99,235,.5)}
+.ptag.highlight{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
 
 /* ── SCORE TABLE ────────────────────────── */
 .score-grid{
-  display:grid;grid-template-columns:140px repeat(6,1fr);
-  border:1px solid var(--border-strong);border-radius:var(--r);overflow:hidden;font-size:12.5px;
+  display:grid;grid-template-columns:130px repeat(6,minmax(72px,1fr));
+  border:1px solid var(--border-strong);border-radius:var(--r);overflow:hidden;font-size:11.8px;min-width:620px;
 }
-.sgc{padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)}
-.sgc.hdr{background:#F8FAFC;font-weight:700;color:var(--text-2);font-size:11px;letter-spacing:.02em;padding:11px 8px}
-.sgc.lbl{text-align:left;padding-left:14px;font-weight:700;color:var(--text);font-size:13px}
+.sgc{padding:8px 6px;text-align:center;border-bottom:1px solid var(--border)}
+.sgc.hdr{background:#F8FAFC;font-weight:700;color:var(--text-2);font-size:10.5px;letter-spacing:.02em;padding:9px 6px}
+.sgc.lbl{text-align:left;padding-left:10px;font-weight:700;color:var(--text);font-size:12px}
 .sgc.last{border-bottom:none}
 .sgc.alt{background:#FAFBFD}
 
@@ -278,59 +299,62 @@ select:focus{border-color:var(--blue)}
 
 /* ── AI REPORT ────────────────────────────── */
 .ai-report{
-  background:linear-gradient(140deg,#0A1628 0%,#0F2044 50%,#1E3A8A 100%);
-  border-radius:var(--r);padding:28px;position:relative;overflow:hidden;
+  background:#FFFFFF;
+  border-radius:var(--r);
+  padding:24px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--border);
+  box-shadow:var(--sh-md);
 }
 .ai-report::before{
-  content:'';position:absolute;top:-60px;right:-60px;
-  width:220px;height:220px;border-radius:50%;
-  background:radial-gradient(circle,rgba(59,130,246,.25) 0%,transparent 70%);
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,#2563EB,#60A5FA);
   pointer-events:none;
 }
 .ai-report::after{
-  content:'';position:absolute;bottom:-30px;left:40%;
-  width:160px;height:160px;border-radius:50%;
-  background:radial-gradient(circle,rgba(139,92,246,.15) 0%,transparent 70%);
+  content:'';position:absolute;inset:auto 0 0 0;height:1px;background:var(--border);
   pointer-events:none;
 }
 .ai-inner{position:relative;z-index:1}
-.ai-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.ai-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .ai-icon{
   width:38px;height:38px;
-  background:linear-gradient(135deg,#2563EB,#7C3AED);
+  background:linear-gradient(135deg,#2563EB,#1D4ED8);
   border-radius:10px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;box-shadow:0 4px 12px rgba(37,99,235,.4);
+  font-size:18px;flex-shrink:0;box-shadow:0 4px 12px rgba(37,99,235,.22);
 }
-.ai-title{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.01em}
-.ai-subtitle{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.ai-title{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:-.01em}
+.ai-subtitle{font-size:11px;color:var(--text-3);margin-top:2px}
 .ai-sec{margin-bottom:20px}
 .ai-sec:last-child{margin-bottom:0}
 .ai-sec-label{
-  font-size:10px;font-weight:700;color:rgba(255,255,255,.45);
+  font-size:10px;font-weight:700;color:var(--text-3);
   text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;
 }
-.ai-text{font-size:13px;line-height:1.85;color:rgba(255,255,255,.8)}
-.ai-text strong{color:#fff}
-.ai-divider{height:1px;background:rgba(255,255,255,.08);margin:20px 0}
+.ai-text{font-size:13px;line-height:1.8;color:var(--text-2)}
+.ai-text strong{color:var(--text)}
+.ai-divider{height:1px;background:var(--border);margin:20px 0}
 .ai-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
 .ai-tag{display:inline-block;padding:4px 12px;border-radius:var(--r-pill);font-size:11.5px;font-weight:700}
-.tag-str{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.3);color:#6EE7B7}
-.tag-dev{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);color:#FCA5A5}
-.tag-neu{background:rgba(37,99,235,.25);border:1px solid rgba(37,99,235,.3);color:#93C5FD}
+.tag-str{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46}
+.tag-dev{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+.tag-neu{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
 .info-chip{
   display:inline-flex;align-items:center;gap:5px;
   padding:4px 12px;border-radius:var(--r-pill);
   font-size:11.5px;font-weight:700;margin:3px;
 }
-.chip-blue{background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.3);color:#93C5FD}
-.chip-orange{background:rgba(234,88,12,.2);border:1px solid rgba(234,88,12,.3);color:#FDBA74}
-.chip-red{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);color:#FCA5A5}
-.chip-green{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.3);color:#6EE7B7}
+.chip-blue{background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF}
+.chip-orange{background:#FFF7ED;border:1px solid #FED7AA;color:#9A3412}
+.chip-red{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+.chip-green{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46}
 .rec-list{list-style:none;padding:0}
 .rec-list li{
   padding:8px 0 8px 18px;position:relative;
-  font-size:13px;line-height:1.7;color:rgba(255,255,255,.75);
-  border-bottom:1px solid rgba(255,255,255,.06);
+  font-size:13px;line-height:1.7;color:var(--text-2);
+  border-bottom:1px solid var(--border);
+  overflow-wrap:anywhere;
 }
 .rec-list li:last-child{border-bottom:none}
 .rec-list li::before{content:'›';position:absolute;left:0;color:#60A5FA;font-size:16px;line-height:1.5}
@@ -366,6 +390,42 @@ select:focus{border-color:var(--blue)}
 /* ── DIVIDER ────────────────────────────── */
 .divider{height:1px;background:var(--border);margin:20px 0}
 
+/* ── DATA UPLOAD ────────────────────────── */
+.upload-box{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  padding:12px 14px;border:1px dashed var(--border-strong);
+  border-radius:12px;background:#F8FAFC;margin-bottom:14px;
+}
+.upload-help{font-size:12px;color:var(--text-3)}
+.upload-help strong{color:var(--text-2)}
+.upload-status{font-size:12px;font-weight:700}
+
+/* ── ADMIN ─────────────────────────────── */
+.admin-layout{display:grid;grid-template-columns:1.2fr .9fr;gap:16px}
+@media(max-width:1100px){.admin-layout{grid-template-columns:1fr}}
+.admin-table-wrap{max-height:620px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+.admin-ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:700px){.admin-form-grid{grid-template-columns:1fr}}
+.fgrp{display:flex;flex-direction:column;gap:4px}
+.flabel{font-size:11px;font-weight:700;color:var(--text-3)}
+.finput,.ftext{
+  width:100%;padding:8px 10px;border:1.5px solid var(--border-strong);border-radius:8px;
+  font-size:12px;font-family:inherit;background:#fff;color:var(--text);
+}
+.ftext{min-height:68px;resize:vertical;line-height:1.45}
+
+/* ── QUALITATIVE ───────────────────────── */
+.qual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:900px){.qual-grid{grid-template-columns:1fr}}
+.qual-card{
+  border:1px solid var(--border);background:#FAFCFF;border-radius:10px;padding:10px 12px;
+}
+.qual-title{font-size:12px;font-weight:800;color:var(--navy);margin-bottom:5px}
+.qual-row{font-size:12px;color:var(--text-2);line-height:1.55;margin-top:2px}
+.qual-row b{color:var(--text-3);font-weight:700}
+.qual-card{overflow-wrap:anywhere}
+
 /* ── COMPANY REPORT ────────────────────── */
 .report-page{
   background:var(--surface);border-radius:var(--r);
@@ -375,12 +435,14 @@ select:focus{border-color:var(--blue)}
   display:flex;align-items:flex-start;justify-content:space-between;
   border-bottom:2px solid var(--navy);padding-bottom:20px;margin-bottom:36px;
 }
-.report-header h1{font-size:22px;font-weight:800;color:var(--navy);margin-bottom:5px;letter-spacing:-.02em}
-.report-header p{font-size:12px;color:var(--text-3)}
+.report-header h1{font-size:24px;font-weight:800;color:var(--navy);margin-bottom:5px;letter-spacing:-.02em}
+.report-header p{font-size:13px;color:var(--text-3)}
 .report-logo{
-  background:var(--navy);color:#fff;font-weight:800;font-size:11px;
-  padding:5px 12px;border-radius:7px;letter-spacing:.5px;flex-shrink:0;
+  background:#fff;border:1px solid var(--border);border-radius:8px;
+  padding:6px 10px;display:flex;align-items:center;justify-content:center;min-width:92px;min-height:34px;flex-shrink:0;
 }
+.report-logo img{height:20px;width:auto;display:block}
+.report-logo .fallback{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--navy)}
 .rep-sec{margin-bottom:36px}
 .rep-sec h2{
   font-size:16px;font-weight:800;color:var(--navy);
@@ -403,7 +465,7 @@ select:focus{border-color:var(--blue)}
 .ins-list{list-style:none;padding:0}
 .ins-list li{
   padding:9px 0 9px 22px;position:relative;
-  font-size:13px;line-height:1.75;color:var(--text-2);
+  font-size:14px;line-height:1.75;color:var(--text-2);
   border-bottom:1px solid var(--border);
 }
 .ins-list li:last-child{border-bottom:none}
@@ -411,9 +473,35 @@ select:focus{border-color:var(--blue)}
 
 /* ── PRINT ────────────────────────────── */
 @media print{
-  header,.tab-nav,.btn-row,#tab-overview,#tab-org,#tab-individual{display:none!important}
+  header,.tab-nav,.btn-row,#tab-overview,#tab-org,#tab-competency,#tab-individual{display:none!important}
   #tab-report{display:block!important}
   body{background:#fff}.main{padding:0}.report-page{box-shadow:none;border:none;padding:20px}
+}
+
+@media (max-width: 1024px){
+  .main{padding:20px}
+  .hdr{padding:0 14px;gap:10px;height:58px}
+  .hdr-title{font-size:16px;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+  .hdr-badge{display:none}
+  .tab-nav-inner{padding:0 10px}
+  .report-page{padding:26px}
+}
+
+@media (max-width: 768px){
+  body{font-size:17px}
+  .main{padding:14px}
+  .card{padding:16px}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-4{grid-template-columns:1fr}
+  .ind-report-top{grid-template-columns:1fr}
+  .score-grid{min-width:620px}
+  .report-page{padding:16px}
+  .report-header{display:block}
+  .report-logo{margin-top:10px;display:inline-flex}
+  .admin-layout{grid-template-columns:1fr}
+  .admin-table-wrap{overflow-x:auto}
+  table{min-width:780px}
+  .emp-list{max-height:360px}
 }
 
 /* ── SECTION HEADER ────────────────────── */
@@ -426,6 +514,14 @@ select:focus{border-color:var(--blue)}
   padding:3px 10px;border-radius:var(--r-pill);
   font-size:11.5px;font-weight:700;background:var(--blue-light);color:var(--blue);
 }
+.ind-tab-nav{display:flex;gap:8px;margin:4px 0 12px 0;flex-wrap:wrap}
+.ind-tab-btn{
+  border:1.5px solid var(--border-strong);background:#fff;color:var(--text-2);
+  border-radius:999px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;
+}
+.ind-tab-btn.active{background:#EFF6FF;border-color:#93C5FD;color:#1E40AF}
+.ind-tab-pane{display:none}
+.ind-tab-pane.active{display:block}
 </style>
 </head>
 <body>
@@ -438,7 +534,10 @@ select:focus{border-color:var(--blue)}
 ">
   <div style="text-align:center;padding:48px 56px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;backdrop-filter:blur(20px);min-width:360px">
     <div style="margin-bottom:24px">
-      <div style="display:inline-block;background:linear-gradient(135deg,#2563EB,#60A5FA);color:#fff;font-weight:800;font-size:13px;padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">mySUNI</div>
+      <div style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#fff;border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">
+        <img src="mysuni-logo-transparent.png" alt="mySUNI" style="height:22px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+        <span style="display:none;background:linear-gradient(135deg,#2563EB,#60A5FA);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;font-size:13px">mySUNI</span>
+      </div>
       <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em">4대 핵심역량 관리 시스템</div>
       <div style="font-size:13px;color:#64748B;margin-top:6px">접근 권한이 필요합니다</div>
     </div>
@@ -483,7 +582,7 @@ function checkPassword(){
 <header>
   <div class="hdr">
     <div class="hdr-logo">
-      <img src="logo.png" class="hdr-logo-img"
+      <img src="mysuni-logo-transparent.png" class="hdr-logo-img"
         onload="this.style.display='block';this.nextElementSibling.style.display='none'"
         onerror="this.style.display='none'"
         alt="mySUNI">
@@ -491,8 +590,9 @@ function checkPassword(){
     </div>
     <div class="hdr-title">4대 핵심역량 관리 시스템</div>
     <div class="hdr-sep"></div>
-    <div class="hdr-badge data"><div class="hdr-dot"></div>샘플 데이터</div>
-    <div class="hdr-badge period">&#39;26년 연초 기준</div>
+    <div class="hdr-badge data" id="data-mode-badge"><div class="hdr-dot"></div>PDF 기반 + 데모 개인데이터</div>
+    <select id="period-select" class="hdr-period" onchange="changeActivePeriod(this.value)"></select>
+    <div class="hdr-badge period" id="period-badge">2026년 2월(연초) 기준</div>
   </div>
 </header>
 
@@ -500,9 +600,11 @@ function checkPassword(){
 <div class="tab-nav">
   <div class="tab-nav-inner">
     <button class="tab-btn active" data-tab="overview"><span class="tab-icon">◈</span>전체 현황</button>
-    <button class="tab-btn" data-tab="org"><span class="tab-icon">◫</span>조직별 비교</button>
+    <button class="tab-btn" data-tab="org"><span class="tab-icon">◫</span>조직별 현황</button>
+    <button class="tab-btn" data-tab="competency"><span class="tab-icon">◍</span>역량별 현황</button>
     <button class="tab-btn" data-tab="individual"><span class="tab-icon">◉</span>개인 레포트</button>
     <button class="tab-btn" data-tab="report"><span class="tab-icon">◧</span>전사 보고서</button>
+    <button class="tab-btn" data-tab="admin"><span class="tab-icon">◬</span>Admin</button>
   </div>
 </div>
 
@@ -516,10 +618,6 @@ function checkPassword(){
     <div class="card">
       <div class="card-title"><div class="ct-dot"></div>4대 핵심역량 종합 수준</div>
       <div class="chart-wrap h420"><canvas id="chart-ov-radar"></canvas></div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>현수준 (연초)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#EA580C;opacity:.7"></div>목표수준</div>
-      </div>
     </div>
     <div class="card">
       <div class="card-title"><div class="ct-dot"></div>역량별 점수 분포 (%)</div>
@@ -559,11 +657,41 @@ function checkPassword(){
   <div class="section card">
     <div class="card-title"><div class="ct-dot"></div>조직별 상세 현황</div>
     <table><thead><tr>
-      <th>조직</th><th class="text-center">인원</th>
-      <th class="text-center">Domain 전문성</th><th class="text-center">AI 역량</th>
-      <th class="text-center">Global 역량</th><th class="text-center">리더십</th>
-      <th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th><th class="text-center">GAP</th>
+      <th class="sortable-th" onclick="setOrgSort('org')">조직<span class="sort-ind" id="org-sort-org"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('count')">인원<span class="sort-ind" id="org-sort-count"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('domain')">Domain 전문성<span class="sort-ind" id="org-sort-domain"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('ai')">AI 역량<span class="sort-ind" id="org-sort-ai"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('global')">Global 역량<span class="sort-ind" id="org-sort-global"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('leadership')">리더십<span class="sort-ind" id="org-sort-leadership"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('avg')">현수준 평균<span class="sort-ind" id="org-sort-avg"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('target')">목표 평균<span class="sort-ind" id="org-sort-target"></span></th>
+      <th class="text-center sortable-th" onclick="setOrgSort('gap')">GAP<span class="sort-ind" id="org-sort-gap"></span></th>
     </tr></thead><tbody id="org-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- ══ TAB 3 : COMPETENCY INSIGHT ══ -->
+<div id="tab-competency" class="tab-pane">
+  <div class="section kpi-grid" id="comp-top-kpis"></div>
+  <div class="section card">
+    <div class="card-title"><div class="ct-dot"></div>역량별 통계 인사이트 요약</div>
+    <div class="chart-wrap h380"><canvas id="chart-comp-insight"></canvas></div>
+  </div>
+  <div class="section card">
+    <div class="card-title"><div class="ct-dot"></div>역량별 핵심 지표 (통계)</div>
+    <table>
+      <thead><tr>
+        <th>역량</th>
+        <th class="text-center">현수준 평균</th>
+        <th class="text-center">목표 평균</th>
+        <th class="text-center">GAP</th>
+        <th class="text-center">표준편차</th>
+        <th class="text-center">하위비율(1~2점)</th>
+        <th class="text-center">상위비율(4~5점)</th>
+        <th class="text-center">우선개발지수</th>
+      </tr></thead>
+      <tbody id="comp-insight-tbody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -587,10 +715,17 @@ function checkPassword(){
         <option value="5년이상">5년 이상</option>
       </select>
     </div>
+    <div class="search-row" style="justify-content:flex-end">
+      <select id="batch-org-filter" style="min-width:170px">
+        <option value="">조직 선택 (일괄 출력)</option>
+      </select>
+      <button class="btn btn-ghost" onclick="exportOrgPPT()">조직별 PPT 내보내기</button>
+      <button class="btn btn-dark" onclick="exportAllPPT()">전체 구성원 PPT 내보내기</button>
+    </div>
     <div class="ind-layout">
       <div>
         <div style="font-size:11.5px;color:var(--text-3);font-weight:600;margin-bottom:10px;letter-spacing:.02em;text-transform:uppercase">
-          직원 목록 <span id="emp-count" style="color:var(--blue)"></span>
+          구성원 리스트 <span id="emp-count" style="color:var(--blue)"></span>
         </div>
         <div class="emp-list" id="emp-list"></div>
       </div>
@@ -612,6 +747,44 @@ function checkPassword(){
   <div class="report-page" id="company-report-content"></div>
 </div>
 
+<!-- ══ TAB 5 : ADMIN ══ -->
+<div id="tab-admin" class="tab-pane">
+  <div class="section">
+    <div class="upload-box">
+      <input type="file" id="employee-file" accept=".csv,.json,.xlsx,.xls">
+      <input class="finput" id="import-period" placeholder="업로드 기간 (예: 2026-연말)" style="max-width:200px">
+      <button class="btn btn-ghost" onclick="downloadTemplate()">템플릿 다운로드</button>
+      <div class="upload-help"><strong>개인별 데이터 업로드:</strong> 첨부하신 RawData 엑셀(질문헤더 1행) 또는 CSV(`name,org,role,years,domain_current,ai_current,global_current,leadership_current,domain_target,ai_target,global_target,leadership_target`)</div>
+      <div class="upload-status" id="upload-status" style="color:#1E3A8A">현재: 데이터 없음</div>
+    </div>
+  </div>
+  <div class="section admin-layout">
+    <div class="card">
+      <div class="card-title"><div class="ct-dot"></div>구성원 데이터 관리</div>
+      <div class="admin-ctrl">
+        <input class="search-input" type="text" id="admin-search" placeholder="이름/조직 검색" oninput="renderAdminTable()">
+        <button class="btn btn-ghost" onclick="adminAddEmployee()">+ 신규 추가</button>
+        <button class="btn btn-dark" onclick="adminSaveAll()">저장</button>
+      </div>
+      <div class="admin-table-wrap">
+        <table>
+          <thead><tr>
+            <th>이름</th><th>조직</th><th>직책</th><th>연차</th>
+            <th class="text-center">D(현/목)</th><th class="text-center">AI(현/목)</th>
+            <th class="text-center">G(현/목)</th><th class="text-center">L(현/목)</th>
+            <th class="text-center">관리</th>
+          </tr></thead>
+          <tbody id="admin-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="ct-dot"></div>선택 구성원 상세 편집</div>
+      <div id="admin-editor"></div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /main -->
 
 <script>
@@ -620,15 +793,33 @@ function checkPassword(){
 // ══════════════════════════════════════════
 const COMP_KEYS=['domain','ai','global','leadership'];
 const COMP_NAMES=['Domain 전문성','AI 역량','Global 역량','리더십'];
-const ORG_LIST=['AI역량육성','경영관리역량','러닝플랫폼','변화추진','SKMS실천','리더십개발'];
-const ORG_COLORS={
-  'AI역량육성':  {b:'#2563EB',bg:'rgba(37,99,235,.18)',tag:'#DBEAFE',tt:'#1D4ED8'},
-  '경영관리역량':{b:'#7C3AED',bg:'rgba(124,58,237,.18)',tag:'#EDE9FE',tt:'#5B21B6'},
-  '러닝플랫폼':  {b:'#059669',bg:'rgba(5,150,105,.18)',tag:'#D1FAE5',tt:'#065F46'},
-  '변화추진':    {b:'#DC2626',bg:'rgba(220,38,38,.18)',tag:'#FEE2E2',tt:'#991B1B'},
-  'SKMS실천':   {b:'#0D9488',bg:'rgba(13,148,136,.18)',tag:'#CCFBF1',tt:'#0F766E'},
-  '리더십개발':  {b:'#D97706',bg:'rgba(217,119,6,.18)',tag:'#FEF3C7',tt:'#92400E'}
+let ORG_LIST=[];
+const ORG_DISPLAY_ORDER=['변화추진','러닝플랫폼','AI역량육성','경영관리역량','미래반도체','SKMS실천','리더십개발'];
+const ORG_ALIAS_MAP={
+  '리더십진단팀':'리더십개발',
+  '미래경영자육성팀':'리더십개발',
+  '리더십개발팀':'리더십개발',
+  'SKMS교육팀':'SKMS실천',
+  'SKMS실천지원팀':'SKMS실천'
 };
+const ORG_COLORS={
+  'AI역량육성':  {b:'#0052CC',bg:'rgba(0,82,204,.22)',tag:'#CFE1FF',tt:'#003A99'},
+  '경영관리역량':{b:'#7B1FA2',bg:'rgba(123,31,162,.22)',tag:'#F1D4FF',tt:'#5A1379'},
+  '러닝플랫폼':  {b:'#00875A',bg:'rgba(0,135,90,.22)',tag:'#CCF5E7',tt:'#006644'},
+  '변화추진':    {b:'#DE350B',bg:'rgba(222,53,11,.22)',tag:'#FFD9CC',tt:'#B42300'},
+  'SKMS실천':   {b:'#FF8B00',bg:'rgba(255,139,0,.22)',tag:'#FFE6C7',tt:'#B35F00'},
+  '리더십개발':  {b:'#C51162',bg:'rgba(197,17,98,.22)',tag:'#FFD3E7',tt:'#8B0A45'}
+};
+function sortOrgsForDisplay(orgs){
+  const rank=Object.fromEntries(ORG_DISPLAY_ORDER.map((v,i)=>[v,i]));
+  return [...new Set((orgs||[]).map(textOrEmpty).filter(Boolean))].sort((a,b)=>{
+    const ra=rank[a],rb=rank[b];
+    if(ra!==undefined&&rb!==undefined)return ra-rb;
+    if(ra!==undefined)return -1;
+    if(rb!==undefined)return 1;
+    return a.localeCompare(b,'ko');
+  });
+}
 const LEVEL_DESC={
   domain:{1:'해당 Domain 관련 업무를 수행한 경험은 있으나, 주어진 범위 내에서만 이해하고 실행하는 수준',2:'Domain의 구조/맥락을 이해하고, 일상적 업무는 스스로 처리할 수 있는 수준',3:'Domain 내 주요 이슈/문제를 이해하고, 상황에 맞는 판단과 대응이 가능한 수준',4:'국내 기준에서 Domain 이슈를 해석하고, 대안이나 방향을 제시할 수 있는 전문가 수준',5:'글로벌 기준에서 Domain을 비교·분석하고, 방향성과 인사이트를 제시할 수 있는 전문가 수준'},
   ai:{1:'AI 도구를 가끔 사용하나, 업무에는 거의 활용하지 않는 수준 (검색·번역·아이디어 참고 수준)',2:'개인 업무에 AI를 활용하나, 활용 범위가 제한적인 수준 (자료 정리·요약·개인 메모 등)',3:'회의록, 보고서 초안, 문서 작성 등 업무 산출물 생성에 AI를 활용하는 수준',4:'에이전트 등을 활용해 반복 업무 자동화 또는 업무 프로세스 개선이 가능한 수준',5:'AI를 활용해 업무 프로세스를 통합/개선하고, 조직 생산성 향상에 기여하며 활용방법을 전수할 수 있는 수준'},
@@ -641,6 +832,61 @@ const DEV_RECS={
   global:{1:['기초 비즈니스 영어 코스 수강 (화상 영어 등)','영어 소통 빈도를 점진적으로 확대'],2:['1:1 화상 영어 정기 수강','영어 미팅 참여 및 영어 문서 작성 훈련'],3:['글로벌 프로젝트 또는 해외 협업 과제 참여','영어 발표·리포팅 기회 적극 모색'],4:['해외 벤더 미팅 주도적 참여','영어 기반 리포팅 체계 직접 구축'],5:['글로벌 리더십 네트워크 참여','영어 기반 조직 내 지식 공유 활동']},
   leadership:{1:['소규모 협업 과제부터 참여 시작','팀 내 리더십 역할 기회 적극 모색'],2:['소규모 과제 리더 역할 직접 도전','리더십 코칭·멘토링 프로그램 수강'],3:['중규모 과제 기획부터 리딩까지 전 과정 경험','1:1 리더십 멘토링 요청'],4:['조직 단위 변화과제 발굴 및 추진','경영층 스폰서십을 활용한 과제 완결 경험'],5:['전사 변화과제 챔피언 역할 수행','리더십 Best Practice 조직 내 공유 활동']}
 };
+let QUESTION_MASTER={};
+let OPTION_MASTER={Q14:{},Q17:{}};
+const DEFAULT_MULTI_OPTIONS={
+  Q14:{
+    '1':'영어 커뮤니케이션 실력 노출 두려움',
+    '2':'영어 잘하는 사람 과대평가 우려',
+    '3':'심리적 부담/추가 시간·업무 투입',
+    '4':'비효율/생산성 저하 우려(이중업무 등)',
+    '5':'별다른 부담 없음',
+    '6':'기타'
+  },
+  Q17:{
+    '1':'기여 인정 및 평가 반영',
+    '2':'업무량/일정 조정',
+    '3':'역할/기대수준 명확 가이드',
+    '4':'실패를 학습으로 인정하는 문화/메시지',
+    '5':'성과 활용 및 확산 구조',
+    '6':'기타'
+  }
+};
+
+const PDF_BASELINE={
+  total:76,
+  lead:16,
+  rf:60,
+  current:{domain:2.99,ai:2.81,global:2.59,leadership:3.13},
+  target:{domain:4.22,ai:4.08,global:3.83,leadership:4.18},
+  std:{domain:0.85,ai:0.90,global:0.95,leadership:0.92},
+  tstd:{domain:0.73,ai:0.66,global:0.78,leadership:0.75},
+  distPct:{
+    domain:[5.1,20.5,44.9,29.5,0.0],
+    ai:[7.7,23.1,55.1,9.0,5.1],
+    global:[11.5,35.9,37.2,12.8,2.6],
+    leadership:[3.8,19.2,42.3,29.5,5.1],
+  }
+};
+
+const ORG_INSIGHTS=[
+  {org:'AI역량육성',text:'AI·리더십은 평균 이상, Domain/Global은 하위구간(2점 이하) 43~50% 밀집'},
+  {org:'경영관리역량',text:'Global/리더십에서 전사 최고 수준 역량 보유, 리더십 하위구간 0%'},
+  {org:'러닝플랫폼',text:'Domain·리더십은 전사 평균 수준, Global은 전사 평균 하회'},
+  {org:'변화추진',text:'전 영역 평균 하회, 전 영역 평균 +1.5의 가장 공격적인 성장 목표'},
+  {org:'SKMS실천',text:'4대 영역 모두 전사 평균 상회, 하위구간 구성원 3명 이하'},
+  {org:'리더십개발',text:'Domain·AI 전사 최고 수준, Global은 하위구간 43% 존재'}
+];
+
+function blankQualitative(){
+  return{
+    domain:{current:'',plan:'',support:''},
+    ai:{current:'',plan:'',support:''},
+    global:{current:'',plan:'',support:''},
+    leadership:{current:'',plan:'',support:''},
+    change:{globalConcern:'',globalSupport:'',aiConcern:'',aiSupport:''}
+  };
+}
 
 // ══════════════════════════════════════════
 // SEEDED PRNG
@@ -689,7 +935,7 @@ function generateEmployees(){
       }
       const nm=SN[ni%SN.length]+GN[(ni*3+id)%GN.length];
       ni++;
-      emp.push({id,name:nm,org:oc.name,role:isTL?'팀장':'RF',years:yrs,current:cur,target:tgt,yearEnd:null});
+      emp.push({id,name:nm,org:oc.name,role:isTL?'팀장':'RF',years:yrs,current:cur,target:tgt,yearEnd:null,qualitative:blankQualitative()});
       id++;
     }
   }
@@ -699,9 +945,46 @@ function generateEmployees(){
 // ══════════════════════════════════════════
 // STATS HELPERS
 // ══════════════════════════════════════════
-const avg=arr=>arr.reduce((s,v)=>s+v,0)/arr.length;
-const stddev=arr=>{const m=avg(arr);return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0)/arr.length)};
+const avg=arr=>arr.length?arr.reduce((s,v)=>s+v,0)/arr.length:0;
+const stddev=arr=>{if(!arr.length)return 0;const m=avg(arr);return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0)/arr.length)};
 const fmtN=v=>typeof v==='number'?v.toFixed(2):'-';
+function excelSerialToDate(serial){
+  const n=Number(serial);
+  if(!Number.isFinite(n))return null;
+  const utc=Math.round((n-25569)*86400*1000);
+  const d=new Date(utc);
+  return Number.isNaN(d.getTime())?null:d;
+}
+function parseBirthToDate(v){
+  const s=textOrEmpty(v);
+  if(!s)return null;
+  if(/^\d{5}$/.test(s)||/^\d{4,5}$/.test(s))return excelSerialToDate(Number(s));
+  if(/^\d{8}$/.test(s)){
+    const y=Number(s.slice(0,4)),m=Number(s.slice(4,6)),d=Number(s.slice(6,8));
+    const dt=new Date(y,m-1,d);
+    return Number.isNaN(dt.getTime())?null:dt;
+  }
+  const dt=new Date(s);
+  return Number.isNaN(dt.getTime())?null:dt;
+}
+function calcAge(birth){
+  const dt=parseBirthToDate(birth);
+  if(!dt)return null;
+  const now=new Date();
+  let age=now.getFullYear()-dt.getFullYear();
+  const mdNow=(now.getMonth()+1)*100+now.getDate();
+  const mdBirth=(dt.getMonth()+1)*100+dt.getDate();
+  if(mdNow<mdBirth)age-=1;
+  return age>=0?age:null;
+}
+function ageBandLabel(age){
+  if(age===null||age===undefined)return '미확인';
+  if(age<30)return '29세 이하';
+  if(age<35)return '30~34세';
+  if(age<40)return '35~39세';
+  if(age<45)return '40~44세';
+  return '45세 이상';
+}
 function computeStats(emps){
   const r={};
   for(const k of COMP_KEYS){
@@ -714,33 +997,312 @@ function computeStats(emps){
 const compAvgObj=emps=>{const r={};for(const k of COMP_KEYS)r[k]=avg(emps.map(e=>e.current[k]));return r};
 const tgtAvgObj=emps=>{const r={};for(const k of COMP_KEYS)r[k]=avg(emps.map(e=>e.target[k]));return r};
 const overallAvg=obj=>avg(COMP_KEYS.map(k=>obj[k]));
+const QUAL_STOPWORDS=new Set(['그리고','또한','현재','향후','위해','필요','대한','으로','에서','있음','있다','없음','응답','없다','관련','업무','역량','수준','기반','통해','강화','활용','진행','참여','지원','계획','요청','가능','경험']);
+function qualTextsByComp(emp,k){
+  const q=emp.qualitative?.[k]||{};
+  return [q.current,q.plan,q.support].map(textOrEmpty).filter(Boolean);
+}
+function concernTextsByComp(emp,k){
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  if(k==='ai')return [qual.ai?.current,qual.change?.aiConcern].map(textOrEmpty).filter(Boolean);
+  if(k==='global')return [qual.global?.current,qual.change?.globalConcern].map(textOrEmpty).filter(Boolean);
+  const q=qual[k]||{};
+  return [q.current].map(textOrEmpty).filter(Boolean);
+}
+function expectationTextsByComp(emp,k){
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  if(k==='ai')return [qual.ai?.plan,qual.ai?.support,qual.change?.aiSupport].map(textOrEmpty).filter(Boolean);
+  if(k==='global')return [qual.global?.plan,qual.global?.support,qual.change?.globalSupport].map(textOrEmpty).filter(Boolean);
+  const q=qual[k]||{};
+  return [q.plan,q.support].map(textOrEmpty).filter(Boolean);
+}
+function representativeTexts(texts,limit=2){
+  const uniq=[];
+  for(const t of texts.map(textOrEmpty).filter(Boolean)){
+    if(!uniq.includes(t))uniq.push(t);
+    if(uniq.length>=limit)break;
+  }
+  return uniq.length?uniq.join(' / '):'-';
+}
+function topKeywords(texts,limit=3){
+  const freq={};
+  texts.forEach(t=>{
+    const tokens=(textOrEmpty(t).match(/[A-Za-z가-힣]{2,}/g)||[]).map(v=>v.toLowerCase());
+    tokens.forEach(tok=>{
+      if(QUAL_STOPWORDS.has(tok))return;
+      freq[tok]=(freq[tok]||0)+1;
+    });
+  });
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([k,v])=>`${k}(${v})`);
+}
+function yearFeatureRows(){
+  const groups=[
+    {label:'1~2년차',emps:EMPLOYEES.filter(e=>e.years<=2)},
+    {label:'3~4년차',emps:EMPLOYEES.filter(e=>e.years>=3&&e.years<=4)},
+    {label:'5년 이상',emps:EMPLOYEES.filter(e=>e.years>=5)},
+  ];
+  return groups.map(g=>{
+    const oa=compAvgObj(g.emps),ta=tgtAvgObj(g.emps);
+    const gaps=COMP_KEYS.map(k=>({k,g:(ta[k]||0)-(oa[k]||0)})).sort((a,b)=>b.g-a.g);
+    const topComp=gaps[0]?.k||'domain';
+    const kw=topKeywords(g.emps.flatMap(e=>qualTextsByComp(e,topComp)),4);
+    return{
+      label:g.label,count:g.emps.length,avg:overallAvg(oa),target:overallAvg(ta),
+      topComp,keywords:kw.length?kw.join(', '):'-'
+    };
+  });
+}
+function qualBandRows(){
+  const bands=[
+    {label:'2점 이하',test:v=>v<=2},
+    {label:'3점',test:v=>v===3},
+    {label:'4점 이상',test:v=>v>=4},
+  ];
+  const rows=[];
+  for(const k of COMP_KEYS){
+    for(const b of bands){
+      const emps=EMPLOYEES.filter(e=>b.test(e.current[k]));
+      const answered=emps.filter(e=>qualTextsByComp(e,k).length>0);
+      const kw=topKeywords(answered.flatMap(e=>qualTextsByComp(e,k)),4);
+      rows.push({
+        comp:k,band:b.label,count:emps.length,
+        ratio:EMPLOYEES.length?emps.length/EMPLOYEES.length*100:0,
+        respRate:emps.length?answered.length/emps.length*100:0,
+        keywords:kw.length?kw.join(', '):'-'
+      });
+    }
+  }
+  return rows;
+}
+function highLowConcernRows(){
+  const rows=[];
+  for(const k of COMP_KEYS){
+    const high=EMPLOYEES.filter(e=>e.current[k]>=4);
+    const low=EMPLOYEES.filter(e=>e.current[k]<=2);
+    const pushRow=(label,group)=>{
+      const concerns=group.flatMap(e=>concernTextsByComp(e,k));
+      const exps=group.flatMap(e=>expectationTextsByComp(e,k));
+      rows.push({
+        comp:k,band:label,count:group.length,ratio:EMPLOYEES.length?group.length/EMPLOYEES.length*100:0,
+        concernKw:topKeywords(concerns,4).join(', ')||'-',
+        expectKw:topKeywords(exps,4).join(', ')||'-',
+        concernEx:representativeTexts(concerns,2),
+        expectEx:representativeTexts(exps,2),
+      });
+    };
+    pushRow('상위(4~5점)',high);
+    pushRow('하위(1~2점)',low);
+  }
+  return rows;
+}
 
 // ══════════════════════════════════════════
 // INIT DATA
 // ══════════════════════════════════════════
-const EMPLOYEES=generateEmployees();
-const COMP_STATS=computeStats(EMPLOYEES);
-const COMP_AVG=compAvgObj(EMPLOYEES);
-const TGT_AVG=tgtAvgObj(EMPLOYEES);
+let DATA_MODE='uploaded';
+const DEFAULT_PERIOD='2026-연초';
+let SURVEY_STORE=(window.__PRELOADED_SURVEY_STORE&&typeof window.__PRELOADED_SURVEY_STORE==='object')
+  ? window.__PRELOADED_SURVEY_STORE
+  : {[DEFAULT_PERIOD]:[]};
+let ACTIVE_PERIOD=DEFAULT_PERIOD;
+if(!SURVEY_STORE[ACTIVE_PERIOD]){
+  const periods=Object.keys(SURVEY_STORE);
+  ACTIVE_PERIOD=periods.length?periods[0]:DEFAULT_PERIOD;
+}
+let EMPLOYEES=(SURVEY_STORE[ACTIVE_PERIOD]||[]).map((e,idx)=>normalizeEmployeeObject(e,idx));
+SURVEY_STORE[ACTIVE_PERIOD]=EMPLOYEES;
+ORG_LIST=sortOrgsForDisplay((EMPLOYEES||[]).map(e=>e.org));
+let COMP_STATS=computeStats(EMPLOYEES);
+let COMP_AVG=compAvgObj(EMPLOYEES);
+let TGT_AVG=tgtAvgObj(EMPLOYEES);
+function recalcStatsFromEmployees(){
+  COMP_STATS=computeStats(EMPLOYEES);
+  COMP_AVG=compAvgObj(EMPLOYEES);
+  TGT_AVG=tgtAvgObj(EMPLOYEES);
+}
+function getPeriods(){
+  return Object.keys(SURVEY_STORE).sort((a,b)=>a.localeCompare(b,'ko'));
+}
+function displayPeriod(period){
+  if(period==='2026-연초')return '2026년 2월(연초)';
+  return period;
+}
+function renderPeriodSelector(){
+  const sel=document.getElementById('period-select');
+  if(!sel)return;
+  const periods=getPeriods();
+  sel.innerHTML=periods.map(p=>`<option value="${escHtml(p)}">${escHtml(displayPeriod(p))}</option>`).join('');
+  sel.value=ACTIVE_PERIOD;
+  const b=document.getElementById('period-badge');
+  if(b)b.textContent=`${displayPeriod(ACTIVE_PERIOD)} 기준`;
+  const ip=document.getElementById('import-period');
+  if(ip&&!ip.value)ip.value=ACTIVE_PERIOD;
+}
+function changeActivePeriod(period){
+  if(!SURVEY_STORE[period])return;
+  ACTIVE_PERIOD=period;
+  EMPLOYEES=SURVEY_STORE[ACTIVE_PERIOD];
+  syncAfterEmployeeChange(false);
+  renderOverview();
+  if(document.getElementById('tab-org').classList.contains('active'))renderOrgTab();
+  if(document.getElementById('tab-competency').classList.contains('active'))renderCompetencyTab();
+  if(document.getElementById('tab-individual').classList.contains('active'))renderEmpList();
+  if(document.getElementById('tab-report').classList.contains('active'))renderCompanyReport();
+  if(document.getElementById('tab-admin').classList.contains('active'))renderAdminTab();
+}
+
+function getSummarySnapshot(){
+  if(DATA_MODE==='uploaded'){
+    return{
+      total:EMPLOYEES.length,
+      lead:EMPLOYEES.filter(e=>e.role==='팀장').length,
+      rf:EMPLOYEES.filter(e=>e.role==='RF').length,
+      current:COMP_AVG,
+      target:TGT_AVG,
+      std:Object.fromEntries(COMP_KEYS.map(k=>[k,COMP_STATS[k].std])),
+      distPct:Object.fromEntries(COMP_KEYS.map(k=>{
+        const d=COMP_STATS[k].dist,total=EMPLOYEES.length||1;
+        return[k,d.map(v=>v/total*100)];
+      })),
+      distCount:Object.fromEntries(COMP_KEYS.map(k=>[k,[...COMP_STATS[k].dist]])),
+    };
+  }
+  return{
+    total:PDF_BASELINE.total,
+    lead:PDF_BASELINE.lead,
+    rf:PDF_BASELINE.rf,
+    current:PDF_BASELINE.current,
+    target:PDF_BASELINE.target,
+    std:PDF_BASELINE.std,
+    distPct:PDF_BASELINE.distPct,
+    distCount:Object.fromEntries(COMP_KEYS.map(k=>[k,PDF_BASELINE.distPct[k].map(p=>Math.round(PDF_BASELINE.total*p/100))])),
+  };
+}
+
+function updateDataModeUI(){
+  const badge=document.getElementById('data-mode-badge');
+  const status=document.getElementById('upload-status');
+  if(DATA_MODE==='uploaded'){
+    badge.innerHTML='<div class="hdr-dot"></div>업로드 데이터 모드';
+    if(status)status.textContent=`현재: ${displayPeriod(ACTIVE_PERIOD)} 데이터 (${EMPLOYEES.length}명)`;
+    if(status)status.style.color=EMPLOYEES.length?'#065F46':'#1E3A8A';
+  }else{
+    badge.innerHTML='<div class="hdr-dot"></div>PDF 기반 + 데모 개인데이터';
+    if(status)status.textContent=`현재: ${displayPeriod(ACTIVE_PERIOD)} (PDF 기반 요약 + 데모 개인 데이터)`;
+    if(status)status.style.color='#1E3A8A';
+  }
+}
+
+const EMP_STORAGE_KEY='mysuni_competency_surveys_v3';
+const ACTIVE_PERIOD_KEY='mysuni_competency_active_period_v1';
+function toSafeInt(v,min=1,max=5){
+  const n=Math.round(Number(v));
+  if(!Number.isFinite(n))return min;
+  return Math.max(min,Math.min(max,n));
+}
+function normalizeEmployeeObject(e,idx){
+  const orgRaw=textOrEmpty(e.org)||'미분류';
+  const org=ORG_ALIAS_MAP[orgRaw]||orgRaw;
+  return{
+    id:Number(e.id)||idx+1,
+    name:textOrEmpty(e.name)||`구성원 ${idx+1}`,
+    org,
+    role:textOrEmpty(e.role)||'RF',
+    years:Math.max(1,Math.round(Number(e.years)||1)),
+    birth:textOrEmpty(e.birth||e.birthday||''),
+    current:{
+      domain:toSafeInt(e.current?.domain),
+      ai:toSafeInt(e.current?.ai),
+      global:toSafeInt(e.current?.global),
+      leadership:toSafeInt(e.current?.leadership),
+    },
+    target:{
+      domain:toSafeInt(e.target?.domain),
+      ai:toSafeInt(e.target?.ai),
+      global:toSafeInt(e.target?.global),
+      leadership:toSafeInt(e.target?.leadership),
+    },
+    yearEnd:e.yearEnd??null,
+    qualitative:e.qualitative||blankQualitative(),
+    survey:e.survey||{items:[]}
+  };
+}
+function persistEmployees(){
+  try{
+    SURVEY_STORE[ACTIVE_PERIOD]=EMPLOYEES.map((e,idx)=>normalizeEmployeeObject(e,idx));
+    localStorage.setItem(EMP_STORAGE_KEY,JSON.stringify(SURVEY_STORE));
+    localStorage.setItem(ACTIVE_PERIOD_KEY,ACTIVE_PERIOD);
+  }catch(_){}
+}
+function loadPersistedEmployees(){
+  try{
+    const raw=localStorage.getItem(EMP_STORAGE_KEY);
+    if(!raw)return false;
+    const store=JSON.parse(raw);
+    if(!store||typeof store!=='object')return false;
+    const normalized={};
+    for(const [period,arr] of Object.entries(store)){
+      if(!Array.isArray(arr)||!arr.length)continue;
+      normalized[period]=arr.map((e,idx)=>normalizeEmployeeObject(e,idx));
+    }
+    if(!Object.keys(normalized).length)return false;
+    SURVEY_STORE=normalized;
+    const savedPeriod=localStorage.getItem(ACTIVE_PERIOD_KEY)||Object.keys(SURVEY_STORE)[0];
+    ACTIVE_PERIOD=SURVEY_STORE[savedPeriod]?savedPeriod:Object.keys(SURVEY_STORE)[0];
+    EMPLOYEES=SURVEY_STORE[ACTIVE_PERIOD];
+    DATA_MODE='uploaded';
+    syncAfterEmployeeChange(false);
+    return true;
+  }catch(_){return false;}
+}
+function syncAfterEmployeeChange(updateStore=true){
+  if(updateStore)SURVEY_STORE[ACTIVE_PERIOD]=EMPLOYEES;
+  EMPLOYEES=EMPLOYEES.map((e,idx)=>normalizeEmployeeObject(e,idx));
+  SURVEY_STORE[ACTIVE_PERIOD]=EMPLOYEES;
+  ORG_LIST=sortOrgsForDisplay(EMPLOYEES.map(e=>e.org));
+  selectedOrgs=selectedOrgs.filter(o=>ORG_LIST.includes(o));
+  if(!selectedOrgs.length)selectedOrgs=[...ORG_LIST];
+  recalcStatsFromEmployees();
+  initFilters();
+  filteredEmps=[...EMPLOYEES];
+  if(selectedEmp){
+    const found=EMPLOYEES.find(e=>e.id===selectedEmp.id);
+    selectedEmp=found||null;
+  }
+  updateDataModeUI();
+  renderPeriodSelector();
+}
 
 const CHARTS={};
 function destroyChart(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id];}}
+if(typeof Chart!=='undefined'&&typeof ChartDataLabels!=='undefined'){Chart.register(ChartDataLabels);}
 
 // ══════════════════════════════════════════
 // CHART HELPERS
 // ══════════════════════════════════════════
-function makeRadar(cid,datasets){
+function makeRadar(cid,datasets,datalabelSize=11){
   destroyChart(cid);
   const ctx=document.getElementById(cid).getContext('2d');
   CHARTS[cid]=new Chart(ctx,{
     type:'radar',
-    data:{labels:['Domain 전문성','AI 역량','Global 역량','리더십'],datasets},
+    data:{labels:COMP_NAMES,datasets},
     options:{
       responsive:true,maintainAspectRatio:false,
       scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10},color:'#94A3B8',backdropColor:'transparent'},
         pointLabels:{font:{size:11.5,weight:'700'},color:'#0F172A'},
         grid:{color:'rgba(15,23,42,.06)'},angleLines:{color:'rgba(15,23,42,.06)'}}},
-      plugins:{legend:{position:'bottom',labels:{font:{size:11.5},boxWidth:10,padding:14,color:'#475569'}}}
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:11.5},boxWidth:10,padding:14,color:'#475569'}},
+        datalabels:{
+          formatter:v=>Number(v).toFixed(2),
+          color:'#334155',
+          font:{size:datalabelSize,weight:'700'},
+          backgroundColor:'rgba(255,255,255,.78)',
+          borderRadius:4,
+          padding:{top:3,right:5,bottom:3,left:5},
+          clip:true
+        }
+      }
     }
   });
 }
@@ -756,7 +1318,8 @@ function colorDs(label,data,hex,dash=false,alpha=.15){
 // TAB 1 : OVERVIEW
 // ══════════════════════════════════════════
 function renderOverview(){
-  const ca=COMP_AVG,ta=TGT_AVG;
+  const snap=getSummarySnapshot();
+  const ca=snap.current,ta=snap.target;
   const am=overallAvg(ca),at=overallAvg(ta),ag=at-am;
 
   document.getElementById('kpi-area').innerHTML=`
@@ -775,7 +1338,7 @@ function renderOverview(){
         <div class="kpi-icon">🎯</div>
         <div class="kpi-label">목표수준 평균</div>
         <div class="kpi-val">${at.toFixed(2)}<span>/ 5점</span></div>
-        <div class="kpi-sub">'26년 목표 수준</div>
+        <div class="kpi-sub">${displayPeriod(ACTIVE_PERIOD)} 목표 수준</div>
       </div>
     </div>
     <div class="kpi kpi-green">
@@ -792,8 +1355,8 @@ function renderOverview(){
       <div class="kpi-body">
         <div class="kpi-icon">👥</div>
         <div class="kpi-label">응답 인원</div>
-        <div class="kpi-val">${EMPLOYEES.length}<span>명</span></div>
-        <div class="kpi-sub"><strong>팀장 ${EMPLOYEES.filter(e=>e.role==='팀장').length}명</strong> · RF ${EMPLOYEES.filter(e=>e.role==='RF').length}명</div>
+        <div class="kpi-val">${snap.total}<span>명</span></div>
+        <div class="kpi-sub"><strong>팀장 ${snap.lead}명</strong> · RF ${snap.rf}명</div>
       </div>
     </div>
   `;
@@ -817,8 +1380,8 @@ function renderOverview(){
   document.getElementById('dist-charts').innerHTML=html;
 
   for(const k of COMP_KEYS){
-    const d=COMP_STATS[k].dist,tot=d.reduce((s,v)=>s+v,0);
-    const pct=d.map(v=>+(v/tot*100).toFixed(1));
+    const pct=snap.distPct[k].map(v=>+v.toFixed(1));
+    const d=snap.distCount[k];
     destroyChart('chart-dist-'+k);
     const ctx=document.getElementById('chart-dist-'+k).getContext('2d');
     const grad=ctx.createLinearGradient(0,0,0,96);
@@ -826,7 +1389,15 @@ function renderOverview(){
     CHARTS['chart-dist-'+k]=new Chart(ctx,{
       type:'bar',data:{labels,datasets:[{data:pct,backgroundColor:grad,borderRadius:5,borderSkipped:false}]},
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.parsed.y.toFixed(1)}% (${d[c.dataIndex]}명)`}}},
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:c=>`${c.parsed.y.toFixed(1)}% (${d[c.dataIndex]}명)`}},
+          datalabels:{
+            formatter:v=>`${Number(v).toFixed(1)}%`,
+            color:'#334155',anchor:'end',align:'end',offset:2,clamp:true,
+            font:{size:13,weight:'800'}
+          }
+        },
         scales:{x:{ticks:{font:{size:10},color:'#94A3B8'},grid:{display:false}},
           y:{ticks:{font:{size:9},color:'#94A3B8',callback:v=>v+'%'},max:70,grid:{color:'rgba(15,23,42,.04)'}}}
       }
@@ -837,7 +1408,14 @@ function renderOverview(){
   const tbody=document.getElementById('overview-tbody');
   tbody.innerHTML='';
   COMP_KEYS.forEach((k,i)=>{
-    const s=COMP_STATS[k],tot=EMPLOYEES.length;
+    const s={
+      mean:ca[k],
+      std:snap.std[k],
+      tmean:ta[k],
+      gap:ta[k]-ca[k],
+      dist:snap.distCount[k],
+    };
+    const tot=snap.total;
     tbody.innerHTML+=`<tr>
       <td><strong>${COMP_NAMES[i]}</strong></td>
       <td class="text-center"><strong>${s.mean.toFixed(2)}</strong></td>
@@ -850,15 +1428,140 @@ function renderOverview(){
 }
 
 // ══════════════════════════════════════════
+// TAB 3 : COMPETENCY INSIGHT
+// ══════════════════════════════════════════
+function getCompetencyInsightRows(){
+  const snap=getSummarySnapshot();
+  const total=snap.total||1;
+  const rows=COMP_KEYS.map((k,i)=>{
+    const low=(snap.distCount[k]?.[0]||0)+(snap.distCount[k]?.[1]||0);
+    const high=(snap.distCount[k]?.[3]||0)+(snap.distCount[k]?.[4]||0);
+    const cur=snap.current[k]||0;
+    const tgt=snap.target[k]||0;
+    const gap=tgt-cur;
+    const std=snap.std[k]||0;
+    const lowPct=low/total*100;
+    const highPct=high/total*100;
+    const devIndex=gap*lowPct;
+    return{key:k,name:COMP_NAMES[i],cur,tgt,gap,std,lowPct,highPct,devIndex};
+  });
+  return rows;
+}
+function competencyAIText(r,rank){
+  const riskText=r.lowPct>=40?'기초 보강이 시급합니다.':r.lowPct>=25?'하위 구간 보강이 필요합니다.':'하위 구간 리스크는 낮습니다.';
+  const spreadText=r.std>=1.0?'구성원 간 편차가 커서 수준별 트랙이 필요합니다.':r.std>=0.8?'편차 관리가 필요한 수준입니다.':'비교적 균질한 역량 분포입니다.';
+  const pressure=r.gap>=1.3?'목표 상향 폭이 커 실행 밀착 지원이 필요합니다.':r.gap>=1.0?'목표 달성을 위한 계획적 학습이 요구됩니다.':'유지·심화 중심의 운영이 가능합니다.';
+  const pos=r.highPct>=30?'상위(4~5점) 인력을 코치 풀로 활용하기 좋습니다.':'상위 인력 풀 확대를 위한 심화 과제 배치가 필요합니다.';
+  return `우선개발지수 순위 ${rank}위입니다. ${riskText} ${spreadText} 현재 ${r.cur.toFixed(2)}점에서 목표 ${r.tgt.toFixed(2)}점까지 +${r.gap.toFixed(2)}점 성장이 필요하며, ${pressure} 또한 상위비율 ${r.highPct.toFixed(1)}% 기준으로 ${pos}`;
+}
+function renderCompetencyTab(){
+  const rows=getCompetencyInsightRows();
+  const top=document.getElementById('comp-top-kpis');
+  if(top){
+    top.innerHTML=rows.map((r,idx)=>`
+      <div class="kpi ${idx%4===0?'kpi-blue':idx%4===1?'kpi-orange':idx%4===2?'kpi-green':'kpi-purple'}">
+        <div class="kpi-top"></div>
+        <div class="kpi-body">
+          <div class="kpi-label">${r.name}</div>
+          <div class="kpi-val">${r.cur.toFixed(2)}<span>목표 ${r.tgt.toFixed(2)}</span></div>
+        </div>
+      </div>
+    `).join('');
+  }
+  const tb=document.getElementById('comp-insight-tbody');
+  if(tb){
+    tb.innerHTML=rows.map(r=>`<tr>
+      <td><strong>${r.name}</strong></td>
+      <td class="text-center">${r.cur.toFixed(2)}</td>
+      <td class="text-center">${r.tgt.toFixed(2)}</td>
+      <td class="text-center"><span class="gap-val">+${r.gap.toFixed(2)}</span></td>
+      <td class="text-center">${r.std.toFixed(2)}</td>
+      <td class="text-center">${r.lowPct.toFixed(1)}%</td>
+      <td class="text-center">${r.highPct.toFixed(1)}%</td>
+      <td class="text-center"><strong>${r.devIndex.toFixed(1)}</strong></td>
+    </tr>`).join('');
+  }
+  destroyChart('chart-comp-insight');
+  const ctx=document.getElementById('chart-comp-insight')?.getContext('2d');
+  if(!ctx)return;
+  CHARTS['chart-comp-insight']=new Chart(ctx,{
+    data:{
+      labels:rows.map(r=>r.name),
+      datasets:[
+        {type:'bar',label:'현수준 평균',data:rows.map(r=>+r.cur.toFixed(2)),backgroundColor:'rgba(37,99,235,.75)',borderRadius:6},
+        {type:'bar',label:'목표 평균',data:rows.map(r=>+r.tgt.toFixed(2)),backgroundColor:'rgba(234,88,12,.65)',borderRadius:6},
+        {type:'line',label:'하위비율(1~2점, %)',data:rows.map(r=>+r.lowPct.toFixed(1)),yAxisID:'y1',borderColor:'#DC2626',backgroundColor:'#DC2626',pointRadius:4,tension:.3},
+        {type:'line',label:'상위비율(4~5점, %)',data:rows.map(r=>+r.highPct.toFixed(1)),yAxisID:'y1',borderColor:'#2563EB',backgroundColor:'#2563EB',pointRadius:4,tension:.3}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:12}}},
+        datalabels:{
+          display:true,
+          formatter:(v,ctx)=>ctx.dataset.yAxisID==='y1'?`${Number(v).toFixed(1)}%`:Number(v).toFixed(2),
+          color:'#0F172A',
+          anchor:'end',
+          align:'end',
+          offset:2,
+          clamp:true,
+          font:{size:11,weight:'700'}
+        }
+      },
+      scales:{
+        y:{min:0,max:5,ticks:{stepSize:1},title:{display:true,text:'점수(5점 만점)'}},
+        y1:{position:'right',min:0,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>`${v}%`},title:{display:true,text:'하위비율'}}
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
 // TAB 2 : ORG COMPARISON
 // ══════════════════════════════════════════
 let selectedOrgs=[...ORG_LIST];
 let showTotal=true;
+let orgSort={key:'gap',dir:'desc'};
+function setOrgSort(key){
+  if(orgSort.key===key){orgSort.dir=orgSort.dir==='desc'?'asc':'desc';}
+  else{orgSort={key,dir:'desc'};}
+  renderOrgTable();
+}
+function colorWithAlpha(hex,a){
+  const h=hex.replace('#','');
+  const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function getOrgColor(org){
+  if(ORG_COLORS[org])return ORG_COLORS[org];
+  const palette=['#0052CC','#7B1FA2','#00875A','#DE350B','#FF8B00','#C51162','#00A3BF','#2E7D32','#6A1B9A','#AD1457'];
+  const idx=Math.abs([...org].reduce((s,ch)=>s+ch.charCodeAt(0),0))%palette.length;
+  const base=palette[idx];
+  return{
+    b:base,
+    bg:colorWithAlpha(base,.18),
+    tag:colorWithAlpha(base,.16),
+    tt:base
+  };
+}
+function renderOrgInsights(){
+  const box=document.getElementById('org-insights-box');
+  box.innerHTML=`
+    <div class="card-title"><div class="ct-dot"></div>조직별 인사이트 (PDF 원문 기준)</div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+      ${ORG_INSIGHTS.map(v=>`<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#FAFCFF">
+        <div style="font-weight:700;font-size:12px;color:var(--navy);margin-bottom:4px">${v.org}</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.55">${v.text}</div>
+      </div>`).join('')}
+    </div>
+  `;
+}
 function renderOrgTab(){
   const btns=document.getElementById('org-buttons');
   btns.innerHTML='';
   for(const org of ORG_LIST){
-    const c=ORG_COLORS[org],on=selectedOrgs.includes(org);
+    const c=getOrgColor(org),on=selectedOrgs.includes(org);
     const btn=document.createElement('button');
     btn.className='org-btn'+(on?' on':'');
     btn.textContent=org;
@@ -880,6 +1583,11 @@ function renderOrgTab(){
   if(showTotal){tb.style.background='#334155';tb.style.boxShadow='0 3px 10px rgba(51,65,85,.4)';}
   tb.onclick=()=>{showTotal=!showTotal;renderOrgTab();};
   btns.appendChild(tb);
+  const cb=document.createElement('button');
+  cb.className='org-btn';
+  cb.textContent='선택 조직 해제';
+  cb.onclick=()=>{selectedOrgs=[];renderOrgTab();};
+  btns.appendChild(cb);
   renderOrgCharts();renderOrgTable();
 }
 function renderOrgCharts(){
@@ -888,7 +1596,7 @@ function renderOrgCharts(){
     const emps=EMPLOYEES.filter(e=>e.org===org);
     if(!emps.length)continue;
     const vals=COMP_KEYS.map(k=>+avg(emps.map(e=>e.current[k])).toFixed(2));
-    ds.push(colorDs(org,vals,ORG_COLORS[org].b,false,.15));
+    ds.push(colorDs(org,vals,getOrgColor(org).b,false,.15));
   }
   if(showTotal){
     const vals=COMP_KEYS.map(k=>+COMP_AVG[k].toFixed(2));
@@ -900,10 +1608,10 @@ function renderOrgCharts(){
     });
   }
   if(!ds.length){destroyChart('chart-org-radar');return;}
-  makeRadar('chart-org-radar',ds);
+  makeRadar('chart-org-radar',ds,13);
   destroyChart('chart-org-bar');
   const barDs=selectedOrgs.map(org=>{
-    const emps=EMPLOYEES.filter(e=>e.org===org),c=ORG_COLORS[org];
+    const emps=EMPLOYEES.filter(e=>e.org===org),c=getOrgColor(org);
     return{label:org,data:COMP_KEYS.map(k=>+avg(emps.map(e=>e.current[k])).toFixed(2)),backgroundColor:c.b+'CC',borderRadius:5};
   });
   if(showTotal){
@@ -920,27 +1628,52 @@ function renderOrgCharts(){
     type:'bar',
     data:{labels:COMP_NAMES,datasets:barDs},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:12}}},
+      plugins:{
+        legend:{position:'bottom',labels:{font:{size:11},boxWidth:10,padding:12}},
+        datalabels:{
+          formatter:v=>Number(v).toFixed(2),
+          color:'#0F172A',anchor:'end',align:'end',offset:2,clamp:true,
+          font:{size:12,weight:'800'}
+        }
+      },
       scales:{y:{min:0,max:5,ticks:{stepSize:1},grid:{color:'rgba(15,23,42,.05)'}},x:{grid:{display:false}}}
     }
   });
 }
 function renderOrgTable(){
   const tbody=document.getElementById('org-tbody');
+  const sortKeys=['org','count','domain','ai','global','leadership','avg','target','gap'];
+  sortKeys.forEach(k=>{
+    const el=document.getElementById(`org-sort-${k}`);
+    if(el)el.textContent=orgSort.key===k?(orgSort.dir==='desc'?'▼':'▲'):'';
+  });
   tbody.innerHTML='';
+  const rows=[];
   for(const org of ORG_LIST){
     const emps=EMPLOYEES.filter(e=>e.org===org);
     if(!emps.length)continue;
     const ca=compAvgObj(emps),ta=tgtAvgObj(emps);
     const oa=overallAvg(ca),ot=overallAvg(ta);
-    const c=ORG_COLORS[org],sel=selectedOrgs.includes(org);
-    tbody.innerHTML+=`<tr style="${sel?'':'opacity:.35'}">
-      <td><span class="otag" style="background:${c.tag};color:${c.tt}">${org}</span></td>
-      <td class="text-center">${emps.length}명</td>
-      ${COMP_KEYS.map(k=>`<td class="text-center"><span class="sb sb${Math.round(ca[k])}">${ca[k].toFixed(2)}</span></td>`).join('')}
-      <td class="text-center"><strong>${oa.toFixed(2)}</strong></td>
-      <td class="text-center">${ot.toFixed(2)}</td>
-      <td class="text-center"><span class="gap-val">+${(ot-oa).toFixed(2)}</span></td>
+    rows.push({org,count:emps.length,domain:ca.domain,ai:ca.ai,global:ca.global,leadership:ca.leadership,avg:oa,target:ot,gap:ot-oa});
+  }
+  rows.sort((a,b)=>{
+    const k=orgSort.key;
+    const av=a[k],bv=b[k];
+    const comp=(typeof av==='string')?String(av).localeCompare(String(bv),'ko'):(av-bv);
+    return orgSort.dir==='desc'?-comp:comp;
+  });
+  for(const r of rows){
+    const c=getOrgColor(r.org),sel=selectedOrgs.includes(r.org);
+    tbody.innerHTML+=`<tr>
+      <td><span class="otag" style="background:${c.tag};color:${c.tt}">${sel?'● ':''}${r.org}</span></td>
+      <td class="text-center">${r.count}명</td>
+      <td class="text-center"><span class="sb sb${Math.round(r.domain)}">${r.domain.toFixed(2)}</span></td>
+      <td class="text-center"><span class="sb sb${Math.round(r.ai)}">${r.ai.toFixed(2)}</span></td>
+      <td class="text-center"><span class="sb sb${Math.round(r.global)}">${r.global.toFixed(2)}</span></td>
+      <td class="text-center"><span class="sb sb${Math.round(r.leadership)}">${r.leadership.toFixed(2)}</span></td>
+      <td class="text-center"><strong>${r.avg.toFixed(2)}</strong></td>
+      <td class="text-center">${r.target.toFixed(2)}</td>
+      <td class="text-center"><span class="gap-val">+${r.gap.toFixed(2)}</span></td>
     </tr>`;
   }
   if(showTotal){
@@ -966,7 +1699,7 @@ function filterEmployees(){
   const role=document.getElementById('emp-role-filter').value;
   const yr=document.getElementById('emp-year-filter').value;
   filteredEmps=EMPLOYEES.filter(e=>{
-    if(q&&!e.name.includes(q))return false;
+    if(q&&!e.name.toLowerCase().includes(q))return false;
     if(org&&e.org!==org)return false;
     if(role&&e.role!==role)return false;
     if(yr){if(yr==='1~2년'&&e.years>2)return false;if(yr==='3~4년'&&(e.years<3||e.years>4))return false;if(yr==='5년이상'&&e.years<5)return false;}
@@ -990,10 +1723,15 @@ function renderEmpList(){
   if(!filteredEmps.length)list.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px">검색 결과 없음</div>';
 }
 function selectEmployee(e){selectedEmp=e;renderEmpList();renderIndividualReport(e);}
+function setIndividualReportView(view){
+  document.querySelectorAll('#ind-report .ind-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  document.querySelectorAll('#ind-report .ind-tab-pane').forEach(p=>p.classList.toggle('active',p.dataset.view===view));
+}
 
 function renderIndividualReport(emp){
   const orgEmps=EMPLOYEES.filter(e=>e.org===emp.org);
   const orgAvg=compAvgObj(orgEmps),ca=COMP_AVG;
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
   const panel=document.getElementById('ind-report');
   const oa=overallAvg(emp.current),ot=overallAvg(emp.target);
 
@@ -1010,9 +1748,10 @@ function renderIndividualReport(emp){
       </div>
     </div>
 
-    <div class="grid-2 section">
+    <div class="section ind-report-top">
       <div class="card">
         <div class="card-title"><div class="ct-dot"></div>역량별 점수 현황</div>
+        <div class="score-grid-wrap">
         <div class="score-grid">
           <div class="sgc hdr lbl">역량</div>
           <div class="sgc hdr">연초</div><div class="sgc hdr">목표</div>
@@ -1041,22 +1780,68 @@ function renderIndividualReport(emp){
             `;
           }).join('')}
         </div>
+        </div>
       </div>
       <div class="card">
         <div class="card-title"><div class="ct-dot"></div>레이더 분석</div>
         <div class="chart-wrap h300"><canvas id="chart-ind-radar"></canvas></div>
-        <div class="legend" style="margin-top:12px">
-          <div class="legend-item"><div class="legend-dot" style="background:#2563EB"></div>개인 현수준</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#EA580C"></div>개인 목표</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#7C3AED"></div>조직 평균</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#94A3B8"></div>전사 평균</div>
+      </div>
+    </div>
+
+    <div class="ind-tab-nav">
+      <button class="ind-tab-btn active" data-view="summary" onclick="setIndividualReportView('summary')">요약 보고서</button>
+      <button class="ind-tab-btn" data-view="full" onclick="setIndividualReportView('full')">종합 보고서</button>
+    </div>
+
+    <div class="ind-tab-pane active" data-view="summary">
+      <div class="section-header"><div class="section-title">요약 보고서 (AI 해석)</div></div>
+      <div class="section ai-report">
+        <div class="ai-inner">
+          ${generateAIReport(emp,orgAvg,ca)}
         </div>
       </div>
     </div>
 
-    <div class="section ai-report">
-      <div class="ai-inner">
-        ${generateAIReport(emp,orgAvg,ca)}
+    <div class="ind-tab-pane" data-view="full">
+      <div class="section-header"><div class="section-title">종합 보고서 (응답 결과 정리)</div></div>
+      <div class="section card">
+        <div class="card-title"><div class="ct-dot"></div>영역별 핵심 응답</div>
+        <div class="qual-grid">
+          ${COMP_KEYS.map((k,i)=>{
+            const q=qual[k]||{};
+            return `<div class="qual-card">
+              <div class="qual-title">${COMP_NAMES[i]}</div>
+              <div class="qual-row"><b>현재:</b> ${escHtml(q.current||'응답 없음')}</div>
+              <div class="qual-row"><b>향후:</b> ${escHtml(q.plan||'응답 없음')}</div>
+              <div class="qual-row"><b>지원요청:</b> ${escHtml(q.support||'응답 없음')}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="divider"></div>
+        <div class="qual-grid">
+          <div class="qual-card">
+            <div class="qual-title">변화과제 의견 (Global)</div>
+            <div class="qual-row"><b>우려:</b> ${escHtml(qual.change?.globalConcern||'응답 없음')}</div>
+            <div class="qual-row"><b>필요지원:</b> ${escHtml(qual.change?.globalSupport||'응답 없음')}</div>
+          </div>
+          <div class="qual-card">
+            <div class="qual-title">변화과제 의견 (AI)</div>
+            <div class="qual-row"><b>우려:</b> ${escHtml(qual.change?.aiConcern||'응답 없음')}</div>
+            <div class="qual-row"><b>필요지원:</b> ${escHtml(qual.change?.aiSupport||'응답 없음')}</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:12px"><div class="ct-dot"></div>설문 전체 응답 원문</div>
+        ${Array.isArray(emp.survey?.items)&&emp.survey.items.length?`
+        <div style="display:grid;grid-template-columns:1fr;gap:8px">
+          ${emp.survey.items.map((it,ix)=>`<div class="qual-card">
+            <div class="qual-title">${escHtml(it.label||it.code||`Q${ix+1}`)}</div>
+            <div class="qual-row">${escHtml(decodeSurveyAnswerByCode(it.code,it.answer)||'응답 없음')}</div>
+          </div>`).join('')}
+        </div>
+        `:`
+        <div class="qual-row" style="padding:6px 0;color:var(--text-3)">원문 응답 데이터가 없습니다.</div>
+        `}
       </div>
     </div>
 
@@ -1077,10 +1862,147 @@ function renderIndividualReport(emp){
 }
 
 // ══════════════════════════════════════════
+// TAB 5 : ADMIN
+// ══════════════════════════════════════════
+let adminSelectedId=null;
+function adminGetSelected(){return EMPLOYEES.find(e=>e.id===adminSelectedId)||null;}
+function renderAdminTab(){
+  renderAdminTable();
+  renderAdminEditor();
+}
+function renderAdminTable(){
+  const tb=document.getElementById('admin-tbody'); if(!tb)return;
+  const q=(document.getElementById('admin-search')?.value||'').trim().toLowerCase();
+  const rows=EMPLOYEES.filter(e=>!q||e.name.toLowerCase().includes(q)||e.org.toLowerCase().includes(q));
+  tb.innerHTML=rows.map(e=>`
+    <tr style="${adminSelectedId===e.id?'background:#EFF6FF':''}">
+      <td>${escHtml(e.name)}</td>
+      <td>${escHtml(e.org)}</td>
+      <td class="text-center">${escHtml(e.role)}</td>
+      <td class="text-center">${e.years}</td>
+      <td class="text-center">${e.current.domain}/${e.target.domain}</td>
+      <td class="text-center">${e.current.ai}/${e.target.ai}</td>
+      <td class="text-center">${e.current.global}/${e.target.global}</td>
+      <td class="text-center">${e.current.leadership}/${e.target.leadership}</td>
+      <td class="text-center">
+        <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="adminSelect(${e.id})">편집</button>
+        <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px;border-color:#fecaca;color:#b91c1c" onclick="adminDelete(${e.id})">삭제</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function adminSelect(id){
+  adminSelectedId=id;
+  renderAdminTable();
+  renderAdminEditor();
+}
+function adminDelete(id){
+  EMPLOYEES=EMPLOYEES.filter(e=>e.id!==id);
+  if(selectedEmp?.id===id)selectedEmp=null;
+  if(adminSelectedId===id)adminSelectedId=null;
+  DATA_MODE='uploaded';
+  syncAfterEmployeeChange();
+  persistEmployees();
+  renderOverview();renderOrgTab();renderEmpList();renderCompanyReport();
+  renderAdminTab();
+}
+function adminAddEmployee(){
+  const nextId=Math.max(0,...EMPLOYEES.map(e=>Number(e.id)||0))+1;
+  EMPLOYEES.unshift(normalizeEmployeeObject({
+    id:nextId,name:'신규 구성원',org:ORG_LIST[0]||'미분류',role:'RF',years:1,
+    current:{domain:1,ai:1,global:1,leadership:1},
+    target:{domain:2,ai:2,global:2,leadership:2},
+    qualitative:blankQualitative()
+  },0));
+  adminSelectedId=nextId;
+  DATA_MODE='uploaded';
+  syncAfterEmployeeChange();
+  persistEmployees();
+  renderOverview();renderOrgTab();renderEmpList();renderCompanyReport();
+  renderAdminTab();
+}
+function renderAdminEditor(){
+  const box=document.getElementById('admin-editor'); if(!box)return;
+  const emp=adminGetSelected();
+  if(!emp){
+    box.innerHTML='<div class="empty-state"><div class="empty-icon">◬</div><p>왼쪽 목록에서 구성원을 선택하세요</p></div>';
+    return;
+  }
+  const q=emp.qualitative||blankQualitative();
+  box.innerHTML=`
+    <div class="admin-form-grid">
+      <div class="fgrp"><label class="flabel">이름</label><input class="finput" id="ad-name" value="${escHtml(emp.name)}"></div>
+      <div class="fgrp"><label class="flabel">조직</label><input class="finput" id="ad-org" value="${escHtml(emp.org)}"></div>
+      <div class="fgrp"><label class="flabel">직책</label><input class="finput" id="ad-role" value="${escHtml(emp.role)}"></div>
+      <div class="fgrp"><label class="flabel">연차</label><input class="finput" id="ad-years" type="number" min="1" value="${emp.years}"></div>
+      <div class="fgrp"><label class="flabel">Domain (현/목)</label><input class="finput" id="ad-domain" value="${emp.current.domain},${emp.target.domain}"></div>
+      <div class="fgrp"><label class="flabel">AI (현/목)</label><input class="finput" id="ad-ai" value="${emp.current.ai},${emp.target.ai}"></div>
+      <div class="fgrp"><label class="flabel">Global (현/목)</label><input class="finput" id="ad-global" value="${emp.current.global},${emp.target.global}"></div>
+      <div class="fgrp"><label class="flabel">리더십 (현/목)</label><input class="finput" id="ad-leadership" value="${emp.current.leadership},${emp.target.leadership}"></div>
+      <div class="fgrp"><label class="flabel">Domain 의견(현재/향후/지원)</label><textarea class="ftext" id="ad-q-domain">${escHtml(`${q.domain.current}\n${q.domain.plan}\n${q.domain.support}`)}</textarea></div>
+      <div class="fgrp"><label class="flabel">AI 의견(현재/향후/지원)</label><textarea class="ftext" id="ad-q-ai">${escHtml(`${q.ai.current}\n${q.ai.plan}\n${q.ai.support}`)}</textarea></div>
+      <div class="fgrp"><label class="flabel">Global 의견(현재/향후/지원)</label><textarea class="ftext" id="ad-q-global">${escHtml(`${q.global.current}\n${q.global.plan}\n${q.global.support}`)}</textarea></div>
+      <div class="fgrp"><label class="flabel">리더십 의견(현재/향후/지원)</label><textarea class="ftext" id="ad-q-leadership">${escHtml(`${q.leadership.current}\n${q.leadership.plan}\n${q.leadership.support}`)}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="btn btn-ghost" onclick="renderAdminEditor()">초기화</button>
+      <button class="btn btn-dark" onclick="adminSaveOne()">저장</button>
+    </div>
+    <div style="font-size:11px;color:#64748B;margin-top:8px">의견 입력 형식: 1행=현재, 2행=향후, 3행=지원요청</div>
+  `;
+}
+function split3(v){
+  const a=String(v||'').split('\n');
+  return{textOr0:textOrEmpty(a[0]),textOr1:textOrEmpty(a[1]),textOr2:textOrEmpty(a[2])};
+}
+function parseCurTgt(id){
+  const raw=(document.getElementById(id)?.value||'').split(',');
+  const cur=toSafeInt(raw[0]); const tgt=toSafeInt(raw[1]??raw[0]);
+  return{cur,tgt};
+}
+function adminSaveOne(){
+  const emp=adminGetSelected(); if(!emp)return;
+  const d=parseCurTgt('ad-domain'),a=parseCurTgt('ad-ai'),g=parseCurTgt('ad-global'),l=parseCurTgt('ad-leadership');
+  const qd=split3(document.getElementById('ad-q-domain')?.value||'');
+  const qa=split3(document.getElementById('ad-q-ai')?.value||'');
+  const qg=split3(document.getElementById('ad-q-global')?.value||'');
+  const ql=split3(document.getElementById('ad-q-leadership')?.value||'');
+  Object.assign(emp,{
+    name:textOrEmpty(document.getElementById('ad-name')?.value)||emp.name,
+    org:textOrEmpty(document.getElementById('ad-org')?.value)||emp.org,
+    role:textOrEmpty(document.getElementById('ad-role')?.value)||emp.role,
+    years:Math.max(1,Math.round(Number(document.getElementById('ad-years')?.value)||1)),
+    current:{domain:d.cur,ai:a.cur,global:g.cur,leadership:l.cur},
+    target:{domain:d.tgt,ai:a.tgt,global:g.tgt,leadership:l.tgt},
+    qualitative:{
+      ...(emp.qualitative||blankQualitative()),
+      domain:{current:qd.textOr0,plan:qd.textOr1,support:qd.textOr2},
+      ai:{current:qa.textOr0,plan:qa.textOr1,support:qa.textOr2},
+      global:{current:qg.textOr0,plan:qg.textOr1,support:qg.textOr2},
+      leadership:{current:ql.textOr0,plan:ql.textOr1,support:ql.textOr2},
+    }
+  });
+  DATA_MODE='uploaded';
+  syncAfterEmployeeChange();
+  persistEmployees();
+  renderOverview();renderOrgTab();filterEmployees();renderCompanyReport();
+  renderAdminTab();
+  if(selectedEmp?.id===emp.id)renderIndividualReport(emp);
+}
+function adminSaveAll(){
+  DATA_MODE='uploaded';
+  syncAfterEmployeeChange();
+  persistEmployees();
+  renderOverview();renderOrgTab();filterEmployees();renderCompanyReport();
+  renderAdminTab();
+}
+
+// ══════════════════════════════════════════
 // AI INTERPRETATION ENGINE
 // ══════════════════════════════════════════
 function generateAIReport(emp,orgAvg,compAvg){
   const{current:cur,target:tgt,name,org,role,years}=emp;
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
   const oa=overallAvg(cur),ot=overallAvg(tgt);
   const ranked=[...COMP_KEYS].map(k=>({k,v:cur[k]})).sort((a,b)=>b.v-a.v);
   const gaps=COMP_KEYS.map(k=>({k,gap:tgt[k]-cur[k]})).sort((a,b)=>b.gap-a.gap);
@@ -1099,6 +2021,26 @@ function generateAIReport(emp,orgAvg,compAvg){
   const vsAvgText=aboveAvg.length>=3?'전반적으로 전사 평균 이상':aboveAvg.length>=2?`${aboveAvg.map(k=>COMP_NAMES[COMP_KEYS.indexOf(k)]).join(', ')} 영역에서 전사 평균 이상`:'전반적으로 전사 평균 이하';
   const recs=DEV_RECS[topGap.k][Math.min(cur[topGap.k],4)];
   const recs2=DEV_RECS[gaps[1].k][Math.min(cur[gaps[1].k],4)];
+  const lowRecs=DEV_RECS[weakest.k][Math.min(cur[weakest.k],4)];
+  const focusQual=qual[topGap.k]||{};
+  const areaPoints=COMP_KEYS.map((k,i)=>{
+    const c=cur[k],t=tgt[k],a=compAvg[k],g=t-c;
+    const q=qual[k]||{};
+    const opinion=[q.current,q.plan,q.support].map(textOrEmpty).filter(Boolean).join(' / ');
+    const vs=a?c-a:0;
+    const direction=vs>=0?'전사 평균 이상 수준입니다.':'전사 평균 대비 보완이 필요합니다.';
+    const priority=g>=2?'우선순위 높은 집중개발 영역입니다.':g>=1?'점진적 상향이 필요한 영역입니다.':'유지·심화 중심 관리 영역입니다.';
+    return{
+      name:COMP_NAMES[i],
+      body:`
+        현재 수준은 <strong>${c}점</strong>, 목표 수준은 <strong>${t}점</strong>이며 GAP은 <strong>+${g}점</strong>입니다.<br>
+        전사 평균은 <strong>${a.toFixed(2)}점</strong>으로, 현재 포지션은 <strong>${vs>=0?'+':''}${vs.toFixed(2)}점</strong> 차이입니다. ${direction}<br>
+        역량 정의 기준으로 보면, 현재는 "${LEVEL_DESC[k][c]}" 단계이며 ${priority}<br>
+        개발 의견 반영: <strong>${opinion?escHtml(opinion):'의견 응답 없음'}</strong><br>
+        권고: ${DEV_RECS[k][Math.min(c,4)][0]} / ${DEV_RECS[k][Math.min(c,4)][1]}
+      `
+    };
+  });
 
   return`
     <div class="ai-hdr">
@@ -1149,8 +2091,25 @@ function generateAIReport(emp,orgAvg,compAvg){
     </div>
 
     <div class="ai-sec">
+      <div class="ai-sec-label">📌 우선 추진 과제 — 최저 역량 ${COMP_NAMES[wIdx]} (${weakest.v}점)</div>
+      <ul class="rec-list">
+        ${lowRecs.map(r=>`<li>${r}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="ai-sec">
+      <div class="ai-sec-label">영역별 개발 포인트</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${areaPoints.map(p=>`<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px">
+          <div style="font-size:12px;font-weight:800;color:#1E3A8A;margin-bottom:8px">${p.name}</div>
+          <div class="ai-text" style="font-size:12px;line-height:1.72">${p.body}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="ai-sec">
       <div class="ai-sec-label">📊 포지셔닝 요약</div>
-      <div class="ai-text">${name}님은 ${vsAvgText}입니다. <strong>${org}</strong> 조직 내에서 <strong>${oa.toFixed(2)}점</strong> 수준으로, 조직 평균(${overallAvg(orgAvg).toFixed(2)}점) 대비 <strong>${oa>overallAvg(orgAvg)?'+':''}${(oa-overallAvg(orgAvg)).toFixed(2)}점</strong>입니다. '26년 목표 달성을 위해 <strong>${COMP_NAMES[gIdx]}</strong> 역량을 집중 개발하는 것을 권장합니다.</div>
+      <div class="ai-text">${name}님은 ${vsAvgText}입니다. <strong>${org}</strong> 조직 내에서 <strong>${oa.toFixed(2)}점</strong> 수준으로, 조직 평균(${overallAvg(orgAvg).toFixed(2)}점) 대비 <strong>${oa>overallAvg(orgAvg)?'+':''}${(oa-overallAvg(orgAvg)).toFixed(2)}점</strong>입니다. <strong>${displayPeriod(ACTIVE_PERIOD)}</strong> 목표 달성을 위해 <strong>${COMP_NAMES[gIdx]}</strong> 역량을 집중 개발하는 것을 권장합니다.${focusQual.plan?` 본인이 제시한 성장 방향은 "${escHtml(focusQual.plan)}" 입니다.`:''}</div>
     </div>
   `;
 }
@@ -1158,171 +2117,210 @@ function generateAIReport(emp,orgAvg,compAvg){
 // ══════════════════════════════════════════
 // PPT EXPORT
 // ══════════════════════════════════════════
-async function exportToPPT(empId){
-  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
-  const orgEmps=EMPLOYEES.filter(e=>e.org===emp.org);
-  const orgAvg=compAvgObj(orgEmps),ca=COMP_AVG;
+function buildAreaDevelopmentPoints(emp,compAvg){
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  return COMP_KEYS.map((k,i)=>{
+    const c=emp.current[k],t=emp.target[k],a=compAvg[k],g=t-c;
+    const q=qual[k]||{};
+    const opinion=[q.current,q.plan,q.support].map(textOrEmpty).filter(Boolean).join(' / ');
+    const vs=(c-a);
+    const priority=g>=2?'우선순위 높은 집중개발 영역입니다.':g>=1?'점진적 상향이 필요한 영역입니다.':'유지·심화 중심 관리 영역입니다.';
+    return{
+      key:k,
+      name:COMP_NAMES[i],
+      scoreText:`현재 ${c}점 / 목표 ${t}점 / 전사 ${a.toFixed(2)}점`,
+      body:`현재 ${c}점은 ${LEVEL_DESC[k][c]} 단계입니다. 목표(${t}점)까지 +${g}점이 필요하며 전사 평균 대비 ${vs>=0?'+':''}${vs.toFixed(2)}점입니다. ${priority} 의견 반영: ${opinion||'응답 없음'}`,
+    };
+  });
+}
+
+function createRadarImageData(emp,orgAvg,ca,w=900,h=760){
+  const tempCanvas=document.createElement('canvas');
+  tempCanvas.width=w;tempCanvas.height=h;
+  const ctx=tempCanvas.getContext('2d');
+  const tmpChart=new Chart(ctx,{
+    type:'radar',
+    data:{labels:COMP_NAMES,datasets:[
+      colorDs('개인 현수준',COMP_KEYS.map(k=>emp.current[k]),'#2563EB'),
+      colorDs('개인 목표',COMP_KEYS.map(k=>emp.target[k]),'#EA580C',true),
+      colorDs('조직 평균',COMP_KEYS.map(k=>+orgAvg[k].toFixed(2)),'#7C3AED',false,.1),
+      colorDs('전사 평균',COMP_KEYS.map(k=>+ca[k].toFixed(2)),'#94A3B8',false,.1),
+    ]},
+    options:{
+      animation:false,responsive:false,maintainAspectRatio:false,
+      plugins:{legend:{display:false},datalabels:{display:false}},
+      scales:{r:{
+        min:0,max:5,angleLines:{color:'rgba(148,163,184,.3)'},grid:{color:'rgba(148,163,184,.3)'},
+        pointLabels:{color:'#334155',font:{size:18,weight:'700'}},
+        ticks:{stepSize:1,showLabelBackdrop:false,color:'#64748B',font:{size:13}}
+      }}
+    }
+  });
+  const data=tempCanvas.toDataURL('image/png');
+  tmpChart.destroy();
+  return data;
+}
+
+function addExecutivePptSlide(pptx,emp){
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  const orgAvg=compAvgObj(EMPLOYEES.filter(e=>e.org===emp.org));
+  const ca=COMP_AVG;
   const oa=overallAvg(emp.current),ot=overallAvg(emp.target);
-  const ranked=[...COMP_KEYS].map(k=>({k,v:emp.current[k]})).sort((a,b)=>b.v-a.v);
   const gaps=COMP_KEYS.map(k=>({k,gap:emp.target[k]-emp.current[k]})).sort((a,b)=>b.gap-a.gap);
-  const strongest=ranked[0],weakest=ranked[ranked.length-1];
   const topGap=gaps[0];
-  const sIdx=COMP_KEYS.indexOf(strongest.k),wIdx=COMP_KEYS.indexOf(weakest.k),gIdx=COMP_KEYS.indexOf(topGap.k);
+  const topIdx=COMP_KEYS.indexOf(topGap.k);
   const recs=DEV_RECS[topGap.k][Math.min(emp.current[topGap.k],4)];
-  const aboveAvg=COMP_KEYS.filter(k=>emp.current[k]>ca[k]);
+  const areaPoints=buildAreaDevelopmentPoints(emp,ca);
+  const radarData=createRadarImageData(emp,orgAvg,ca);
+  const focusQual=qual[topGap.k]||{};
   const today=new Date().toLocaleDateString('ko-KR');
   const KF='맑은 고딕';
 
-  const pptx=new PptxGenJS();
-  pptx.layout='LAYOUT_16x9'; // 10" × 5.625"
-  pptx.title=`${emp.name} 역량 레포트`;
-  pptx.author='mySUNI';
-
-  // ══ 단일 슬라이드 ══════════════════════════
   const s=pptx.addSlide();
-  s.background={color:'F0F4F9'};
+  s.background={color:'FFFFFF'};
 
-  // ── 상단 헤더 바 (다크 네이비, h=0.92) ──────
-  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:.92,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
-  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:'100%',h:.07,fill:{color:'2563EB'},line:{color:'2563EB',width:0}});
+  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.2,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
+  s.addText('mySUNI 4대 핵심역량 개인 레포트',{x:.42,y:.28,w:4.9,h:.32,fontFace:KF,fontSize:14,bold:true,color:'0A1628'});
+  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:5.1,y:.34,w:2.0,h:.2,fontFace:KF,fontSize:7.5,color:'64748B',align:'right'});
 
-  // 로고
-  s.addText('mySUNI',{x:.18,y:.13,w:1.3,h:.3,fontSize:10,bold:true,color:'FFFFFF',
-    fontFace:KF,align:'center',fill:{color:'1D4ED8'},line:{color:'FFFFFF',width:.5},rectRadius:.06});
-  // 타이틀
-  s.addText('4대 핵심역량 개인 레포트',{x:1.6,y:.12,w:3.2,h:.3,
-    fontSize:13,bold:true,color:'FFFFFF',fontFace:KF});
-  s.addText(`'26년 연초 기준  ·  ${today}`,{x:1.6,y:.46,w:3,h:.22,
-    fontSize:8.5,color:'94A3B8',fontFace:KF});
+  s.addShape(pptx.ShapeType.roundRect,{x:.42,y:.73,w:6.66,h:.86,fill:{color:'F8FAFC'},line:{color:'CBD5E1',width:.8},radius:0.08});
+  s.addText(emp.name,{x:.58,y:.92,w:2.2,h:.26,fontFace:KF,fontSize:12,bold:true,color:'0A1628'});
+  s.addText(`${emp.org} · ${emp.role} · ${emp.years}년차`,{x:.58,y:1.16,w:3.3,h:.2,fontFace:KF,fontSize:8.6,color:'475569'});
+  s.addText(`현수준 ${oa.toFixed(2)}  |  목표 ${ot.toFixed(2)}  |  GAP +${(ot-oa).toFixed(2)}`,{x:3.8,y:.98,w:3.1,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A',align:'right'});
+  s.addText(`우선 개발 영역: ${COMP_NAMES[topIdx]} (+${topGap.gap})`,{x:3.8,y:1.2,w:3.1,h:.2,fontFace:KF,fontSize:8.2,color:'DC2626',align:'right'});
 
-  // 이름/조직
-  s.addText(emp.name,{x:5.0,y:.1,w:2.4,h:.38,
-    fontSize:20,bold:true,color:'FFFFFF',fontFace:KF});
-  s.addText(`${emp.org}  ·  ${emp.role}  ·  ${emp.years}년차`,{x:5.0,y:.5,w:2.4,h:.22,
-    fontSize:8.5,color:'94A3B8',fontFace:KF});
-
-  // KPI 3 미니 박스
-  const kpiDefs=[
-    {label:'현수준',val:`${oa.toFixed(2)}점`,col:'60A5FA'},
-    {label:'목표',val:`${ot.toFixed(2)}점`,col:'FB923C'},
-    {label:'GAP',val:`+${(ot-oa).toFixed(2)}`,col:'F87171'},
-  ];
-  kpiDefs.forEach((k,i)=>{
-    const x=7.55+i*.82;
-    s.addShape(pptx.ShapeType.rect,{x,y:.1,w:.75,h:.72,
-      fill:{color:'0F2044'},line:{color:k.col,width:.8},rectRadius:.06});
-    s.addText(k.label,{x,y:.12,w:.75,h:.2,fontSize:7,color:'94A3B8',fontFace:KF,align:'center'});
-    s.addText(k.val,{x,y:.32,w:.75,h:.28,fontSize:11,bold:true,color:k.col,fontFace:KF,align:'center'});
-  });
-
-  // ── 가운데 구역 : 왼쪽 점수표 + 오른쪽 레이더 (y:1.0~3.72) ──
-  const midY=1.0,midH=2.72;
-
-  // [왼쪽] 점수표 (x:0.15, w:4.55)
-  s.addShape(pptx.ShapeType.rect,{x:.15,y:midY,w:4.55,h:midH,
-    fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},rectRadius:.1});
-  s.addText('역량별 점수 현황',{x:.3,y:midY+.1,w:4.2,h:.26,
-    fontSize:9.5,bold:true,color:'0A1628',fontFace:KF});
-
+  s.addText('역량별 점수 현황',{x:.42,y:1.74,w:2.4,h:.2,fontFace:KF,fontSize:9,bold:true,color:'1E3A8A'});
   const th=[
-    {text:'역량',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,valign:'middle'}},
-    {text:'연초',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
-    {text:'목표',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
-    {text:'GAP',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
-    {text:'조직평균',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
-    {text:'전사평균',options:{bold:true,fill:{color:'0F172A'},color:'FFFFFF',fontFace:KF,fontSize:8.5,align:'center',valign:'middle'}},
+    {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4}},
+    {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4,align:'center'}},
+    {text:'목표',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4,align:'center'}},
+    {text:'GAP',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4,align:'center'}},
+    {text:'조직',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4,align:'center'}},
+    {text:'전사',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4,align:'center'}},
   ];
-  const tr=COMP_KEYS.map((k,i)=>{
-    const c=emp.current[k],t=emp.target[k],bg=i%2===0?'FFFFFF':'F8FAFC';
-    const vsOrg=c>orgAvg[k]?'▲':c<orgAvg[k]?'▼':'─';
-    const vsAll=c>ca[k]?'▲':c<ca[k]?'▼':'─';
-    const vsOC=c>orgAvg[k]?'059669':c<orgAvg[k]?'DC2626':'94A3B8';
-    const vsAC=c>ca[k]?'059669':c<ca[k]?'DC2626':'94A3B8';
-    return[
-      {text:COMP_NAMES[i],options:{bold:true,fill:{color:bg},fontFace:KF,fontSize:8.5,valign:'middle'}},
-      {text:`${c}`,options:{bold:true,fill:{color:bg},fontFace:KF,fontSize:12,align:'center',color:'1D4ED8',valign:'middle'}},
-      {text:`${t}`,options:{fill:{color:bg},fontFace:KF,fontSize:10,align:'center',color:'92400E',valign:'middle'}},
-      {text:`+${t-c}`,options:{bold:true,fill:{color:bg},fontFace:KF,fontSize:9,align:'center',color:'DC2626',valign:'middle'}},
-      {text:`${orgAvg[k].toFixed(2)} ${vsOrg}`,options:{fill:{color:bg},fontFace:KF,fontSize:8.5,align:'center',color:vsOC,valign:'middle'}},
-      {text:`${ca[k].toFixed(2)} ${vsAll}`,options:{fill:{color:bg},fontFace:KF,fontSize:8.5,align:'center',color:vsAC,valign:'middle'}},
-    ];
-  });
-  s.addTable([th,...tr],{
-    x:.25,y:midY+.42,w:4.35,rowH:.5,
-    border:{pt:.6,color:'E2E8F0'},
-    colW:[1.35,.6,.6,.55,.65,.6],
+  const tr=COMP_KEYS.map((k,i)=>[
+    {text:COMP_NAMES[i],options:{fontFace:KF,fontSize:8.2,bold:true}},
+    {text:`${emp.current[k]}`,options:{fontFace:KF,fontSize:8.6,align:'center',bold:true,color:'1D4ED8'}},
+    {text:`${emp.target[k]}`,options:{fontFace:KF,fontSize:8.2,align:'center'}},
+    {text:`+${emp.target[k]-emp.current[k]}`,options:{fontFace:KF,fontSize:8.2,align:'center',bold:true,color:'DC2626'}},
+    {text:`${orgAvg[k].toFixed(2)}`,options:{fontFace:KF,fontSize:8,align:'center'}},
+    {text:`${ca[k].toFixed(2)}`,options:{fontFace:KF,fontSize:8,align:'center'}},
+  ]);
+  s.addTable([th,...tr],{x:.42,y:1.96,w:3.62,rowH:.35,border:{pt:.5,color:'E2E8F0'},colW:[1.42,.44,.44,.46,.43,.43]});
+
+  s.addShape(pptx.ShapeType.roundRect,{x:4.18,y:1.96,w:2.9,h:3.08,fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},radius:0.08});
+  s.addText('레이더 분석',{x:4.3,y:2.08,w:1.5,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A'});
+  if(radarData)s.addImage({data:radarData,x:4.26,y:2.32,w:2.72,h:2.45});
+  s.addText('현수준 / 목표 / 조직 / 전사',{x:4.22,y:4.82,w:2.8,h:.18,fontFace:KF,fontSize:6.9,color:'64748B',align:'center'});
+
+  s.addText('영역별 개발 포인트',{x:.42,y:5.24,w:2.3,h:.2,fontFace:KF,fontSize:9,bold:true,color:'1E3A8A'});
+  areaPoints.forEach((p,i)=>{
+    const x=(i%2===0)?.42:3.82;
+    const y=5.48+Math.floor(i/2)*1.56;
+    s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.24,h:1.44,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
+    s.addText(p.name,{x:x+.12,y:y+.09,w:1.2,h:.18,fontFace:KF,fontSize:8.2,bold:true,color:'0F172A'});
+    s.addText(p.scoreText,{x:x+.12,y:y+.28,w:3.0,h:.17,fontFace:KF,fontSize:7.6,color:'1E40AF'});
+    s.addText(p.body,{x:x+.12,y:y+.47,w:3.0,h:.88,fontFace:KF,fontSize:7.4,color:'334155',valign:'top'});
   });
 
-  // 역량 수준 설명 (점수표 아래)
-  const descY=midY+.42+4*.5+.1;
+  s.addText('면담용 핵심 메모',{x:.42,y:8.72,w:2.2,h:.2,fontFace:KF,fontSize:9,bold:true,color:'1E3A8A'});
+  s.addShape(pptx.ShapeType.roundRect,{x:.42,y:8.96,w:6.66,h:1.95,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
+  s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.56,y:9.1,w:6.3,h:.2,fontFace:KF,fontSize:7.5,color:'0F172A'});
+  s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.56,y:9.34,w:6.3,h:.28,fontFace:KF,fontSize:7.8,color:'334155'});
+  s.addText(`• 본인 의견(원문): ${focusQual.plan||focusQual.current||focusQual.support||'응답 없음'}`,{x:.56,y:9.64,w:6.3,h:.3,fontFace:KF,fontSize:7.8,color:'334155'});
+  s.addText(`• 변화과제 의견: Global(${qual.change?.globalConcern||'응답 없음'}) / AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.56,y:9.98,w:6.3,h:.3,fontFace:KF,fontSize:7.8,color:'334155'});
+
+  s.addShape(pptx.ShapeType.line,{x:.42,y:11.1,w:6.66,h:0,line:{color:'E2E8F0',width:.6}});
+  s.addText('mySUNI 자동 생성 (임원 면담용 요약본)',{x:.42,y:11.16,w:6.66,h:.18,fontFace:KF,fontSize:6.8,color:'94A3B8',align:'center'});
+}
+
+function wrapTextForPpt(text,maxLen=62){
+  const src=textOrEmpty(text).replace(/\r/g,'');
+  if(!src)return['응답 없음'];
+  const lines=[];
+  src.split('\n').forEach(raw=>{
+    const s=raw.trim();
+    if(!s){lines.push('');return;}
+    if(s.length<=maxLen){lines.push(s);return;}
+    for(let i=0;i<s.length;i+=maxLen)lines.push(s.slice(i,i+maxLen));
+  });
+  return lines.length?lines:['응답 없음'];
+}
+function addFullContentSlides(pptx,emp){
+  const KF='돋움';
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  const surveyItems=Array.isArray(emp.survey?.items)?emp.survey.items:[];
+  const lines=[];
+  lines.push(`[기본정보] ${emp.name} | ${emp.org} | ${emp.role} | ${emp.years}년차`);
+  lines.push('[영역별 정성응답]');
   COMP_KEYS.forEach((k,i)=>{
-    s.addText(`${COMP_NAMES[i]}(${emp.current[k]}점): ${LEVEL_DESC[k][emp.current[k]]}`,{
-      x:.25,y:descY+i*.2,w:4.35,h:.2,
-      fontSize:7.5,color:'64748B',fontFace:KF,wrap:false});
+    const q=qual[k]||{};
+    lines.push(`${COMP_NAMES[i]} - 현재: ${q.current||'응답 없음'}`);
+    lines.push(`${COMP_NAMES[i]} - 향후: ${q.plan||'응답 없음'}`);
+    lines.push(`${COMP_NAMES[i]} - 지원요청: ${q.support||'응답 없음'}`);
   });
-
-  // [오른쪽] 레이더 차트 (x:4.82, w:5.03)
-  s.addShape(pptx.ShapeType.rect,{x:4.82,y:midY,w:5.03,h:midH,
-    fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},rectRadius:.1});
-  s.addText('레이더 분석',{x:4.97,y:midY+.1,w:4.7,h:.26,
-    fontSize:9.5,bold:true,color:'0A1628',fontFace:KF});
-
-  const canvas=document.getElementById('chart-ind-radar');
-  if(canvas){
-    s.addImage({data:canvas.toDataURL('image/png'),x:5.1,y:midY+.38,w:4.65,h:2.18});
+  lines.push(`변화과제(Global 우려): ${qual.change?.globalConcern||'응답 없음'}`);
+  lines.push(`변화과제(Global 지원): ${qual.change?.globalSupport||'응답 없음'}`);
+  lines.push(`변화과제(AI 우려): ${qual.change?.aiConcern||'응답 없음'}`);
+  lines.push(`변화과제(AI 지원): ${qual.change?.aiSupport||'응답 없음'}`);
+  if(surveyItems.length){
+    lines.push('[설문 문항별 원문 응답]');
+    surveyItems.forEach((it,idx)=>{
+      const qLabel=textOrEmpty(it.label)||textOrEmpty(it.code)||`Q${idx+1}`;
+      const ans=decodeSurveyAnswerByCode(it.code,it.answer)||'응답 없음';
+      lines.push(`${qLabel}`);
+      lines.push(`- ${ans}`);
+    });
   }
-  // 레이더 범례
-  const legItems=[{col:'2563EB',t:'현수준'},{col:'EA580C',t:'목표'},{col:'7C3AED',t:'조직평균'},{col:'94A3B8',t:'전사평균'}];
-  legItems.forEach((l,i)=>{
-    const lx=5.1+i*1.2;
-    s.addShape(pptx.ShapeType.rect,{x:lx,y:midY+midH-.28,w:.14,h:.1,fill:{color:l.col},rectRadius:.02});
-    s.addText(l.t,{x:lx+.18,y:midY+midH-.3,w:1.0,h:.16,fontSize:7.5,color:'475569',fontFace:KF});
-  });
 
-  // ── 하단 AI 섹션 (y:3.82 ~ 5.42) ──────────
-  const aiY=3.82,aiH=1.6;
-  s.addShape(pptx.ShapeType.rect,{x:.15,y:aiY,w:9.7,h:aiH,
-    fill:{color:'0A1628'},line:{color:'1E3A8A',width:.8},rectRadius:.1});
-  s.addShape(pptx.ShapeType.rect,{x:.15,y:aiY,w:9.7,h:.07,
-    fill:{color:'2563EB'},line:{color:'2563EB',width:0},rectRadius:.1});
+  const wrapped=[];
+  lines.forEach(l=>wrapped.push(...wrapTextForPpt(l,66)));
+  const perSlide=38;
+  const total=Math.max(1,Math.ceil(wrapped.length/perSlide));
+  for(let i=0;i<total;i++){
+    const slide=pptx.addSlide();
+    slide.background={color:'FFFFFF'};
+    slide.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
+    slide.addText(`개인 레포트 원문 전체 (${i+1}/${total})`,{x:.42,y:.24,w:6.66,h:.24,fontFace:KF,fontSize:11,bold:true,color:'0A1628'});
+    slide.addText(`${emp.name} · ${displayPeriod(ACTIVE_PERIOD)} 기준`,{x:.42,y:.49,w:6.66,h:.18,fontFace:KF,fontSize:7,color:'64748B'});
+    const chunk=wrapped.slice(i*perSlide,(i+1)*perSlide);
+    slide.addText(chunk.map(v=>`• ${v}`).join('\n'),{x:.46,y:.74,w:6.58,h:10.25,fontFace:KF,fontSize:7,color:'334155',valign:'top'});
+  }
+}
 
-  s.addText('AI 역량 해석 리포트',{x:.32,y:aiY+.1,w:3,h:.22,
-    fontSize:9,bold:true,color:'60A5FA',fontFace:KF});
+function buildPptDocument(title){
+  const pptx=new PptxGenJS();
+  pptx.defineLayout({name:'A4P',width:7.5,height:13.333});
+  pptx.layout='A4P';
+  pptx.title=title;
+  pptx.author='mySUNI';
+  pptx.subject='mySUNI 4대 핵심역량 개인 레포트';
+  return pptx;
+}
 
-  // 종합평가
-  let overallLevel=oa>=3.8?'안정적이고 높은 수준':oa>=3.0?'실무 독립 수행이 가능한 단계':oa>=2.0?'기초~실무 역량 형성 단계':'역량 형성 초기 단계';
-  const summaryText=`${emp.name}님은 현재 "${overallLevel}"에 위치. 현수준 ${oa.toFixed(2)}점, 목표 ${ot.toFixed(2)}점 (GAP +${(ot-oa).toFixed(2)}점). ${aboveAvg.length>=3?'전반적으로 전사 평균 이상':aboveAvg.length>=1?aboveAvg.map(k=>COMP_NAMES[COMP_KEYS.indexOf(k)]).join(', ')+'에서 전사 평균 이상':'전반적으로 전사 평균 이하'}.`;
-  s.addText(summaryText,{x:.32,y:aiY+.34,w:3.15,h:.7,
-    fontSize:8,color:'CBD5E1',fontFace:KF,wrap:true,valign:'top'});
+async function exportToPPT(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const pptx=buildPptDocument(`${emp.name} 역량 레포트`);
+  addExecutivePptSlide(pptx,emp);
+  await pptx.writeFile({fileName:`${emp.name}_mySUNI 핵심 역량 레포트_${ACTIVE_PERIOD}.pptx`});
+}
 
-  // 강점 박스
-  s.addShape(pptx.ShapeType.rect,{x:3.6,y:aiY+.1,w:2.05,h:1.38,
-    fill:{color:'052E16'},line:{color:'34D399',width:.8},rectRadius:.08});
-  s.addText('강점 영역',{x:3.73,y:aiY+.14,w:1.8,h:.2,fontSize:8,bold:true,color:'34D399',fontFace:KF});
-  s.addText(`${COMP_NAMES[sIdx]}  ${strongest.v}점`,{x:3.73,y:aiY+.36,w:1.8,h:.2,fontSize:9,bold:true,color:'FFFFFF',fontFace:KF});
-  s.addText(LEVEL_DESC[strongest.k][strongest.v],{x:3.73,y:aiY+.58,w:1.8,h:.82,fontSize:7.5,color:'94A3B8',fontFace:KF,wrap:true,valign:'top'});
+async function exportOrgPPT(){
+  const org=document.getElementById('batch-org-filter')?.value||'';
+  if(!org){alert('조직을 먼저 선택하세요.');return;}
+  const list=EMPLOYEES.filter(e=>e.org===org);
+  if(!list.length){alert('선택한 조직에 구성원 데이터가 없습니다.');return;}
+  const pptx=buildPptDocument(`${org} 조직 개인 레포트`);
+  list.sort((a,b)=>a.name.localeCompare(b.name,'ko')).forEach(emp=>addExecutivePptSlide(pptx,emp));
+  await pptx.writeFile({fileName:`${org}_조직_mySUNI 핵심 역량 레포트_${ACTIVE_PERIOD}.pptx`});
+}
 
-  // 성장 박스
-  s.addShape(pptx.ShapeType.rect,{x:5.72,y:aiY+.1,w:2.05,h:1.38,
-    fill:{color:'2D0A0A'},line:{color:'FCA5A5',width:.8},rectRadius:.08});
-  s.addText('성장 필요',{x:5.85,y:aiY+.14,w:1.8,h:.2,fontSize:8,bold:true,color:'FCA5A5',fontFace:KF});
-  s.addText(`${COMP_NAMES[wIdx]}  ${weakest.v}점`,{x:5.85,y:aiY+.36,w:1.8,h:.2,fontSize:9,bold:true,color:'FFFFFF',fontFace:KF});
-  s.addText(`목표(${emp.target[weakest.k]}점)까지 +${emp.target[weakest.k]-weakest.v}점 필요`,{x:5.85,y:aiY+.58,w:1.8,h:.82,fontSize:7.5,color:'94A3B8',fontFace:KF,wrap:true,valign:'top'});
-
-  // 개발 과제 박스
-  s.addShape(pptx.ShapeType.rect,{x:7.84,y:aiY+.1,w:1.88,h:1.38,
-    fill:{color:'0D1629'},line:{color:'FCD34D',width:.8},rectRadius:.08});
-  s.addText(`개발 과제`,{x:7.97,y:aiY+.14,w:1.62,h:.2,fontSize:8,bold:true,color:'FCD34D',fontFace:KF});
-  s.addText(`${COMP_NAMES[gIdx]} (GAP +${topGap.gap})`,{x:7.97,y:aiY+.36,w:1.62,h:.2,fontSize:8,bold:true,color:'FFFFFF',fontFace:KF});
-  recs.slice(0,2).forEach((rec,i)=>{
-    s.addText(`• ${rec}`,{x:7.97,y:aiY+.6+i*.38,w:1.62,h:.36,fontSize:7,color:'CBD5E1',fontFace:KF,wrap:true,valign:'top'});
-  });
-
-  // 푸터
-  s.addText(`mySUNI 4대 핵심역량 관리 시스템  ·  ${today}  ·  ${emp.name} 전용`,{
-    x:.15,y:5.45,w:9.7,h:.17,fontSize:7.5,color:'1E3A8A',fontFace:KF,align:'center'});
-
-  await pptx.writeFile({fileName:`${emp.name}_역량레포트_26년.pptx`});
+async function exportAllPPT(){
+  if(!EMPLOYEES.length){alert('내보낼 데이터가 없습니다.');return;}
+  const pptx=buildPptDocument('mySUNI 전체 구성원 개인 레포트');
+  const list=[...EMPLOYEES].sort((a,b)=>`${a.org}${a.name}`.localeCompare(`${b.org}${b.name}`,'ko'));
+  list.forEach(emp=>addExecutivePptSlide(pptx,emp));
+  await pptx.writeFile({fileName:`mySUNI_전체구성원_핵심 역량 레포트_${ACTIVE_PERIOD}.pptx`});
 }
 
 // ══════════════════════════════════════════
@@ -1330,40 +2328,391 @@ async function exportToPPT(empId){
 // ══════════════════════════════════════════
 function printIndividualReport(empId){
   const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
   const orgEmps=EMPLOYEES.filter(e=>e.org===emp.org);
   const orgAvg=compAvgObj(orgEmps),ca=COMP_AVG;
   const oa=overallAvg(emp.current),ot=overallAvg(emp.target);
+  const gaps=COMP_KEYS.map(k=>({k,gap:emp.target[k]-emp.current[k]})).sort((a,b)=>b.gap-a.gap);
+  const topGap=gaps[0];
+  const topIdx=COMP_KEYS.indexOf(topGap.k);
+  const recs=DEV_RECS[topGap.k][Math.min(emp.current[topGap.k],4)];
+  const areaPoints=buildAreaDevelopmentPoints(emp,ca);
+  const radarData=createRadarImageData(emp,orgAvg,ca,900,760);
   const today=new Date().toLocaleDateString('ko-KR');
   const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
   <title>${emp.name} 역량 레포트</title>
-  <style>body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;max-width:800px;margin:0 auto;padding:40px;color:#0F172A;font-size:13px}
-  h1{font-size:22px;color:#0A1628;border-bottom:3px solid #0A1628;padding-bottom:10px;margin-bottom:6px}
-  .sub{color:#94A3B8;font-size:12px;margin-bottom:30px}
-  .profile{background:#0A1628;color:#fff;padding:18px 22px;border-radius:10px;margin-bottom:24px}
-  .profile h2{font-size:18px;margin-bottom:5px}
-  .profile p{font-size:12px;opacity:.7}
-  h2{font-size:15px;color:#1E3A8A;border-bottom:1px solid #BFDBFE;padding-bottom:6px;margin:20px 0 10px}
-  table{width:100%;border-collapse:collapse;font-size:12px}
-  th{background:#F8FAFC;padding:8px 10px;border:1px solid #E2E8F0;font-weight:600;color:#475569}
-  td{padding:8px 10px;border:1px solid #E2E8F0;text-align:center}
-  .red{color:#DC2626;font-weight:700}.green{color:#059669;font-weight:700}
-  ul{padding-left:18px}li{padding:3px 0;line-height:1.7}
-  p{margin-bottom:8px;line-height:1.75}
-  @media print{body{padding:20px}}</style>
+  <style>
+  :root{--navy:#0A1628;--line:#E2E8F0;--muted:#64748B;--blue:#1E3A8A}
+  body{font-family:'돋움','Dotum','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#F8FAFC;margin:0;padding:0;color:#0F172A}
+  .paper{max-width:900px;margin:18px auto;background:#fff;border:1px solid #DCE3EE;border-radius:14px;padding:24px;box-shadow:0 6px 20px rgba(15,23,42,.08)}
+  .head{border-bottom:2px solid var(--navy);padding-bottom:12px;margin-bottom:14px}
+  .title{font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--navy)}
+  .sub{font-size:11px;color:var(--muted);margin-top:4px}
+  .profile{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;background:#F8FAFC;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+  .name{font-size:18px;font-weight:700;color:var(--navy)}
+  .meta{font-size:12px;color:#475569;margin-top:3px}
+  .kpi{font-size:12px;font-weight:700;color:var(--blue);text-align:right;line-height:1.7}
+  .grid{display:grid;grid-template-columns:1.12fr .88fr;gap:12px;margin-bottom:12px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .card h2{font-size:13px;color:var(--blue);margin:0 0 8px 0}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th,td{border:1px solid var(--line);padding:6px 7px;text-align:center}
+  th{background:#F8FAFC;color:#475569;font-weight:700}
+  td:first-child{text-align:left;font-weight:700}
+  .g{color:#DC2626;font-weight:700}
+  .radar{width:100%;height:250px;display:flex;align-items:center;justify-content:center;background:#fff}
+  .radar img{max-width:100%;max-height:100%;object-fit:contain}
+  .pts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .pt{border:1px solid var(--line);background:#FAFCFF;border-radius:10px;padding:8px 9px}
+  .pt h3{font-size:12px;margin:0 0 5px 0;color:#0F172A}
+  .pt .s{font-size:10px;color:#1E40AF;margin-bottom:4px}
+  .pt p{font-size:11px;line-height:1.56;color:#334155;margin:0}
+  .memo{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .memo h2{font-size:13px;color:var(--blue);margin:0 0 8px 0}
+  .memo p{font-size:11px;line-height:1.68;margin:3px 0}
+  .q{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+  .footer{margin-top:14px;font-size:10px;color:#94A3B8;text-align:center}
+  @page{size:A4 portrait;margin:10mm}
+  @media print{
+    body{background:#fff}
+    .paper{box-shadow:none;border:none;border-radius:0;margin:0;max-width:none;padding:0}
+  }
+  </style>
   </head><body>
-  <h1>mySUNI 4대 핵심역량 개인 레포트</h1>
-  <div class="sub">발행일: ${today} · '26년 연초 기준</div>
-  <div class="profile"><h2>${emp.name}</h2><p>${emp.org} · ${emp.role} · 근무 ${emp.years}년차 · 현수준 ${oa.toFixed(2)}점 / 목표 ${ot.toFixed(2)}점</p></div>
-  <h2>역량별 점수 현황</h2>
-  <table><tr><th>역량</th><th>연초 현수준</th><th>목표수준</th><th>GAP</th><th>조직평균</th><th>전사평균</th><th>연말 수준</th></tr>
-  ${COMP_KEYS.map((k,i)=>{const c=emp.current[k],t=emp.target[k];return`<tr><td style="text-align:left;font-weight:700">${COMP_NAMES[i]}</td><td><strong>${c}점</strong></td><td>${t}점</td><td class="red">+${t-c}점</td><td>${orgAvg[k].toFixed(2)}점</td><td>${ca[k].toFixed(2)}점</td><td style="color:#94A3B8">미측정</td></tr>`;}).join('')}
-  </table>
-  <h2>역량 수준 설명</h2>
-  ${COMP_KEYS.map((k,i)=>`<p><strong>${COMP_NAMES[i]} (${emp.current[k]}점):</strong> ${LEVEL_DESC[k][emp.current[k]]}</p>`).join('')}
-  <h2>AI 기반 개발 권고사항</h2>
-  ${(()=>{const ranked=[...COMP_KEYS].map(k=>({k,v:emp.current[k]})).sort((a,b)=>b.v-a.v);const gaps=COMP_KEYS.map(k=>({k,gap:emp.target[k]-emp.current[k]})).sort((a,b)=>b.gap-a.gap);const topGap=gaps[0];const idx=COMP_KEYS.indexOf(topGap.k);const recs=DEV_RECS[topGap.k][Math.min(emp.current[topGap.k],4)];return`<p><strong>종합:</strong> 현수준 평균 ${oa.toFixed(2)}점, 목표 ${ot.toFixed(2)}점 (GAP +${(ot-oa).toFixed(2)}점).</p><p><strong>강점:</strong> ${COMP_NAMES[COMP_KEYS.indexOf(ranked[0].k)]}(${ranked[0].v}점) — ${LEVEL_DESC[ranked[0].k][ranked[0].v]}</p><p><strong>우선 개발:</strong> ${COMP_NAMES[idx]}(현재 ${emp.current[topGap.k]}점 → 목표 ${emp.target[topGap.k]}점)</p><ul>${recs.map(r=>`<li>${r}</li>`).join('')}</ul>`;})()}
+  <div class="paper">
+    <div class="head">
+      <div class="title">mySUNI 4대 핵심역량 개인 레포트</div>
+      <div class="sub">${displayPeriod(ACTIVE_PERIOD)} 기준 · 발행일 ${today}</div>
+    </div>
+    <div class="profile">
+      <div>
+        <div class="name">${emp.name}</div>
+        <div class="meta">${emp.org} · ${emp.role} · 근무 ${emp.years}년차</div>
+      </div>
+      <div class="kpi">현수준 ${oa.toFixed(2)}점<br>목표 ${ot.toFixed(2)}점<br>GAP +${(ot-oa).toFixed(2)}점</div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h2>역량별 점수 현황</h2>
+        <table><tr><th>역량</th><th>현재</th><th>목표</th><th>GAP</th><th>조직</th><th>전사</th></tr>
+        ${COMP_KEYS.map((k,i)=>{const c=emp.current[k],t=emp.target[k];return`<tr><td>${COMP_NAMES[i]}</td><td><strong>${c}</strong></td><td>${t}</td><td class="g">+${t-c}</td><td>${orgAvg[k].toFixed(2)}</td><td>${ca[k].toFixed(2)}</td></tr>`;}).join('')}
+        </table>
+      </div>
+      <div class="card">
+        <h2>레이더 분석</h2>
+        <div class="radar"><img src="${radarData}" alt="radar"></div>
+      </div>
+    </div>
+    <div class="pts">
+      ${areaPoints.map(p=>`<div class="pt"><h3>${p.name}</h3><div class="s">${p.scoreText}</div><p>${escHtml(p.body)}</p></div>`).join('')}
+    </div>
+    <div class="memo">
+      <h2>면담용 핵심 메모</h2>
+      <p>• 우선 개발 과제: <strong>${COMP_NAMES[topIdx]}</strong> (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})</p>
+      <p>• 권고 액션: ${recs[0]} / ${recs[1]}</p>
+      <p>• 변화과제 의견: Global(${escHtml(qual.change?.globalConcern||'응답 없음')}), AI(${escHtml(qual.change?.aiConcern||'응답 없음')})</p>
+      <div class="q">
+        ${COMP_KEYS.map((k,i)=>{const q=qual[k]||{};return`<p><strong>${COMP_NAMES[i]}</strong> - 현재: ${escHtml(q.current||'응답 없음')} / 향후: ${escHtml(q.plan||'응답 없음')}</p>`;}).join('')}
+      </div>
+    </div>
+    <div class="footer">mySUNI 자동 생성 (임원 면담용 요약본)</div>
+  </div>
   </body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),400);
+}
+
+function textOrEmpty(v){
+  return v===undefined||v===null?'':String(v).trim();
+}
+function parseScore(v){
+  if(v===undefined||v===null||v==='')return NaN;
+  if(typeof v==='number')return v;
+  const m=String(v).match(/-?\d+(\.\d+)?/);
+  return m?Number(m[0]):NaN;
+}
+function escHtml(v){
+  return String(v??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function shortText(v,max=44){
+  const s=textOrEmpty(v).replace(/\s+/g,' ');
+  return s.length>max?`${s.slice(0,max-1)}…`:s;
+}
+
+function parseCsvLine(line){
+  const out=[];let cur='',q=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){
+      if(q&&line[i+1]==='"'){cur+='"';i++;}
+      else q=!q;
+    }else if(ch===','&&!q){out.push(cur);cur='';}
+    else cur+=ch;
+  }
+  out.push(cur);
+  return out.map(v=>v.trim());
+}
+
+function parseCsv(text){
+  const lines=text.replace(/\r/g,'').split('\n').filter(v=>v.trim());
+  if(lines.length<2)return [];
+  const headers=parseCsvLine(lines[0]).map(h=>h.trim().toLowerCase().replace(/\s+/g,'_'));
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const vals=parseCsvLine(lines[i]);
+    const row={};
+    headers.forEach((h,idx)=>row[h]=vals[idx]??'');
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseExcelWorkbook(arrayBuffer){
+  if(typeof XLSX==='undefined')throw new Error('엑셀 파서 로드 실패');
+  const wb=XLSX.read(arrayBuffer,{type:'array'});
+  const rawSheet=wb.SheetNames.find(n=>/raw/i.test(n))||wb.SheetNames[1]||wb.SheetNames[0];
+  const masterSheet=wb.SheetNames.find(n=>/문항|옵션|마스터/i.test(n))||wb.SheetNames[0];
+  const rawRows=XLSX.utils.sheet_to_json(wb.Sheets[rawSheet],{defval:''});
+  const masterRows=wb.Sheets[masterSheet]?XLSX.utils.sheet_to_json(wb.Sheets[masterSheet],{defval:''}):[];
+  const questionMap={};
+  const optionMap={Q14:{},Q17:{}};
+  masterRows.forEach(r=>{
+    const col=textOrEmpty(r['컬럼명']);
+    const qtext=textOrEmpty(r['문항명']);
+    if(col&&qtext)questionMap[col]=qtext;
+    const q=textOrEmpty(r['문항']).toUpperCase();
+    const no=textOrEmpty(r['옵션번호']);
+    const opt=textOrEmpty(r['옵션']);
+    if((q==='Q14'||q==='Q17')&&no&&opt)optionMap[q][no]=opt;
+  });
+  return{rawRows,questionMap,optionMap};
+}
+
+function pick(row,keys){
+  for(const k of keys){
+    if(row[k]!==undefined&&row[k]!==null&&String(row[k]).trim()!=='')return row[k];
+  }
+  return '';
+}
+function keyNorm(s){
+  return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[\(\)\[\]{}]/g,'');
+}
+function pickByPrefix(row,prefixes){
+  const ps=prefixes.map(keyNorm);
+  for(const [k,v] of Object.entries(row||{})){
+    if(v===undefined||v===null||String(v).trim()==='')continue;
+    const nk=keyNorm(k);
+    if(ps.some(p=>nk.startsWith(p)))return v;
+  }
+  return '';
+}
+
+function decodeMultiOption(raw,optionMap){
+  const s=textOrEmpty(raw);
+  if(!s)return '';
+  const tokens=s.split(/[,/;|\n]+/).map(v=>v.trim()).filter(Boolean);
+  const decoded=tokens.map(t=>{
+    const m=t.match(/^(\d+)/);
+    if(m&&optionMap[m[1]])return optionMap[m[1]];
+    return '';
+  }).filter(Boolean);
+  if(decoded.length)return decoded.join(', ');
+  return s;
+}
+function getMergedOptionMap(qCode,customMap={}){
+  return{...(DEFAULT_MULTI_OPTIONS[qCode]||{}),...(customMap||{})};
+}
+function decodeSurveyAnswerByCode(code,answer){
+  const c=textOrEmpty(code);
+  if(c==='Question_14_문항')return decodeMultiOption(answer,getMergedOptionMap('Q14',OPTION_MASTER.Q14));
+  if(c==='Question_17_문항')return decodeMultiOption(answer,getMergedOptionMap('Q17',OPTION_MASTER.Q17));
+  return textOrEmpty(answer);
+}
+function decodeOptionMixedText(raw,qCode){
+  const s=textOrEmpty(raw);
+  if(!s)return '';
+  const map=getMergedOptionMap(qCode,qCode==='Q14'?OPTION_MASTER.Q14:OPTION_MASTER.Q17);
+  const tokens=s.split(/[,/;|\n]+/).map(v=>v.trim()).filter(Boolean);
+  if(!tokens.length)return s;
+  let changed=false;
+  const out=tokens.map(tok=>{
+    const m=tok.match(/^(\d+)/);
+    if(m&&map[m[1]]){changed=true;return map[m[1]];}
+    return tok;
+  });
+  return changed?out.join(', '):s;
+}
+function decodedQualitative(qual){
+  const q=qual||blankQualitative();
+  return{
+    ...q,
+    leadership:{...(q.leadership||{}),plan:decodeOptionMixedText(q.leadership?.plan,'Q17')},
+    change:{
+      ...(q.change||{}),
+      globalConcern:decodeOptionMixedText(q.change?.globalConcern,'Q14'),
+      aiConcern:decodeOptionMixedText(q.change?.aiConcern,'Q17')
+    }
+  };
+}
+
+function normalizeRawQuestionRow(row,idx,meta={}){
+  const qMap=meta.questionMap||{};
+  const optionMap=meta.optionMap||{Q14:{},Q17:{}};
+  const q14Decoded=decodeMultiOption(row['Question_14_문항'],getMergedOptionMap('Q14',optionMap.Q14));
+  const q17Decoded=decodeMultiOption(row['Question_17_문항'],getMergedOptionMap('Q17',optionMap.Q17));
+  const current={
+    domain:parseScore(pick(row,['Question_2_문항_1'])),
+    ai:parseScore(pick(row,['Question_6_문항_1'])),
+    global:parseScore(pick(row,['Question_9_문항_1'])),
+    leadership:parseScore(pick(row,['Question_11_문항_1'])),
+  };
+  const target={
+    domain:parseScore(pick(row,['Question_2_문항_2'])),
+    ai:parseScore(pick(row,['Question_6_문항_2'])),
+    global:parseScore(pick(row,['Question_9_문항_2'])),
+    leadership:parseScore(pick(row,['Question_11_문항_2'])),
+  };
+  if(!COMP_KEYS.every(k=>Number.isFinite(current[k])&&Number.isFinite(target[k])))return null;
+  const q=blankQualitative();
+  q.domain.current=textOrEmpty(pick(row,['Question_1_문항']));
+  q.domain.plan=textOrEmpty(pick(row,['Question_4_문항']));
+  q.domain.support=[textOrEmpty(pick(row,['Question_3_문항'])),textOrEmpty(pick(row,['Question_5_문항']))].filter(Boolean).join(' / ');
+  q.ai.current=textOrEmpty(pick(row,['Question_7_문항']));
+  q.ai.plan=textOrEmpty(pick(row,['Question_8_문항']));
+  q.ai.support=textOrEmpty(pick(row,['Question_18_문항']));
+  q.global.current=textOrEmpty(pick(row,['Question_10_문항']));
+  q.global.plan=textOrEmpty(pick(row,['Question_15_문항']));
+  q.global.support=textOrEmpty(pick(row,['Question_16_문항']));
+  q.leadership.current=textOrEmpty(pick(row,['Question_12_문항']));
+  q.leadership.plan=q17Decoded||textOrEmpty(pick(row,['Question_17_문항']));
+  q.leadership.support=textOrEmpty(pick(row,['Question_13_문항']));
+  q.change.globalConcern=[q14Decoded,textOrEmpty(pick(row,['Question_15_문항']))].filter(Boolean).join(' / ');
+  q.change.globalSupport=textOrEmpty(pick(row,['Question_16_문항']));
+  q.change.aiConcern=q17Decoded||textOrEmpty(pick(row,['Question_17_문항']));
+  q.change.aiSupport=textOrEmpty(pick(row,['Question_18_문항']));
+
+  const years=Number(pick(row,['체류기간']))||1;
+  const surveyItems=Object.entries(qMap).map(([code,label])=>{
+    let ans=textOrEmpty(row[code]);
+    if(code==='Question_14_문항')ans=q14Decoded||ans;
+    if(code==='Question_17_문항')ans=q17Decoded||ans;
+    return{code,label,answer:ans||'응답 없음'};
+  });
+  return{
+    id:idx+1,
+    name:textOrEmpty(pick(row,['참여자']))||`구성원 ${idx+1}`,
+    org:textOrEmpty(pick(row,['부서명']))||'미분류',
+    role:textOrEmpty(pick(row,['직책']))||'RF',
+    years,
+    birth:textOrEmpty(pick(row,['생년월일'])),
+    current:Object.fromEntries(COMP_KEYS.map(k=>[k,Math.max(1,Math.min(5,Math.round(current[k])))])),
+    target:Object.fromEntries(COMP_KEYS.map(k=>[k,Math.max(1,Math.min(5,Math.round(target[k])))])),
+    yearEnd:null,
+    qualitative:q,
+    survey:{items:surveyItems}
+  };
+}
+
+function normalizeRow(row,idx){
+  const g=(...keys)=>{for(const k of keys){if(row[k]!==undefined&&String(row[k]).trim()!=='')return row[k];}return '';};
+  const n=v=>Math.max(1,Math.min(5,Number(v)));
+  const e={
+    id:idx+1,
+    name:String(g('name','이름')).trim(),
+    org:String(g('org','조직')).trim(),
+    role:String(g('role','직책')).trim()||'RF',
+    years:Number(g('years','연차','근무년차'))||1,
+    birth:textOrEmpty(g('birth','birthday','생년월일')),
+    current:{
+      domain:n(g('domain_current','domain_cur')),
+      ai:n(g('ai_current','ai_cur')),
+      global:n(g('global_current','global_cur')),
+      leadership:n(g('leadership_current','leadership_cur'))
+    },
+    target:{
+      domain:n(g('domain_target','domain_tgt')),
+      ai:n(g('ai_target','ai_tgt')),
+      global:n(g('global_target','global_tgt')),
+      leadership:n(g('leadership_target','leadership_tgt'))
+    },
+    yearEnd:null,
+    qualitative:blankQualitative()
+  };
+  e.qualitative.domain.current=textOrEmpty(g('domain_current_comment','domain_asis'));
+  e.qualitative.domain.plan=textOrEmpty(g('domain_plan','domain_tobe'));
+  e.qualitative.ai.current=textOrEmpty(g('ai_current_comment','ai_asis'));
+  e.qualitative.ai.plan=textOrEmpty(g('ai_plan','ai_tobe'));
+  e.qualitative.global.current=textOrEmpty(g('global_current_comment','global_asis'));
+  e.qualitative.global.plan=textOrEmpty(g('global_plan','global_tobe'));
+  e.qualitative.leadership.current=textOrEmpty(g('leadership_current_comment','leadership_asis'));
+  e.qualitative.leadership.plan=textOrEmpty(g('leadership_plan','leadership_tobe'));
+  if(!e.name||!e.org||!Number.isFinite(e.current.domain)||!Number.isFinite(e.target.domain))return null;
+  return e;
+}
+
+async function handleEmployeeFile(ev){
+  const file=ev.target.files&&ev.target.files[0];
+  if(!file)return;
+  const status=document.getElementById('upload-status');
+  try{
+    const periodInput=textOrEmpty(document.getElementById('import-period')?.value);
+    const importPeriod=periodInput||`${new Date().getFullYear()}-연초`;
+    const lower=file.name.toLowerCase();
+    let rows=[];
+    if(lower.endsWith('.json')){
+      const text=await file.text();
+      const parsed=JSON.parse(text);
+      rows=(Array.isArray(parsed)?parsed:[]).map(normalizeEmployeeObject).filter(Boolean);
+    }else if(lower.endsWith('.xlsx')||lower.endsWith('.xls')){
+      const buf=await file.arrayBuffer();
+      const parsed=parseExcelWorkbook(buf);
+      QUESTION_MASTER=parsed.questionMap||{};
+      OPTION_MASTER=parsed.optionMap||{Q14:{},Q17:{}};
+      rows=(parsed.rawRows||[]).map((r,i)=>normalizeRawQuestionRow(r,i,{questionMap:QUESTION_MASTER,optionMap:OPTION_MASTER})).filter(Boolean);
+    }else{
+      const text=await file.text();
+      rows=parseCsv(text);
+      rows=rows.map(normalizeRow).filter(Boolean);
+    }
+    const emps=rows;
+    if(!emps.length)throw new Error('유효한 행이 없습니다.');
+    SURVEY_STORE[importPeriod]=emps.map((e,idx)=>normalizeEmployeeObject(e,idx));
+    ACTIVE_PERIOD=importPeriod;
+    EMPLOYEES=SURVEY_STORE[ACTIVE_PERIOD];
+    DATA_MODE='uploaded';
+    syncAfterEmployeeChange(false);
+    persistEmployees();
+    selectedEmp=null;
+    renderOverview();
+    if(document.getElementById('tab-org').classList.contains('active'))renderOrgTab();
+    if(document.getElementById('tab-competency').classList.contains('active'))renderCompetencyTab();
+    if(document.getElementById('tab-individual').classList.contains('active'))renderEmpList();
+    if(document.getElementById('tab-report').classList.contains('active'))renderCompanyReport();
+    if(document.getElementById('tab-admin').classList.contains('active'))renderAdminTab();
+  }catch(err){
+    if(status){status.textContent=`업로드 실패: ${err.message}`;status.style.color='#B91C1C';}
+  }finally{
+    ev.target.value='';
+  }
+}
+
+function downloadTemplate(){
+  const cols=['name','org','role','years','domain_current','ai_current','global_current','leadership_current','domain_target','ai_target','global_target','leadership_target','domain_current_comment','domain_plan','ai_current_comment','ai_plan','global_current_comment','global_plan','leadership_current_comment','leadership_plan'];
+  const sample=[
+    ['홍길동','AI역량육성','RF',3,3,3,2,3,4,4,3,4,'데이터 분석 중심','현업 연계 프로젝트 확대','문서 자동화 반복','에이전트 실습','영문 메일이 부담','영어회의 정기 참여','소규모 리딩 경험','중규모 프로젝트 리딩'],
+    ['김mySUNI','리더십개발','팀장',7,4,4,3,4,5,5,4,5,'도메인 지식 공유 중','전사 사례화','과제 자동화 확장','실행 표준 정착','해외 협업 경험 보완','글로벌 커뮤니케이션 체계화','변화과제 리딩','후배 코칭 강화']
+  ];
+  const csv=[cols.join(','),...sample.map(r=>r.join(','))].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='mysuni_competency_template.csv';
+  document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ══════════════════════════════════════════
@@ -1371,7 +2720,24 @@ function printIndividualReport(empId){
 // ══════════════════════════════════════════
 function renderCompanyReport(){
   const today=new Date().toLocaleDateString('ko-KR');
-  const stats=COMP_STATS,ca=COMP_AVG,ta=TGT_AVG;
+  const periodTrend=getPeriods().map(p=>{
+    const emps=SURVEY_STORE[p]||[];
+    const ca=compAvgObj(emps),ta=tgtAvgObj(emps);
+    return{
+      period:p,count:emps.length,
+      current:overallAvg(ca),target:overallAvg(ta),
+      domain:ca.domain||0,ai:ca.ai||0,global:ca.global||0,leadership:ca.leadership||0
+    };
+  });
+  const snap=getSummarySnapshot();
+  const ca=snap.current,ta=snap.target;
+  const stats=Object.fromEntries(COMP_KEYS.map(k=>[k,{
+    mean:ca[k],
+    std:snap.std[k],
+    tmean:ta[k],
+    gap:ta[k]-ca[k],
+    dist:snap.distPct[k]
+  }]));
   const allMean=overallAvg(ca),allTgt=overallAvg(ta);
   const tls=EMPLOYEES.filter(e=>e.role==='팀장'),rfs=EMPLOYEES.filter(e=>e.role==='RF');
   const yr12=EMPLOYEES.filter(e=>e.years<=2),yr34=EMPLOYEES.filter(e=>e.years>=3&&e.years<=4),yr5p=EMPLOYEES.filter(e=>e.years>=5);
@@ -1382,25 +2748,64 @@ function renderCompanyReport(){
   let orgRows='';
   for(const org of ORG_LIST){
     const emps=EMPLOYEES.filter(e=>e.org===org);
+    if(!emps.length)continue;
     const oa2=compAvgObj(emps),ta2=tgtAvgObj(emps);
     const m=overallAvg(oa2),t=overallAvg(ta2);
-    const c=ORG_COLORS[org];
+    const c=getOrgColor(org);
     orgRows+=`<tr><td><span class="otag" style="background:${c.tag};color:${c.tt}">${org}</span></td><td class="text-center">${emps.length}명</td>
     ${COMP_KEYS.map(k=>`<td class="text-center">${oa2[k].toFixed(2)}</td>`).join('')}
     <td class="text-center"><strong>${m.toFixed(2)}</strong></td><td class="text-center">${t.toFixed(2)}</td>
     <td class="text-center" style="color:#DC2626;font-weight:700">+${(t-m).toFixed(2)}</td></tr>`;
   }
 
-  const groups=[{l:'팀장',e:tls},{l:'RF',e:rfs},{l:'1~2년차',e:yr12},{l:'3~4년차',e:yr34},{l:'5년 이상',e:yr5p}];
-  const demoRows=groups.map(g=>{const oa2=compAvgObj(g.e);return`<tr><td>${g.l} (${g.e.length}명)</td>${COMP_KEYS.map(k=>`<td class="text-center">${oa2[k].toFixed(2)}</td>`).join('')}<td class="text-center"><strong>${overallAvg(oa2).toFixed(2)}</strong></td></tr>`;}).join('');
+  const roleGroups=[{l:'팀장',e:tls},{l:'RF',e:rfs}];
+  const yearGroups=[{l:'1~2년차',e:yr12},{l:'3~4년차',e:yr34},{l:'5년 이상',e:yr5p}];
+  const ageMap={};
+  EMPLOYEES.forEach(e=>{
+    const label=ageBandLabel(calcAge(e.birth));
+    if(!ageMap[label])ageMap[label]=[];
+    ageMap[label].push(e);
+  });
+  const ageOrder=['29세 이하','30~34세','35~39세','40~44세','45세 이상','미확인'];
+  const ageGroups=ageOrder.filter(l=>ageMap[l]?.length).map(l=>({l,e:ageMap[l]}));
+  const makeTraitRows=(groups)=>groups.map(g=>{
+    const oa2=compAvgObj(g.e);
+    return`<tr><td>${g.l} (${g.e.length}명)</td>${COMP_KEYS.map(k=>`<td class="text-center">${oa2[k].toFixed(2)}</td>`).join('')}<td class="text-center"><strong>${overallAvg(oa2).toFixed(2)}</strong></td></tr>`;
+  }).join('')||`<tr><td colspan="${COMP_KEYS.length+2}" class="text-center">데이터 없음</td></tr>`;
+  const overallTraitRow=`<tr style="background:#EFF6FF;font-weight:700"><td>전체 평균 (${EMPLOYEES.length}명)</td>${COMP_KEYS.map(k=>`<td class="text-center">${ca[k].toFixed(2)}</td>`).join('')}<td class="text-center"><strong>${allMean.toFixed(2)}</strong></td></tr>`;
+  const roleTraitRows=makeTraitRows(roleGroups);
+  const yearTraitRows=makeTraitRows(yearGroups);
+  const ageTraitRows=makeTraitRows(ageGroups);
+  const yearRows=yearFeatureRows().map(r=>`<tr>
+    <td>${r.label}</td><td class="text-center">${r.count}명</td>
+    <td class="text-center">${r.avg.toFixed(2)}</td><td class="text-center">${r.target.toFixed(2)}</td>
+    <td class="text-center">${COMP_NAMES[COMP_KEYS.indexOf(r.topComp)]}</td>
+    <td>${r.keywords}</td>
+  </tr>`).join('');
+  const qualRows=qualBandRows().map(r=>`<tr>
+    <td>${COMP_NAMES[COMP_KEYS.indexOf(r.comp)]}</td>
+    <td class="text-center">${r.band}</td>
+    <td class="text-center">${r.count}명 (${r.ratio.toFixed(1)}%)</td>
+    <td class="text-center">${r.respRate.toFixed(1)}%</td>
+    <td>${r.keywords}</td>
+  </tr>`).join('');
+  const hlRows=highLowConcernRows().map(r=>`<tr>
+    <td>${COMP_NAMES[COMP_KEYS.indexOf(r.comp)]}</td>
+    <td class="text-center">${r.band}</td>
+    <td class="text-center">${r.count}명 (${r.ratio.toFixed(1)}%)</td>
+    <td>${r.concernKw}</td>
+    <td>${r.expectKw}</td>
+    <td>${escHtml(r.concernEx)}</td>
+    <td>${escHtml(r.expectEx)}</td>
+  </tr>`).join('');
 
   document.getElementById('company-report-content').innerHTML=`
     <div class="report-header">
       <div>
         <h1>mySUNI 구성원 4대 핵심역량 현황 보고서</h1>
-        <p>'26년 연초 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${EMPLOYEES.length}명 (팀장 ${tls.length}명 / RF ${rfs.length}명)</p>
+        <p>${displayPeriod(ACTIVE_PERIOD)} 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${snap.total}명 (팀장 ${snap.lead}명 / RF ${snap.rf}명) ${DATA_MODE==='demo'?'&nbsp;|&nbsp; 개인/조직 상세는 데모 데이터':''}</p>
       </div>
-      <div class="report-logo">mySUNI</div>
+      <div class="report-logo"><img src="mysuni-logo-transparent.png" alt="mySUNI" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">mySUNI</span></div>
     </div>
 
     <div class="rep-sec">
@@ -1415,43 +2820,113 @@ function renderCompanyReport(){
         </div>
         <p style="font-size:13px;line-height:1.85;color:#334155">
           전체 역량 평균은 <strong>${allMean.toFixed(2)}점</strong>으로, 개인이 주어진 과제를 이해하고 독립적으로 수행 가능한 단계(3점)에 근접한 수준입니다.
-          '26년 목표 평균은 <strong>${allTgt.toFixed(2)}점</strong>으로 변화 설계·리딩이 가능한 수준을 지향하며, 전사 평균 <strong>+${(allTgt-allMean).toFixed(2)}점</strong>의 성장이 필요합니다.
+          ${displayPeriod(ACTIVE_PERIOD)} 목표 평균은 <strong>${allTgt.toFixed(2)}점</strong>으로 변화 설계·리딩이 가능한 수준을 지향하며, 전사 평균 <strong>+${(allTgt-allMean).toFixed(2)}점</strong>의 성장이 필요합니다.
         </p>
       </div>
     </div>
 
     <div class="rep-sec">
-      <h2>2. 역량별 상세 현황</h2>
+      <h2>2. 기간별 누적 추이</h2>
       <table>
-        <tr><th>역량</th><th class="text-center">현수준</th><th class="text-center">표준편차</th><th class="text-center">목표수준</th><th class="text-center">GAP</th><th class="text-center">1점(%)</th><th class="text-center">2점(%)</th><th class="text-center">3점(%)</th><th class="text-center">4점(%)</th><th class="text-center">5점(%)</th></tr>
-        ${COMP_KEYS.map((k,i)=>{const s=stats[k],tot=EMPLOYEES.length;return`<tr><td><strong>${COMP_NAMES[i]}</strong></td><td class="text-center"><strong>${s.mean.toFixed(2)}</strong></td><td class="text-center">${s.std.toFixed(2)}</td><td class="text-center">${s.tmean.toFixed(2)}</td><td class="text-center" style="color:#DC2626;font-weight:700">+${s.gap.toFixed(2)}</td>${s.dist.map(v=>`<td class="text-center">${(v/tot*100).toFixed(1)}%</td>`).join('')}</tr>`;}).join('')}
+        <tr><th>기간</th><th class="text-center">인원</th><th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}</tr>
+        ${periodTrend.map(r=>`<tr style="${r.period===ACTIVE_PERIOD?'background:#EFF6FF;font-weight:700':''}">
+          <td>${r.period}${r.period===ACTIVE_PERIOD?' (현재 선택)':''}</td>
+          <td class="text-center">${r.count}명</td>
+          <td class="text-center">${r.current.toFixed(2)}</td>
+          <td class="text-center">${r.target.toFixed(2)}</td>
+          <td class="text-center">${r.domain.toFixed(2)}</td>
+          <td class="text-center">${r.ai.toFixed(2)}</td>
+          <td class="text-center">${r.global.toFixed(2)}</td>
+          <td class="text-center">${r.leadership.toFixed(2)}</td>
+        </tr>`).join('')}
       </table>
     </div>
 
     <div class="rep-sec">
-      <h2>3. 조직별 역량 현황</h2>
+      <h2>3. 역량별 상세 현황</h2>
+      <table>
+        <tr><th>역량</th><th class="text-center">현수준</th><th class="text-center">표준편차</th><th class="text-center">목표수준</th><th class="text-center">GAP</th><th class="text-center">1점(%)</th><th class="text-center">2점(%)</th><th class="text-center">3점(%)</th><th class="text-center">4점(%)</th><th class="text-center">5점(%)</th></tr>
+        ${COMP_KEYS.map((k,i)=>{const s=stats[k];return`<tr><td><strong>${COMP_NAMES[i]}</strong></td><td class="text-center"><strong>${s.mean.toFixed(2)}</strong></td><td class="text-center">${s.std.toFixed(2)}</td><td class="text-center">${s.tmean.toFixed(2)}</td><td class="text-center" style="color:#DC2626;font-weight:700">+${s.gap.toFixed(2)}</td>${s.dist.map(v=>`<td class="text-center">${v.toFixed(1)}%</td>`).join('')}</tr>`;}).join('')}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>4. 조직별 역량 현황</h2>
       <table>
         <tr><th>조직</th><th class="text-center">인원</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th><th class="text-center">목표</th><th class="text-center">GAP</th></tr>
         ${orgRows}
-        <tr style="background:#EFF6FF;font-weight:700"><td>전사 평균</td><td class="text-center">${EMPLOYEES.length}명</td>${COMP_KEYS.map(k=>`<td class="text-center">${ca[k].toFixed(2)}</td>`).join('')}<td class="text-center">${allMean.toFixed(2)}</td><td class="text-center">${allTgt.toFixed(2)}</td><td class="text-center" style="color:#DC2626">+${(allTgt-allMean).toFixed(2)}</td></tr>
+        <tr style="background:#EFF6FF;font-weight:700"><td>전사 평균</td><td class="text-center">${snap.total}명</td>${COMP_KEYS.map(k=>`<td class="text-center">${ca[k].toFixed(2)}</td>`).join('')}<td class="text-center">${allMean.toFixed(2)}</td><td class="text-center">${allTgt.toFixed(2)}</td><td class="text-center" style="color:#DC2626">+${(allTgt-allMean).toFixed(2)}</td></tr>
       </table>
     </div>
 
     <div class="rep-sec">
-      <h2>4. Demo별 역량 특성 (직책·연차)</h2>
+      <h2>5. 직책별 역량 특성</h2>
       <table>
         <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
-        ${demoRows}
+        ${roleTraitRows}
+        ${overallTraitRow}
       </table>
     </div>
 
     <div class="rep-sec">
-      <h2>5. 핵심 시사점 및 육성 방향</h2>
+      <h2>6. 연차별 역량 특성</h2>
+      <table>
+        <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
+        ${yearTraitRows}
+        ${overallTraitRow}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>7. 연령별 역량 특성 (생년월일 기반)</h2>
+      <table>
+        <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
+        ${ageTraitRows}
+        ${overallTraitRow}
+      </table>
+      <p style="font-size:11px;color:#64748B;margin-top:8px">연령은 시스템 현재일(${new Date().toLocaleDateString('ko-KR')}) 기준 만 나이로 산출</p>
+    </div>
+
+    <div class="rep-sec">
+      <h2>8. 연차별 특성 및 정성의견 키워드</h2>
+      <table>
+        <tr><th>연차 그룹</th><th class="text-center">인원</th><th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th><th class="text-center">주요 성장영역</th><th>정성의견 키워드(상위)</th></tr>
+        ${yearRows}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>9. 응답 비율별 정성의견 특성 (점수구간 기준)</h2>
+      <table>
+        <tr><th>역량</th><th class="text-center">점수구간</th><th class="text-center">인원/비율</th><th class="text-center">정성 응답률</th><th>정성의견 키워드(상위)</th></tr>
+        ${qualRows}
+      </table>
+      <p style="font-size:11px;color:#64748B;margin-top:8px">정성 응답률: 해당 점수구간 인원 중 의견(현재/향후/지원요청)을 1개 이상 작성한 비율</p>
+    </div>
+
+    <div class="rep-sec">
+      <h2>10. 영역별 상·하위 응답자 우려/기대사항</h2>
+      <table>
+        <tr>
+          <th>역량</th>
+          <th class="text-center">구간</th>
+          <th class="text-center">인원/비율</th>
+          <th>주요 우려 키워드</th>
+          <th>주요 기대 키워드</th>
+          <th>대표 우려 원문</th>
+          <th>대표 기대 원문</th>
+        </tr>
+        ${hlRows}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>11. 핵심 시사점 및 육성 방향</h2>
       <div class="rep-box">
         <h3>① 성장 GAP 최대 전략 영역: ${COMP_NAMES[hiGapIdx]}</h3>
         <ul class="ins-list">
           <li>${COMP_NAMES[hiGapIdx]} 역량은 현수준 ${stats[hiGap.k].mean.toFixed(2)}점 대비 목표 ${stats[hiGap.k].tmean.toFixed(2)}점으로, <strong>+${stats[hiGap.k].gap.toFixed(2)}점</strong>의 최대 GAP을 기록하고 있습니다.</li>
-          <li>전체 구성원의 ${((stats[hiGap.k].dist[0]+stats[hiGap.k].dist[1])/EMPLOYEES.length*100).toFixed(1)}%가 2점 이하에 분포하고 있어 집중 육성이 필요합니다.</li>
+          <li>전체 구성원의 ${(stats[hiGap.k].dist[0]+stats[hiGap.k].dist[1]).toFixed(1)}%가 2점 이하에 분포하고 있어 집중 육성이 필요합니다.</li>
           <li>실무 데이터 기반 실습과 1:1 맞춤형 코칭 등 실전형 지원이 효과적입니다.</li>
         </ul>
       </div>
@@ -1476,7 +2951,7 @@ function renderCompanyReport(){
           <li>개인별 CDP(Career Development Plan) 수립 및 1:1 리더 면담을 통한 목표 확정</li>
           <li>AI SUPEX Lab 과제 실행, AI Tool 구독 지원, 학습 커뮤니티 운영 등 성장 기반 조성</li>
           <li>Global 역량 강화를 위한 OPIC 진행 및 어학 코칭 프로그램 시행</li>
-          <li>'26년 연말 재진단을 통한 성장 GAP 모니터링 및 육성 계획 갱신</li>
+          <li>반기/연말 재진단을 통한 기간별 성장 GAP 모니터링 및 육성 계획 갱신</li>
         </ul>
       </div>
     </div>
@@ -1492,18 +2967,33 @@ function renderCompanyReport(){
 // ══════════════════════════════════════════
 function initFilters(){
   const sel=document.getElementById('emp-org-filter');
-  for(const org of ORG_LIST){const o=document.createElement('option');o.value=o.textContent=org;sel.appendChild(o);}
+  const bsel=document.getElementById('batch-org-filter');
+  sel.innerHTML='<option value="">전체 조직</option>';
+  if(bsel)bsel.innerHTML='<option value="">조직 선택 (일괄 출력)</option>';
+  for(const org of ORG_LIST){
+    const o=document.createElement('option');o.value=o.textContent=org;sel.appendChild(o);
+    if(bsel){const bo=document.createElement('option');bo.value=bo.textContent=org;bsel.appendChild(bo);}
+  }
 }
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
   if(tab==='overview')renderOverview();
   else if(tab==='org')renderOrgTab();
+  else if(tab==='competency')renderCompetencyTab();
   else if(tab==='individual')renderEmpList();
   else if(tab==='report')renderCompanyReport();
+  else if(tab==='admin')renderAdminTab();
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+document.getElementById('employee-file').addEventListener('change',handleEmployeeFile);
+try{
+  localStorage.removeItem(EMP_STORAGE_KEY);
+  localStorage.removeItem(ACTIVE_PERIOD_KEY);
+}catch(_){}
 initFilters();
+updateDataModeUI();
+renderPeriodSelector();
 renderOverview();
 </script>
 </body>
