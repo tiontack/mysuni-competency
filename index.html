@@ -2279,6 +2279,10 @@ function addExecutivePptSlide(pptx,emp){
     if(!wrapped.length)return `${label}응답 없음`;
     return wrapped.join('\n');
   };
+  const fitAreaBody=(text,maxLen=36,maxLines=6)=>{
+    const wrapped=wrapTextForPpt(textOrEmpty(text)||'응답 없음',maxLen).slice(0,maxLines);
+    return wrapped.join('\n');
+  };
   const memoTask=fitMemo('• 우선 개발 과제: ',`${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,64,1);
   const memoExec=fitMemo('• 실행 권고: ',`${recs[0]} / ${recs[1]}`,62,1);
   const memoGlobal=fitMemo('• 본인 의견/변화과제(Global): ',qual.change?.globalConcern,60,1);
@@ -2336,19 +2340,19 @@ function addExecutivePptSlide(pptx,emp){
   addTxt('영역별 개발 포인트',{x:.34,y:5.34,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   areaPoints.forEach((p,i)=>{
     const x=(i%2===0)?.34:3.82;
-    const y=5.62+Math.floor(i/2)*2.3;
-    s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.36,h:2.22,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
+    const y=5.62+Math.floor(i/2)*2.44;
+    s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.36,h:2.34,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
     addTxt(p.name,{x:x+.12,y:y+.12,w:1.5,h:.24,fontFace:KF,fontSize:F_AREA,bold:true,color:'0F172A'});
     addTxt(p.scoreText,{x:x+.12,y:y+.46,w:3.12,h:.24,fontFace:KF,fontSize:F_SCORE,color:'1E40AF'});
-    addTxt(p.body,{x:x+.12,y:y+.8,w:3.12,h:1.3,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+    addTxt(fitAreaBody(p.body,36,6),{x:x+.12,y:y+.8,w:3.12,h:1.5,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
   });
 
-  addTxt('면담용 핵심 메모',{x:.34,y:10.44,w:2.8,h:.22,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
-  s.addShape(pptx.ShapeType.roundRect,{x:.34,y:10.72,w:6.84,h:1.24,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  addTxt(memoTask,{x:.5,y:10.82,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'0F172A',valign:'top'});
-  addTxt(memoExec,{x:.5,y:11.04,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
-  addTxt(memoGlobal,{x:.5,y:11.26,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
-  addTxt(memoAi,{x:.5,y:11.48,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+  addTxt('면담용 핵심 메모',{x:.34,y:10.56,w:2.8,h:.22,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
+  s.addShape(pptx.ShapeType.roundRect,{x:.34,y:10.84,w:6.84,h:1.12,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
+  addTxt(memoTask,{x:.5,y:10.9,w:6.52,h:.18,fontFace:KF,fontSize:F_BODY,color:'0F172A',valign:'top'});
+  addTxt(memoExec,{x:.5,y:11.08,w:6.52,h:.18,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+  addTxt(memoGlobal,{x:.5,y:11.26,w:6.52,h:.18,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+  addTxt(memoAi,{x:.5,y:11.44,w:6.52,h:.18,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
 
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
   s.addImage({path:'/mysuni-competency/mysuni-logo-transparent.png',x:5.86,y:11.86,w:1.24,h:1.44});
