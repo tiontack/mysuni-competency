@@ -558,6 +558,12 @@ select:focus{border-color:var(--blue)}
 .one-login-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
 .one-sec{border:1px solid var(--border);border-radius:10px;background:#F8FAFC;padding:12px;margin-top:12px}
 .one-sec h4{margin:0 0 8px 0;font-size:13px;color:#0F172A}
+.one-compare{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin-top:10px}
+.one-compare-card{border:1px solid #DBEAFE;background:#F8FBFF;border-radius:10px;padding:8px 10px}
+.one-compare-card .nm{font-size:11px;color:#1E3A8A;font-weight:700}
+.one-compare-card .sc{font-size:14px;color:#0F172A;font-weight:800;margin-top:4px}
+.one-compare-card .dg{font-size:11px;margin-top:2px}
+.one-compare-card .up{color:#059669}.one-compare-card .dn{color:#B91C1C}
 .one-text{width:100%;min-height:88px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:10px;font-family:inherit;font-size:13px;line-height:1.6}
 .one-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .one-hist{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px;max-height:280px;overflow:auto}
@@ -572,6 +578,7 @@ select:focus{border-color:var(--blue)}
   .one-layout{grid-template-columns:1fr}
   .one-list{max-height:300px}
   .one-login-grid{grid-template-columns:1fr}
+  .one-compare{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -2163,17 +2170,11 @@ function oneOnOneDeleteHistory(empId,hid){
   renderOneOnOneTab();
 }
 function oneOnOneOpenIndividual(empId){
-  const emp=EMPLOYEES.find(e=>e.id===empId);
-  if(!emp)return;
-  selectedEmp=emp;
-  filteredEmps=[...EMPLOYEES];
-  const orgSel=document.getElementById('emp-org-filter');
-  if(orgSel)orgSel.value=emp.org;
-  const q=document.getElementById('emp-search');
-  if(q)q.value='';
-  filterEmployees();
-  switchTab('individual');
-  selectEmployee(emp);
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const u=new URL(window.location.href);
+  u.searchParams.set('tab','individual');
+  u.searchParams.set('emp',String(empId));
+  window.open(u.toString(),'_blank','noopener');
 }
 function renderOneOnOneTab(){
   const root=document.getElementById('oneonone-root');
@@ -2209,6 +2210,16 @@ function renderOneOnOneTab(){
   }
   const org=ONEONONE_SESSION.org;
   const acc=ensureOneOnOneAccount(org);
+  const orgAvg=compAvgObj(EMPLOYEES.filter(e=>e.org===org));
+  const cmpHtml=COMP_KEYS.map((k,i)=>{
+    const ov=orgAvg[k],cv=COMP_AVG[k],dg=ov-cv;
+    const cls=dg>=0?'up':'dn';
+    return `<div class="one-compare-card">
+      <div class="nm">${COMP_NAMES[i]}</div>
+      <div class="sc">${ov.toFixed(2)} <span style="font-size:11px;color:#64748B;font-weight:600">/ 전사 ${cv.toFixed(2)}</span></div>
+      <div class="dg ${cls}">${dg>=0?'+':''}${dg.toFixed(2)}p</div>
+    </div>`;
+  }).join('');
   const members=oneOnOneOrgEmployees();
   const emp=oneOnOneSelectedEmp();
   const listHtml=members.length?members.map(m=>{
@@ -2289,6 +2300,7 @@ function renderOneOnOneTab(){
         </div>
         <button class="btn btn-ghost" onclick="oneOnOneLogout()">로그아웃</button>
       </div>
+      <div class="one-compare">${cmpHtml}</div>
     </div>
     <div class="one-layout">
       <div class="one-list">${listHtml}</div>
@@ -3540,6 +3552,27 @@ function initFilters(){
     if(bsel){const bo=document.createElement('option');bo.value=bo.textContent=org;bsel.appendChild(bo);}
   }
 }
+function applyRouteFromUrl(){
+  try{
+    const u=new URL(window.location.href);
+    const tab=textOrEmpty(u.searchParams.get('tab'));
+    const empId=Number(u.searchParams.get('emp'));
+    if(tab&&['overview','org','competency','individual','oneonone','report','admin'].includes(tab)){
+      switchTab(tab);
+    }
+    if(tab==='individual'&&Number.isFinite(empId)){
+      const emp=EMPLOYEES.find(e=>e.id===empId);
+      if(emp){
+        const orgSel=document.getElementById('emp-org-filter');
+        if(orgSel)orgSel.value=emp.org;
+        const q=document.getElementById('emp-search');
+        if(q)q.value='';
+        filterEmployees();
+        selectEmployee(emp);
+      }
+    }
+  }catch(_){}
+}
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
@@ -3562,6 +3595,7 @@ loadOneOnOneData();
 updateDataModeUI();
 renderPeriodSelector();
 renderOverview();
+applyRouteFromUrl();
 </script>
 </body>
 </html>
