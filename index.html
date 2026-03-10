@@ -693,6 +693,7 @@ function checkPassword(){
       <tbody id="comp-insight-tbody"></tbody>
     </table>
   </div>
+  <div class="section grid-2" id="comp-ai-cards"></div>
 </div>
 
 <!-- ══ TAB 3 : INDIVIDUAL ══ -->
@@ -1480,6 +1481,22 @@ function renderCompetencyTab(){
       <td class="text-center">${r.highPct.toFixed(1)}%</td>
       <td class="text-center"><strong>${r.devIndex.toFixed(1)}</strong></td>
     </tr>`).join('');
+  }
+  const cardWrap=document.getElementById('comp-ai-cards');
+  if(cardWrap){
+    cardWrap.innerHTML=rows.map((r,idx)=>`
+      <div class="card">
+        <div class="card-title"><div class="ct-dot"></div>${r.name}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <span class="info-chip chip-blue">현수준 ${r.cur.toFixed(2)}</span>
+          <span class="info-chip chip-orange">목표 ${r.tgt.toFixed(2)}</span>
+          <span class="info-chip chip-red">GAP +${r.gap.toFixed(2)}</span>
+          <span class="info-chip chip-green">하위비율 ${r.lowPct.toFixed(1)}%</span>
+          <span class="info-chip chip-blue">상위비율 ${r.highPct.toFixed(1)}%</span>
+        </div>
+        <div class="ai-text">${competencyAIText(r,idx+1)}</div>
+      </div>
+    `).join('');
   }
   destroyChart('chart-comp-insight');
   const ctx=document.getElementById('chart-comp-insight')?.getContext('2d');
