@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" href="/mysuni-competency/assets/fonts/Freesentation-4Regular.ttf?v=20260310c" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="/mysuni-competency/assets/fonts/Freesentation-7Bold.ttf?v=20260310c" as="font" type="font/ttf" crossorigin>
-<link rel="preload" href="/mysuni-competency/mysuni-wordmark-white.png?v=20260310c" as="image">
+<link rel="preload" href="/mysuni-competency/mysuni-wordmark-white.png?v=20260310d" as="image">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
@@ -69,7 +69,7 @@ header::after{
 }
 .hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:nowrap}
 .hdr-logo{height:34px;display:flex;align-items:center;flex-shrink:0}
-.hdr-logo-img{height:30px;width:auto;object-fit:contain;display:block}
+.hdr-logo-img{height:34px;width:auto;object-fit:contain;display:block}
 .hdr-logo,.hdr-title{cursor:pointer}
 .hdr-logo-text{
   background:linear-gradient(135deg,#2563EB,#60A5FA);
@@ -454,10 +454,9 @@ select:focus{border-color:var(--blue)}
 .report-header h1{font-size:24px;font-weight:800;color:var(--navy);margin-bottom:5px;letter-spacing:-.02em}
 .report-header p{font-size:13px;color:var(--text-3)}
 .report-logo{
-  background:#0A1628;border:1px solid rgba(10,22,40,.35);border-radius:8px;
-  padding:6px 10px;display:flex;align-items:center;justify-content:center;min-width:92px;min-height:34px;flex-shrink:0;
+  padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.report-logo img{height:20px;width:auto;display:block}
+.report-logo img{height:24px;width:auto;display:block}
 .report-logo .fallback{font-size:11px;font-weight:800;letter-spacing:.5px;color:#fff}
 .rep-sec{margin-bottom:36px}
 .rep-sec h2{
@@ -550,8 +549,8 @@ select:focus{border-color:var(--blue)}
 ">
   <div style="text-align:center;padding:48px 56px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;backdrop-filter:blur(20px);min-width:360px">
     <div style="margin-bottom:24px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:rgba(10,22,40,.72);border:1px solid rgba(255,255,255,.25);padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">
-        <img src="/mysuni-competency/mysuni-wordmark-white.png?v=20260310c" alt="mySUNI" style="height:22px;width:auto" onerror="this.onerror=null;this.src='mysuni-wordmark-white.png?v=20260310c'">
+      <div style="display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:2px 0;margin-bottom:16px">
+        <img src="/mysuni-competency/mysuni-wordmark-white.png?v=20260310d" alt="mySUNI" style="height:34px;width:auto" onerror="this.onerror=null;this.src='mysuni-wordmark-white.png?v=20260310d'">
       </div>
       <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em">4대 핵심역량 관리 시스템</div>
       <div style="font-size:13px;color:#64748B;margin-top:6px">접근 권한이 필요합니다</div>
@@ -609,7 +608,7 @@ function showLoginScreen(){
 <header>
   <div class="hdr">
     <div class="hdr-logo" onclick="showLoginScreen()" title="로그인 화면으로 이동">
-      <img src="/mysuni-competency/mysuni-wordmark-white.png?v=20260310c" class="hdr-logo-img" alt="mySUNI" onerror="this.onerror=null;this.src='mysuni-wordmark-white.png?v=20260310c'">
+      <img src="/mysuni-competency/mysuni-wordmark-white.png?v=20260310d" class="hdr-logo-img" alt="mySUNI" onerror="this.onerror=null;this.src='mysuni-wordmark-white.png?v=20260310d'">
     </div>
     <div class="hdr-title" onclick="showLoginScreen()" title="로그인 화면으로 이동">4대 핵심역량 관리 시스템</div>
     <div class="hdr-sep"></div>
@@ -2845,7 +2844,7 @@ function renderCompanyReport(){
         <h1>mySUNI 구성원 4대 핵심역량 현황 보고서</h1>
         <p>${displayPeriod(ACTIVE_PERIOD)} 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${snap.total}명 (팀장 ${snap.lead}명 / RF ${snap.rf}명) ${DATA_MODE==='demo'?'&nbsp;|&nbsp; 개인/조직 상세는 데모 데이터':''}</p>
       </div>
-      <div class="report-logo"><img src="/mysuni-competency/mysuni-wordmark-white.png?v=20260310c" alt="mySUNI" onerror="this.onerror=null;this.src='mysuni-wordmark-white.png?v=20260310c'"></div>
+      <div class="report-logo"><img src="/mysuni-competency/mysuni-wordmark-white.png?v=20260310d" alt="mySUNI" onerror="this.onerror=null;this.src='mysuni-wordmark-white.png?v=20260310d'"></div>
     </div>
 
     <div class="rep-sec">
