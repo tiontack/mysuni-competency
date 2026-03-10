@@ -12,15 +12,15 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="preloaded-survey-data.js"></script>
 <style>
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-1Thin.ttf') format('truetype'),url('./assets/fonts/Freesentation-1Thin.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-1Thin.ttf') format('truetype');font-weight:100;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-2ExtraLight.ttf') format('truetype'),url('./assets/fonts/Freesentation-2ExtraLight.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-2ExtraLight.ttf') format('truetype');font-weight:200;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-3Light.ttf') format('truetype'),url('./assets/fonts/Freesentation-3Light.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-3Light.ttf') format('truetype');font-weight:300;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-4Regular.ttf') format('truetype'),url('./assets/fonts/Freesentation-4Regular.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-4Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-5Medium.ttf') format('truetype'),url('./assets/fonts/Freesentation-5Medium.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-5Medium.ttf') format('truetype');font-weight:500;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-6SemiBold.ttf') format('truetype'),url('./assets/fonts/Freesentation-6SemiBold.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-6SemiBold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-7Bold.ttf') format('truetype'),url('./assets/fonts/Freesentation-7Bold.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-7Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-8ExtraBold.ttf') format('truetype'),url('./assets/fonts/Freesentation-8ExtraBold.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-8ExtraBold.ttf') format('truetype');font-weight:800;font-style:normal;font-display:swap}
-@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-9Black.ttf') format('truetype'),url('./assets/fonts/Freesentation-9Black.ttf') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-9Black.ttf') format('truetype');font-weight:900;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-1Thin.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-1Thin.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-1Thin.ttf?v=20260310') format('truetype');font-weight:100;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-2ExtraLight.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-2ExtraLight.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-2ExtraLight.ttf?v=20260310') format('truetype');font-weight:200;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-3Light.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-3Light.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-3Light.ttf?v=20260310') format('truetype');font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-4Regular.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-4Regular.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-4Regular.ttf?v=20260310') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-5Medium.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-5Medium.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-5Medium.ttf?v=20260310') format('truetype');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-6SemiBold.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-6SemiBold.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-6SemiBold.ttf?v=20260310') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-7Bold.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-7Bold.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-7Bold.ttf?v=20260310') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-8ExtraBold.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-8ExtraBold.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-8ExtraBold.ttf?v=20260310') format('truetype');font-weight:800;font-style:normal;font-display:swap}
+@font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-9Black.ttf?v=20260310') format('truetype'),url('./assets/fonts/Freesentation-9Black.ttf?v=20260310') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-9Black.ttf?v=20260310') format('truetype');font-weight:900;font-style:normal;font-display:swap}
 :root{
   --bg:#F0F4F9;
   --surface:#FFFFFF;
@@ -46,7 +46,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:'Freesentation','Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif;
+  font-family:'Freesentation','Pretendard','Apple SD Gothic Neo','Noto Sans KR',-apple-system,sans-serif!important;
   background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
   font-size:16px;line-height:1.55;word-break:keep-all;line-break:strict;
 }
@@ -545,7 +545,7 @@ select:focus{border-color:var(--blue)}
   <div style="text-align:center;padding:48px 56px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;backdrop-filter:blur(20px);min-width:360px">
     <div style="margin-bottom:24px">
       <div style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:rgba(10,22,40,.72);border:1px solid rgba(255,255,255,.25);padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">
-        <img src="mysuni-wordmark-white.png" alt="mySUNI" style="height:22px;width:auto" onerror="this.onerror=null;this.src='/mysuni-competency/mysuni-wordmark-white.png'">
+        <img src="mysuni-wordmark-white.png?v=20260310" alt="mySUNI" style="height:22px;width:auto" onerror="this.onerror=null;this.src='/mysuni-competency/mysuni-wordmark-white.png?v=20260310'">
       </div>
       <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em">4대 핵심역량 관리 시스템</div>
       <div style="font-size:13px;color:#64748B;margin-top:6px">접근 권한이 필요합니다</div>
@@ -603,7 +603,7 @@ function showLoginScreen(){
 <header>
   <div class="hdr">
     <div class="hdr-logo" onclick="showLoginScreen()" title="로그인 화면으로 이동">
-      <img src="mysuni-wordmark-white.png" class="hdr-logo-img" alt="mySUNI" onerror="this.onerror=null;this.src='/mysuni-competency/mysuni-wordmark-white.png'">
+      <img src="mysuni-wordmark-white.png?v=20260310" class="hdr-logo-img" alt="mySUNI" onerror="this.onerror=null;this.src='/mysuni-competency/mysuni-wordmark-white.png?v=20260310'">
     </div>
     <div class="hdr-title" onclick="showLoginScreen()" title="로그인 화면으로 이동">4대 핵심역량 관리 시스템</div>
     <div class="hdr-sep"></div>
@@ -2839,7 +2839,7 @@ function renderCompanyReport(){
         <h1>mySUNI 구성원 4대 핵심역량 현황 보고서</h1>
         <p>${displayPeriod(ACTIVE_PERIOD)} 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${snap.total}명 (팀장 ${snap.lead}명 / RF ${snap.rf}명) ${DATA_MODE==='demo'?'&nbsp;|&nbsp; 개인/조직 상세는 데모 데이터':''}</p>
       </div>
-      <div class="report-logo"><img src="mysuni-wordmark-white.png" alt="mySUNI" onerror="this.onerror=null;this.src='/mysuni-competency/mysuni-wordmark-white.png'"></div>
+      <div class="report-logo"><img src="mysuni-wordmark-white.png?v=20260310" alt="mySUNI" onerror="this.onerror=null;this.src='/mysuni-competency/mysuni-wordmark-white.png?v=20260310'"></div>
     </div>
 
     <div class="rep-sec">
