@@ -2297,7 +2297,12 @@ function addExecutivePptSlide(pptx,emp){
 
   const s=pptx.addSlide();
   s.background={color:'FFFFFF'};
-  const addTxt=(text,opt)=>s.addText(text,{...opt,charSpace:-1});
+  const normColor=c=>String(c||'0F172A').replace('#','');
+  const withStroke=opt=>{
+    const color=normColor(opt?.color);
+    return {...opt,color,transparency:0,outline:{color,pt:0.5}};
+  };
+  const addTxt=(text,opt)=>s.addText(text,withStroke({...opt,charSpace:-1}));
 
   s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
   addTxt('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.24,w:5.5,h:.5,fontFace:KF,fontSize:18,bold:true,color:'0A1628'});
@@ -2311,20 +2316,20 @@ function addExecutivePptSlide(pptx,emp){
 
   addTxt('역량별 점수 현황',{x:.34,y:1.68,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   const th=[
-    {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11}},
-    {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
-    {text:'목표',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
-    {text:'GAP',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
-    {text:'조직',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
-    {text:'전사',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
+    {text:'역량',options:withStroke({bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11})},
+    {text:'현재',options:withStroke({bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'})},
+    {text:'목표',options:withStroke({bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'})},
+    {text:'GAP',options:withStroke({bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'})},
+    {text:'조직',options:withStroke({bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'})},
+    {text:'전사',options:withStroke({bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'})},
   ];
   const tr=COMP_KEYS.map((k,i)=>[
-    {text:COMP_NAMES[i],options:{fontFace:KF,fontSize:F_AREA,bold:true}},
-    {text:`${emp.current[k]}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center',bold:true,color:'1D4ED8'}},
-    {text:`${emp.target[k]}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
-    {text:`+${emp.target[k]-emp.current[k]}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center',bold:true,color:'DC2626'}},
-    {text:`${orgAvg[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
-    {text:`${ca[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:COMP_NAMES[i],options:withStroke({fontFace:KF,fontSize:F_AREA,bold:true})},
+    {text:`${emp.current[k]}`,options:withStroke({fontFace:KF,fontSize:F_SCORE,align:'center',bold:true,color:'1D4ED8'})},
+    {text:`${emp.target[k]}`,options:withStroke({fontFace:KF,fontSize:F_SCORE,align:'center'})},
+    {text:`+${emp.target[k]-emp.current[k]}`,options:withStroke({fontFace:KF,fontSize:F_SCORE,align:'center',bold:true,color:'DC2626'})},
+    {text:`${orgAvg[k].toFixed(1)}`,options:withStroke({fontFace:KF,fontSize:F_SCORE,align:'center'})},
+    {text:`${ca[k].toFixed(1)}`,options:withStroke({fontFace:KF,fontSize:F_SCORE,align:'center'})},
   ]);
   s.addTable([th,...tr],{x:.34,y:2.0,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[1.53,.56,.56,.58,.56,.56]});
 
