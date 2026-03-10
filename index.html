@@ -2236,6 +2236,7 @@ function addExecutivePptSlide(pptx,emp){
   s.addText(`우선 개발 영역: ${COMP_NAMES[topIdx]} (+${topGap.gap})`,{x:3.7,y:1.05,w:3.32,h:.2,fontFace:KF,fontSize:8,color:'DC2626',align:'right'});
 
   s.addText('역량별 점수 현황',{x:.34,y:1.57,w:2.4,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A'});
+  s.addShape(pptx.ShapeType.roundRect,{x:.34,y:1.78,w:3.72,h:2.82,fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},radius:0.08});
   const th=[
     {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4}},
     {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:7.4,align:'center'}},
@@ -2250,9 +2251,9 @@ function addExecutivePptSlide(pptx,emp){
     {text:`${emp.target[k]}`,options:{fontFace:KF,fontSize:8.2,align:'center'}},
     {text:`+${emp.target[k]-emp.current[k]}`,options:{fontFace:KF,fontSize:8.2,align:'center',bold:true,color:'DC2626'}},
     {text:`${orgAvg[k].toFixed(2)}`,options:{fontFace:KF,fontSize:8,align:'center'}},
-    {text:`${ca[k].toFixed(2)}`,options:{fontFace:KF,fontSize:8,align:'center'}},
+    {text:`${ca[k].toFixed(2)} (${(emp.current[k]-ca[k]>=0?'+':'')}${(emp.current[k]-ca[k]).toFixed(2)})`,options:{fontFace:KF,fontSize:7.4,align:'center'}},
   ]);
-  s.addTable([th,...tr],{x:.34,y:1.78,w:3.72,rowH:.33,border:{pt:.5,color:'E2E8F0'},colW:[1.46,.45,.45,.46,.45,.45]});
+  s.addTable([th,...tr],{x:.42,y:1.93,w:3.56,rowH:.4,border:{pt:.5,color:'E2E8F0'},colW:[1.36,.44,.44,.45,.43,.44]});
 
   s.addShape(pptx.ShapeType.roundRect,{x:4.14,y:1.78,w:3.04,h:2.82,fill:{color:'FFFFFF'},line:{color:'E2E8F0',width:.8},radius:0.08});
   s.addText('레이더 분석',{x:4.26,y:1.89,w:1.5,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A'});
@@ -2262,20 +2263,21 @@ function addExecutivePptSlide(pptx,emp){
   s.addText('영역별 개발 포인트',{x:.34,y:4.76,w:2.3,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A'});
   areaPoints.forEach((p,i)=>{
     const x=(i%2===0)?.34:3.82;
-    const y=4.98+Math.floor(i/2)*1.44;
-    s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.36,h:1.31,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
-    s.addText(p.name,{x:x+.12,y:y+.09,w:1.2,h:.18,fontFace:KF,fontSize:8.2,bold:true,color:'0F172A'});
-    s.addText(p.scoreText,{x:x+.12,y:y+.28,w:3.12,h:.17,fontFace:KF,fontSize:7.5,color:'1E40AF'});
-    s.addText(p.body,{x:x+.12,y:y+.46,w:3.12,h:.76,fontFace:KF,fontSize:7.2,color:'334155',valign:'top'});
+    const y=4.98+Math.floor(i/2)*1.58;
+    s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.36,h:1.48,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
+    s.addText(p.name,{x:x+.12,y:y+.1,w:1.4,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'0F172A'});
+    s.addText(p.scoreText,{x:x+.12,y:y+.32,w:3.12,h:.18,fontFace:KF,fontSize:8,color:'1E40AF'});
+    s.addText(p.body,{x:x+.12,y:y+.53,w:3.12,h:.9,fontFace:KF,fontSize:7.8,color:'334155',valign:'top'});
   });
 
-  s.addText('면담용 핵심 메모',{x:.34,y:8.0,w:2.2,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A'});
-  s.addShape(pptx.ShapeType.roundRect,{x:.34,y:8.22,w:6.84,h:3.78,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:8.38,w:6.52,h:.24,fontFace:KF,fontSize:7.6,color:'0F172A'});
-  s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:8.67,w:6.52,h:.52,fontFace:KF,fontSize:7.6,color:'334155'});
-  s.addText(`• 본인 의견(원문): ${focusQual.plan||focusQual.current||focusQual.support||'응답 없음'}`,{x:.5,y:9.24,w:6.52,h:1.08,fontFace:KF,fontSize:7.6,color:'334155',valign:'top'});
-  s.addText(`• 변화과제 의견: Global(${qual.change?.globalConcern||'응답 없음'}) / AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.5,y:10.36,w:6.52,h:1.08,fontFace:KF,fontSize:7.6,color:'334155',valign:'top'});
+  s.addText('면담용 핵심 메모',{x:.34,y:8.28,w:2.2,h:.2,fontFace:KF,fontSize:8.8,bold:true,color:'1E3A8A'});
+  s.addShape(pptx.ShapeType.roundRect,{x:.34,y:8.5,w:6.84,h:2.46,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
+  s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:8.66,w:6.52,h:.22,fontFace:KF,fontSize:7.6,color:'0F172A'});
+  s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:8.92,w:6.52,h:.44,fontFace:KF,fontSize:7.6,color:'334155'});
+  s.addText(`• 본인 의견/변화과제: ${focusQual.plan||focusQual.current||'응답 없음'} | Global(${qual.change?.globalConcern||'응답 없음'}) | AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.5,y:9.39,w:6.52,h:1.42,fontFace:KF,fontSize:7.5,color:'334155',valign:'top'});
 
+  // subtle decorative pattern to avoid a flat lower area
+  ['E2E8F0','DBEAFE','E0E7FF'].forEach((c,i)=>s.addShape(pptx.ShapeType.chevron,{x:5.72+(i*.32),y:11.36+(i*.04),w:.28,h:.14,fill:{color:c},line:{color:c,width:0}}));
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
   s.addText('mySUNI 자동 생성 (임원 면담용 요약본)',{x:.34,y:12.18,w:6.84,h:.18,fontFace:KF,fontSize:6.8,color:'94A3B8',align:'center'});
 }
