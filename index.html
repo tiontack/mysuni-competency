@@ -2283,7 +2283,6 @@ function addExecutivePptSlide(pptx,emp){
   // subtle decorative pattern to avoid a flat lower area
   ['E2E8F0','DBEAFE','E0E7FF'].forEach((c,i)=>s.addShape(pptx.ShapeType.chevron,{x:5.72+(i*.32),y:12.05+(i*.04),w:.28,h:.14,fill:{color:c},line:{color:c,width:0}}));
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
-  s.addText('mySUNI 자동 생성 (임원 면담용 요약본)',{x:.34,y:12.18,w:6.84,h:.18,fontFace:KF,fontSize:11,color:'94A3B8',align:'center'});
 }
 
 function wrapTextForPpt(text,maxLen=62){
