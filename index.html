@@ -2233,7 +2233,7 @@ function addExecutivePptSlide(pptx,emp){
 
   s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
   s.addText('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.18,w:5.5,h:.38,fontFace:KF,fontSize:16,bold:true,color:'0A1628'});
-  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.24,w:2.2,h:.24,fontFace:KF,fontSize:F_META,color:'64748B',align:'right'});
+  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.24,w:2.2,h:.24,fontFace:KF,fontSize:11,color:'64748B',align:'right'});
 
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:.62,w:6.84,h:.82,fill:{color:'F8FAFC'},line:{color:'CBD5E1',width:.8},radius:0.08});
   s.addText(emp.name,{x:.5,y:.76,w:2.6,h:.28,fontFace:KF,fontSize:F_NAME,bold:true,color:'0A1628'});
@@ -2280,8 +2280,6 @@ function addExecutivePptSlide(pptx,emp){
   s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:10.99,w:6.52,h:.26,fontFace:KF,fontSize:F_BODY,color:'334155'});
   s.addText(`• 본인 의견/변화과제: ${focusQual.plan||focusQual.current||'응답 없음'} | Global(${qual.change?.globalConcern||'응답 없음'}) | AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.5,y:11.28,w:6.52,h:.58,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
 
-  // subtle decorative pattern to avoid a flat lower area
-  ['E2E8F0','DBEAFE','E0E7FF'].forEach((c,i)=>s.addShape(pptx.ShapeType.chevron,{x:5.72+(i*.32),y:12.05+(i*.04),w:.28,h:.14,fill:{color:c},line:{color:c,width:0}}));
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
 }
 
