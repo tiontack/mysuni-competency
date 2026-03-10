@@ -2221,65 +2221,69 @@ function addExecutivePptSlide(pptx,emp){
   const focusQual=qual[topGap.k]||{};
   const today=new Date().toLocaleDateString('ko-KR');
   const KF='Freesentation';
-  const FS=2;
-  const fs=v=>Number((v*FS).toFixed(1));
+  const F_NAME=18;
+  const F_META=13;
+  const F_SECTION=13;
+  const F_AREA=12;
+  const F_SCORE=12;
+  const F_BODY=12;
 
   const s=pptx.addSlide();
   s.background={color:'FFFFFF'};
 
   s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
-  s.addText('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.18,w:5.5,h:.38,fontFace:KF,fontSize:fs(14.8),bold:true,color:'0A1628'});
-  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.24,w:2.2,h:.24,fontFace:KF,fontSize:fs(8.6),color:'64748B',align:'right'});
+  s.addText('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.18,w:5.5,h:.38,fontFace:KF,fontSize:16,bold:true,color:'0A1628'});
+  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.24,w:2.2,h:.24,fontFace:KF,fontSize:F_META,color:'64748B',align:'right'});
 
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:.62,w:6.84,h:.82,fill:{color:'F8FAFC'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  s.addText(emp.name,{x:.5,y:.76,w:2.6,h:.28,fontFace:KF,fontSize:fs(13.2),bold:true,color:'0A1628'});
-  s.addText(`${emp.org} · ${emp.role} · ${emp.years}년차`,{x:.5,y:1.02,w:3.45,h:.22,fontFace:KF,fontSize:fs(9.8),color:'475569'});
-  s.addText(`현수준 ${oa.toFixed(2)}  |  목표 ${ot.toFixed(2)}  |  GAP +${(ot-oa).toFixed(2)}`,{x:3.55,y:.84,w:3.47,h:.22,fontFace:KF,fontSize:fs(9.9),bold:true,color:'1E3A8A',align:'right'});
-  s.addText(`우선 개발 영역: ${COMP_NAMES[topIdx]} (+${topGap.gap})`,{x:3.55,y:1.08,w:3.47,h:.22,fontFace:KF,fontSize:fs(9.2),color:'DC2626',align:'right'});
+  s.addText(emp.name,{x:.5,y:.76,w:2.6,h:.28,fontFace:KF,fontSize:F_NAME,bold:true,color:'0A1628'});
+  s.addText(`${emp.org} · ${emp.role} · ${emp.years}년차`,{x:.5,y:1.02,w:3.45,h:.22,fontFace:KF,fontSize:F_META,color:'475569'});
+  s.addText(`현수준 ${oa.toFixed(2)}  |  목표 ${ot.toFixed(2)}  |  GAP +${(ot-oa).toFixed(2)}`,{x:3.55,y:.84,w:3.47,h:.22,fontFace:KF,fontSize:F_SCORE,bold:true,color:'1E3A8A',align:'right'});
+  s.addText(`우선 개발 영역: ${COMP_NAMES[topIdx]} (+${topGap.gap})`,{x:3.55,y:1.08,w:3.47,h:.22,fontFace:KF,fontSize:F_SCORE,color:'DC2626',align:'right'});
 
-  s.addText('역량별 점수 현황',{x:.34,y:1.58,w:2.8,h:.24,fontFace:KF,fontSize:fs(10.4),bold:true,color:'1E3A8A'});
+  s.addText('역량별 점수 현황',{x:.34,y:1.58,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   const th=[
-    {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:fs(9)}},
-    {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:fs(9),align:'center'}},
-    {text:'목표',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:fs(9),align:'center'}},
-    {text:'GAP',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:fs(9),align:'center'}},
-    {text:'조직',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:fs(9),align:'center'}},
-    {text:'전사',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:fs(9),align:'center'}},
+    {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE}},
+    {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:'목표',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:'GAP',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:'조직',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:'전사',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
   ];
   const tr=COMP_KEYS.map((k,i)=>[
-    {text:COMP_NAMES[i],options:{fontFace:KF,fontSize:fs(8.4),bold:true}},
-    {text:`${emp.current[k]}`,options:{fontFace:KF,fontSize:fs(8.8),align:'center',bold:true,color:'1D4ED8'}},
-    {text:`${emp.target[k]}`,options:{fontFace:KF,fontSize:fs(8.4),align:'center'}},
-    {text:`+${emp.target[k]-emp.current[k]}`,options:{fontFace:KF,fontSize:fs(8.4),align:'center',bold:true,color:'DC2626'}},
-    {text:`${orgAvg[k].toFixed(1)}`,options:{fontFace:KF,fontSize:fs(8),align:'center'}},
-    {text:`${ca[k].toFixed(1)}`,options:{fontFace:KF,fontSize:fs(8),align:'center'}},
+    {text:COMP_NAMES[i],options:{fontFace:KF,fontSize:F_AREA,bold:true}},
+    {text:`${emp.current[k]}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center',bold:true,color:'1D4ED8'}},
+    {text:`${emp.target[k]}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:`+${emp.target[k]-emp.current[k]}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center',bold:true,color:'DC2626'}},
+    {text:`${orgAvg[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:`${ca[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
   ]);
   s.addTable([th,...tr],{x:.34,y:1.9,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[2.05,.46,.46,.5,.44,.44]});
 
-  s.addText('레이더 분석',{x:4.86,y:1.9,w:2.1,h:.24,fontFace:KF,fontSize:fs(10.4),bold:true,color:'1E3A8A'});
+  s.addText('레이더 분석',{x:4.86,y:1.9,w:2.1,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   if(radarData)s.addImage({data:radarData,x:4.82,y:2.17,w:2.34,h:2.62});
-  s.addText('현수준 / 목표 / 조직 / 전사',{x:4.84,y:4.78,w:2.28,h:.2,fontFace:KF,fontSize:fs(7.2),color:'64748B',align:'center'});
+  s.addText('현수준 / 목표 / 조직 / 전사',{x:4.84,y:4.78,w:2.28,h:.2,fontFace:KF,fontSize:F_SCORE,color:'64748B',align:'center'});
 
-  s.addText('영역별 개발 포인트',{x:.34,y:5.14,w:2.8,h:.24,fontFace:KF,fontSize:fs(10.4),bold:true,color:'1E3A8A'});
+  s.addText('영역별 개발 포인트',{x:.34,y:5.14,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   areaPoints.forEach((p,i)=>{
     const x=(i%2===0)?.34:3.82;
     const y=5.42+Math.floor(i/2)*2.3;
     s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.36,h:2.22,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
-    s.addText(p.name,{x:x+.12,y:y+.12,w:1.5,h:.24,fontFace:KF,fontSize:fs(8.6),bold:true,color:'0F172A'});
-    s.addText(p.scoreText,{x:x+.12,y:y+.46,w:3.12,h:.24,fontFace:KF,fontSize:fs(7.8),color:'1E40AF'});
-    s.addText(p.body,{x:x+.12,y:y+.8,w:3.12,h:1.3,fontFace:KF,fontSize:fs(6.8),color:'334155',valign:'top'});
+    s.addText(p.name,{x:x+.12,y:y+.12,w:1.5,h:.24,fontFace:KF,fontSize:F_AREA,bold:true,color:'0F172A'});
+    s.addText(p.scoreText,{x:x+.12,y:y+.46,w:3.12,h:.24,fontFace:KF,fontSize:F_SCORE,color:'1E40AF'});
+    s.addText(p.body,{x:x+.12,y:y+.8,w:3.12,h:1.3,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
   });
 
-  s.addText('면담용 핵심 메모',{x:.34,y:10.34,w:2.8,h:.22,fontFace:KF,fontSize:fs(9.2),bold:true,color:'1E3A8A'});
+  s.addText('면담용 핵심 메모',{x:.34,y:10.34,w:2.8,h:.22,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:10.62,w:6.84,h:1.34,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:10.74,w:6.52,h:.24,fontFace:KF,fontSize:fs(7),color:'0F172A'});
-  s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:10.99,w:6.52,h:.26,fontFace:KF,fontSize:fs(7),color:'334155'});
-  s.addText(`• 본인 의견/변화과제: ${focusQual.plan||focusQual.current||'응답 없음'} | Global(${qual.change?.globalConcern||'응답 없음'}) | AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.5,y:11.28,w:6.52,h:.58,fontFace:KF,fontSize:fs(6.6),color:'334155',valign:'top'});
+  s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:10.74,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'0F172A'});
+  s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:10.99,w:6.52,h:.26,fontFace:KF,fontSize:F_BODY,color:'334155'});
+  s.addText(`• 본인 의견/변화과제: ${focusQual.plan||focusQual.current||'응답 없음'} | Global(${qual.change?.globalConcern||'응답 없음'}) | AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.5,y:11.28,w:6.52,h:.58,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
 
   // subtle decorative pattern to avoid a flat lower area
   ['E2E8F0','DBEAFE','E0E7FF'].forEach((c,i)=>s.addShape(pptx.ShapeType.chevron,{x:5.72+(i*.32),y:12.05+(i*.04),w:.28,h:.14,fill:{color:c},line:{color:c,width:0}}));
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
-  s.addText('mySUNI 자동 생성 (임원 면담용 요약본)',{x:.34,y:12.18,w:6.84,h:.18,fontFace:KF,fontSize:fs(6.8),color:'94A3B8',align:'center'});
+  s.addText('mySUNI 자동 생성 (임원 면담용 요약본)',{x:.34,y:12.18,w:6.84,h:.18,fontFace:KF,fontSize:11,color:'94A3B8',align:'center'});
 }
 
 function wrapTextForPpt(text,maxLen=62){
