@@ -2276,6 +2276,16 @@ function addExecutivePptSlide(pptx,emp){
   const focusQual=qual[topGap.k]||{};
   const radarLine1=`D ${emp.current.domain}/${emp.target.domain}/${orgAvg.domain.toFixed(1)}/${ca.domain.toFixed(1)} | AI ${emp.current.ai}/${emp.target.ai}/${orgAvg.ai.toFixed(1)}/${ca.ai.toFixed(1)}`;
   const radarLine2=`G ${emp.current.global}/${emp.target.global}/${orgAvg.global.toFixed(1)}/${ca.global.toFixed(1)} | L ${emp.current.leadership}/${emp.target.leadership}/${orgAvg.leadership.toFixed(1)}/${ca.leadership.toFixed(1)}`;
+  const fitMemo=(label,text,maxLen=58,maxLines=1)=>{
+    const wrapped=wrapTextForPpt(`${label}${textOrEmpty(text)||'응답 없음'}`,maxLen).slice(0,maxLines);
+    if(!wrapped.length)return `${label}응답 없음`;
+    if(wrapped.length===maxLines&&wrapped[maxLines-1].length>=maxLen)wrapped[maxLines-1]=`${wrapped[maxLines-1].slice(0,maxLen-1)}…`;
+    return wrapped.join('\n');
+  };
+  const memoTask=fitMemo('• 우선 개발 과제: ',`${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,64,1);
+  const memoExec=fitMemo('• 실행 권고: ',`${recs[0]} / ${recs[1]}`,62,1);
+  const memoGlobal=fitMemo('• 본인 의견/변화과제(Global): ',qual.change?.globalConcern,60,1);
+  const memoAi=fitMemo('• 본인 의견/변화과제(AI): ',qual.change?.aiConcern,60,1);
   const today=new Date().toLocaleDateString('ko-KR');
   const KF='돋움';
   const F_NAME=17;
@@ -2336,10 +2346,10 @@ function addExecutivePptSlide(pptx,emp){
 
   addTxt('면담용 핵심 메모',{x:.34,y:10.44,w:2.8,h:.22,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:10.72,w:6.84,h:1.24,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  addTxt(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:10.82,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'0F172A'});
-  addTxt(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:11.04,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'334155'});
-  addTxt(`• 본인 의견/변화과제(Global): ${qual.change?.globalConcern||'응답 없음'}`,{x:.5,y:11.26,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'334155'});
-  addTxt(`• 본인 의견/변화과제(AI): ${qual.change?.aiConcern||'응답 없음'}`,{x:.5,y:11.48,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'334155'});
+  addTxt(memoTask,{x:.5,y:10.82,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'0F172A',valign:'top'});
+  addTxt(memoExec,{x:.5,y:11.04,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+  addTxt(memoGlobal,{x:.5,y:11.26,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+  addTxt(memoAi,{x:.5,y:11.48,w:6.52,h:.2,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
 
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
   s.addImage({path:'/mysuni-competency/mysuni-logo-transparent.png',x:5.86,y:11.86,w:1.24,h:1.44});
