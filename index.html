@@ -2279,7 +2279,8 @@ function addExecutivePptSlide(pptx,emp){
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:10.62,w:6.84,h:1.34,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
   s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:10.74,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'0F172A'});
   s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:10.99,w:6.52,h:.26,fontFace:KF,fontSize:F_BODY,color:'334155'});
-  s.addText(`• 본인 의견/변화과제: ${focusQual.plan||focusQual.current||'응답 없음'} | Global(${qual.change?.globalConcern||'응답 없음'}) | AI(${qual.change?.aiConcern||'응답 없음'})`,{x:.5,y:11.28,w:6.52,h:.58,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+  s.addText(`• 본인 의견/변화과제(Global): ${qual.change?.globalConcern||'응답 없음'}`,{x:.5,y:11.26,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'334155'});
+  s.addText(`• 본인 의견/변화과제(AI): ${qual.change?.aiConcern||'응답 없음'}`,{x:.5,y:11.5,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'334155'});
 
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
   s.addImage({path:'/mysuni-competency/mysuni-logo-transparent.png',x:5.86,y:12.16,w:1.24,h:.36});
