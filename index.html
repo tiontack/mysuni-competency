@@ -2299,7 +2299,7 @@ function addExecutivePptSlide(pptx,emp){
   const normColor=c=>String(c||'0F172A').replace('#','');
   const withStroke=opt=>{
     const color=normColor(opt?.color);
-    return {...opt,color,transparency:0,charSpace:-1,outline:{color,pt:0,transparency:100}};
+    return {...opt,color,transparency:0,charSpace:-1};
   };
   const addTxt=(text,opt)=>s.addText(text,withStroke(opt));
 
