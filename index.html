@@ -53,8 +53,8 @@ header::after{
   background:radial-gradient(ellipse 60% 120% at 70% -10%,rgba(37,99,235,.25) 0%,transparent 70%);
 }
 .hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:nowrap}
-.hdr-logo{height:40px;display:flex;align-items:center;flex-shrink:0}
-.hdr-logo-img{height:40px;width:auto;object-fit:contain;display:none}
+.hdr-logo{height:34px;display:flex;align-items:center;flex-shrink:0}
+.hdr-logo-img{height:30px;width:auto;object-fit:contain;display:none}
 .hdr-logo,.hdr-title{cursor:pointer}
 .hdr-logo-text{
   background:linear-gradient(135deg,#2563EB,#60A5FA);
@@ -439,11 +439,11 @@ select:focus{border-color:var(--blue)}
 .report-header h1{font-size:24px;font-weight:800;color:var(--navy);margin-bottom:5px;letter-spacing:-.02em}
 .report-header p{font-size:13px;color:var(--text-3)}
 .report-logo{
-  background:#fff;border:1px solid var(--border);border-radius:8px;
+  background:#0A1628;border:1px solid rgba(10,22,40,.35);border-radius:8px;
   padding:6px 10px;display:flex;align-items:center;justify-content:center;min-width:92px;min-height:34px;flex-shrink:0;
 }
 .report-logo img{height:20px;width:auto;display:block}
-.report-logo .fallback{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--navy)}
+.report-logo .fallback{font-size:11px;font-weight:800;letter-spacing:.5px;color:#fff}
 .rep-sec{margin-bottom:36px}
 .rep-sec h2{
   font-size:16px;font-weight:800;color:var(--navy);
@@ -535,8 +535,9 @@ select:focus{border-color:var(--blue)}
 ">
   <div style="text-align:center;padding:48px 56px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;backdrop-filter:blur(20px);min-width:360px">
     <div style="margin-bottom:24px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:#fff;border:1px solid rgba(255,255,255,.25);padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">
-        <span style="background:linear-gradient(135deg,#2563EB,#60A5FA);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;font-size:15px">mySUNI</span>
+      <div style="display:inline-flex;align-items:center;justify-content:center;min-height:40px;background:rgba(10,22,40,.72);border:1px solid rgba(255,255,255,.25);padding:6px 16px;border-radius:8px;letter-spacing:.8px;margin-bottom:16px">
+        <img src="mysuni-wordmark-white.png" alt="mySUNI" style="height:22px;width:auto" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+        <span style="display:none;color:#fff;font-weight:800;font-size:15px">mySUNI</span>
       </div>
       <div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-.02em">4대 핵심역량 관리 시스템</div>
       <div style="font-size:13px;color:#64748B;margin-top:6px">접근 권한이 필요합니다</div>
@@ -594,7 +595,7 @@ function showLoginScreen(){
 <header>
   <div class="hdr">
     <div class="hdr-logo" onclick="showLoginScreen()" title="로그인 화면으로 이동">
-      <img src="mysuni-logo-transparent.png" class="hdr-logo-img"
+      <img src="mysuni-wordmark-white.png" class="hdr-logo-img"
         onload="this.style.display='block';this.nextElementSibling.style.display='none'"
         onerror="this.style.display='none'"
         alt="mySUNI">
@@ -2834,7 +2835,7 @@ function renderCompanyReport(){
         <h1>mySUNI 구성원 4대 핵심역량 현황 보고서</h1>
         <p>${displayPeriod(ACTIVE_PERIOD)} 수준 진단 결과 &nbsp;|&nbsp; 발행일: ${today} &nbsp;|&nbsp; 대상: 구성원 ${snap.total}명 (팀장 ${snap.lead}명 / RF ${snap.rf}명) ${DATA_MODE==='demo'?'&nbsp;|&nbsp; 개인/조직 상세는 데모 데이터':''}</p>
       </div>
-      <div class="report-logo"><img src="mysuni-logo-transparent.png" alt="mySUNI" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">mySUNI</span></div>
+      <div class="report-logo"><img src="mysuni-wordmark-white.png" alt="mySUNI" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fallback" style="display:none">mySUNI</span></div>
     </div>
 
     <div class="rep-sec">
