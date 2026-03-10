@@ -2258,7 +2258,7 @@ function addExecutivePptSlide(pptx,emp){
     {text:`${orgAvg[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
     {text:`${ca[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
   ]);
-  s.addTable([th,...tr],{x:.34,y:1.9,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[2.05,.46,.46,.5,.44,.44]});
+  s.addTable([th,...tr],{x:.34,y:1.9,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[1.75,.45,.45,.62,.54,.54]});
 
   s.addText('레이더 분석',{x:4.86,y:1.9,w:2.1,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   if(radarData)s.addImage({data:radarData,x:4.82,y:2.17,w:2.34,h:2.62});
