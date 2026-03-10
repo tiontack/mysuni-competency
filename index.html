@@ -25,6 +25,7 @@
 @font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-8ExtraBold.ttf?v=20260310c') format('truetype'),url('./assets/fonts/Freesentation-8ExtraBold.ttf?v=20260310c') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-8ExtraBold.ttf?v=20260310c') format('truetype');font-weight:800;font-style:normal;font-display:swap}
 @font-face{font-family:'Freesentation';src:url('/mysuni-competency/assets/fonts/Freesentation-9Black.ttf?v=20260310c') format('truetype'),url('./assets/fonts/Freesentation-9Black.ttf?v=20260310c') format('truetype'),url('https://cdn.jsdelivr.net/gh/tiontack/mysuni-competency@main/assets/fonts/Freesentation-9Black.ttf?v=20260310c') format('truetype');font-weight:900;font-style:normal;font-display:swap}
 :root{
+  --header-h:64px;
   --bg:#F0F4F9;
   --surface:#FFFFFF;
   --border:rgba(15,23,42,.08);
@@ -67,7 +68,7 @@ header::after{
   content:'';position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 60% 120% at 70% -10%,rgba(37,99,235,.25) 0%,transparent 70%);
 }
-.hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:nowrap}
+.hdr{max-width:1360px;margin:0 auto;padding:0 28px;height:var(--header-h);display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:nowrap}
 .hdr-logo{height:34px;display:flex;align-items:center;flex-shrink:0}
 .hdr-logo-img{height:34px;width:auto;object-fit:contain;display:block}
 .hdr-logo,.hdr-title{cursor:pointer}
@@ -96,7 +97,10 @@ header::after{
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* ── TAB NAV ────────────────────────────── */
-.tab-nav{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(15,23,42,.04)}
+.tab-nav{
+  background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(15,23,42,.04);
+  position:sticky;top:var(--header-h);z-index:190;
+}
 .tab-nav-inner{max-width:1360px;margin:0 auto;padding:0 28px;display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;white-space:nowrap}
 .tab-btn{
   display:flex;align-items:center;gap:7px;
