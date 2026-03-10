@@ -2234,7 +2234,7 @@ function addExecutivePptSlide(pptx,emp){
 
   s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
   s.addText('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.18,w:5.5,h:.38,fontFace:KF,fontSize:16,bold:true,color:'0A1628'});
-  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.24,w:2.2,h:.24,fontFace:KF,fontSize:11,color:'64748B',align:'right'});
+  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.24,w:2.2,h:.24,fontFace:KF,fontSize:9,color:'64748B',align:'right'});
 
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:.62,w:6.84,h:.82,fill:{color:'F8FAFC'},line:{color:'CBD5E1',width:.8},radius:0.08});
   s.addText(emp.name,{x:.5,y:.76,w:2.6,h:.28,fontFace:KF,fontSize:F_NAME,bold:true,color:'0A1628'});
@@ -2244,12 +2244,12 @@ function addExecutivePptSlide(pptx,emp){
 
   s.addText('역량별 점수 현황',{x:.34,y:1.58,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   const th=[
-    {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE}},
-    {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
-    {text:'목표',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
-    {text:'GAP',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
-    {text:'조직',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
-    {text:'전사',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:F_SCORE,align:'center'}},
+    {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11}},
+    {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
+    {text:'목표',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
+    {text:'GAP',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
+    {text:'조직',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
+    {text:'전사',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
   ];
   const tr=COMP_KEYS.map((k,i)=>[
     {text:COMP_NAMES[i],options:{fontFace:KF,fontSize:F_AREA,bold:true}},
@@ -2259,7 +2259,7 @@ function addExecutivePptSlide(pptx,emp){
     {text:`${orgAvg[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
     {text:`${ca[k].toFixed(1)}`,options:{fontFace:KF,fontSize:F_SCORE,align:'center'}},
   ]);
-  s.addTable([th,...tr],{x:.34,y:1.9,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[1.75,.45,.45,.62,.54,.54]});
+  s.addTable([th,...tr],{x:.34,y:1.9,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[1.53,.56,.56,.58,.56,.56]});
 
   s.addText('레이더 분석',{x:4.86,y:1.9,w:2.1,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   if(radarData)s.addImage({data:radarData,x:4.82,y:2.17,w:2.34,h:2.62});
