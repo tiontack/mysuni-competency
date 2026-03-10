@@ -2279,7 +2279,6 @@ function addExecutivePptSlide(pptx,emp){
   const fitMemo=(label,text,maxLen=58,maxLines=1)=>{
     const wrapped=wrapTextForPpt(`${label}${textOrEmpty(text)||'응답 없음'}`,maxLen).slice(0,maxLines);
     if(!wrapped.length)return `${label}응답 없음`;
-    if(wrapped.length===maxLines&&wrapped[maxLines-1].length>=maxLen)wrapped[maxLines-1]=`${wrapped[maxLines-1].slice(0,maxLen-1)}…`;
     return wrapped.join('\n');
   };
   const memoTask=fitMemo('• 우선 개발 과제: ',`${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,64,1);
@@ -2293,14 +2292,14 @@ function addExecutivePptSlide(pptx,emp){
   const F_SECTION=12;
   const F_AREA=11;
   const F_SCORE=11;
-  const F_BODY=10;
+  const F_BODY=9.5;
 
   const s=pptx.addSlide();
   s.background={color:'FFFFFF'};
   const normColor=c=>String(c||'0F172A').replace('#','');
   const withStroke=opt=>{
     const color=normColor(opt?.color);
-    return {...opt,color,transparency:0,outline:{color,pt:0.5}};
+    return {...opt,color,transparency:0,outline:{color,pt:0,transparency:100}};
   };
   const addTxt=(text,opt)=>s.addText(text,withStroke({...opt,charSpace:-1}));
 
