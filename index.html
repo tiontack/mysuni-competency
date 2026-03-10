@@ -570,6 +570,11 @@ select:focus{border-color:var(--blue)}
 .one-hist-card{border:1px solid #E2E8F0;border-radius:10px;padding:10px;background:#fff}
 .one-hist-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
 .one-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700}
+.one-inline-report{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:10px}
+.one-inline-report table{width:100%;border-collapse:collapse;margin:8px 0}
+.one-inline-report th,.one-inline-report td{border-bottom:1px solid #EEF2F7;padding:6px 4px;font-size:12px;text-align:center}
+.one-inline-report th:first-child,.one-inline-report td:first-child{text-align:left}
+.one-inline-report tr:last-child td{border-bottom:none}
 .one-ai{font-size:13px;line-height:1.7;color:#334155}
 .one-ai ul{margin:6px 0 0 18px;padding:0}
 .one-empty{padding:16px;border:1px dashed #CBD5E1;border-radius:10px;background:#fff;color:#64748B;font-size:13px;text-align:center}
@@ -2171,10 +2176,43 @@ function oneOnOneDeleteHistory(empId,hid){
 }
 function oneOnOneOpenIndividual(empId){
   const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
-  const u=new URL(window.location.href);
-  u.searchParams.set('tab','individual');
-  u.searchParams.set('emp',String(empId));
-  window.open(u.toString(),'_blank','noopener');
+  ONEONONE_SESSION.empId=emp.id;
+  ONEONONE_SESSION.showInlineReport=(ONEONONE_SESSION.showInlineReport===emp.id)?null:emp.id;
+  persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneInlineReportHtml(emp){
+  const orgAvg=compAvgObj(EMPLOYEES.filter(e=>e.org===emp.org));
+  const ca=COMP_AVG;
+  const qual=decodedQualitative(emp.qualitative||blankQualitative());
+  const gaps=COMP_KEYS.map(k=>({k,g:emp.target[k]-emp.current[k]})).sort((a,b)=>b.g-a.g);
+  const top=gaps[0];
+  const topIdx=COMP_KEYS.indexOf(top.k);
+  const recs=DEV_RECS[top.k][Math.min(emp.current[top.k],4)];
+  return `
+    <div class="one-inline-report">
+      <div style="font-size:13px;font-weight:800;color:#0F172A">${escHtml(emp.name)} · 개인 레포트 요약</div>
+      <table>
+        <tr><th>역량</th><th>현재</th><th>목표</th><th>GAP</th><th>조직</th><th>전사</th></tr>
+        ${COMP_KEYS.map((k,i)=>`
+          <tr>
+            <td>${COMP_NAMES[i]}</td>
+            <td><strong>${emp.current[k]}</strong></td>
+            <td>${emp.target[k]}</td>
+            <td style="color:#DC2626;font-weight:700">+${emp.target[k]-emp.current[k]}</td>
+            <td>${orgAvg[k].toFixed(2)}</td>
+            <td>${ca[k].toFixed(2)}</td>
+          </tr>
+        `).join('')}
+      </table>
+      <div class="one-ai">
+        <div><strong>우선 개발 영역:</strong> ${COMP_NAMES[topIdx]} (GAP +${top.g})</div>
+        <div style="margin-top:4px"><strong>코칭 권고:</strong> ${escHtml(recs[0])} / ${escHtml(recs[1])}</div>
+        <div style="margin-top:4px"><strong>변화과제 의견(Global):</strong> ${escHtml(qual.change?.globalConcern||'응답 없음')}</div>
+        <div style="margin-top:4px"><strong>변화과제 의견(AI):</strong> ${escHtml(qual.change?.aiConcern||'응답 없음')}</div>
+      </div>
+    </div>
+  `;
 }
 function renderOneOnOneTab(){
   const root=document.getElementById('oneonone-root');
@@ -2234,6 +2272,7 @@ function renderOneOnOneTab(){
     if(!emp)return `<div class="one-empty">구성원을 선택해 주세요.</div>`;
     const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
     const history=[...rec.history].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    const showInline=ONEONONE_SESSION.showInlineReport===emp.id;
     return `
       <div class="one-panel">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
@@ -2244,8 +2283,13 @@ function renderOneOnOneTab(){
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span class="one-chip">현수준 ${overallAvg(emp.current).toFixed(2)}</span>
             <span class="one-chip" style="background:#FFEDD5;color:#9A3412">목표 ${overallAvg(emp.target).toFixed(2)}</span>
-            <button class="btn btn-ghost" onclick="oneOnOneOpenIndividual(${emp.id})">개인 레포트 보기</button>
+            <button class="btn btn-ghost" onclick="oneOnOneOpenIndividual(${emp.id})">${showInline?'개인 레포트 숨기기':'개인 레포트 보기'}</button>
           </div>
+        </div>
+
+        <div class="one-sec">
+          <h4>개인 레포트 (1on1 내 보기)</h4>
+          ${showInline?oneOnOneInlineReportHtml(emp):'<div class="one-empty">상단 "개인 레포트 보기" 버튼을 누르면 이 박스에서 확인할 수 있습니다.</div>'}
         </div>
 
         <div class="one-sec">
