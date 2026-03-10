@@ -2278,27 +2278,28 @@ function addExecutivePptSlide(pptx,emp){
   const radarLine2=`G ${emp.current.global}/${emp.target.global}/${orgAvg.global.toFixed(1)}/${ca.global.toFixed(1)} | L ${emp.current.leadership}/${emp.target.leadership}/${orgAvg.leadership.toFixed(1)}/${ca.leadership.toFixed(1)}`;
   const today=new Date().toLocaleDateString('ko-KR');
   const KF='돋움';
-  const F_NAME=18;
-  const F_META=13;
-  const F_SECTION=13;
-  const F_AREA=12;
-  const F_SCORE=12;
+  const F_NAME=17;
+  const F_META=12;
+  const F_SECTION=12;
+  const F_AREA=11;
+  const F_SCORE=11;
   const F_BODY=10;
 
   const s=pptx.addSlide();
   s.background={color:'FFFFFF'};
+  const addTxt=(text,opt)=>s.addText(text,{...opt,charSpace:-1});
 
   s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
-  s.addText('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.24,w:5.5,h:.5,fontFace:KF,fontSize:19,bold:true,color:'0A1628'});
-  s.addText(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.36,w:2.2,h:.24,fontFace:KF,fontSize:9,color:'64748B',align:'right'});
+  addTxt('mySUNI 4대 핵심역량 개인 레포트',{x:.34,y:.24,w:5.5,h:.5,fontFace:KF,fontSize:18,bold:true,color:'0A1628'});
+  addTxt(`${displayPeriod(ACTIVE_PERIOD)} 기준 · ${today}`,{x:4.95,y:.36,w:2.2,h:.24,fontFace:KF,fontSize:8,color:'64748B',align:'right'});
 
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:.74,w:6.84,h:.82,fill:{color:'F8FAFC'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  s.addText(emp.name,{x:.5,y:.88,w:2.6,h:.28,fontFace:KF,fontSize:F_NAME,bold:true,color:'0A1628'});
-  s.addText(`${emp.org} · ${emp.role} · ${emp.years}년차`,{x:.5,y:1.14,w:3.45,h:.22,fontFace:KF,fontSize:F_META,color:'475569'});
-  s.addText(`현수준 ${oa.toFixed(2)}  |  목표 ${ot.toFixed(2)}  |  GAP +${(ot-oa).toFixed(2)}`,{x:3.55,y:.96,w:3.47,h:.22,fontFace:KF,fontSize:F_SCORE,bold:true,color:'1E3A8A',align:'right'});
-  s.addText(`우선 개발 영역: ${COMP_NAMES[topIdx]} (+${topGap.gap})`,{x:3.55,y:1.2,w:3.47,h:.22,fontFace:KF,fontSize:F_SCORE,color:'DC2626',align:'right'});
+  addTxt(emp.name,{x:.5,y:.88,w:2.6,h:.28,fontFace:KF,fontSize:F_NAME,bold:true,color:'0A1628'});
+  addTxt(`${emp.org} · ${emp.role} · ${emp.years}년차`,{x:.5,y:1.14,w:3.45,h:.22,fontFace:KF,fontSize:F_META,color:'475569'});
+  addTxt(`현수준 ${oa.toFixed(2)}  |  목표 ${ot.toFixed(2)}  |  GAP +${(ot-oa).toFixed(2)}`,{x:3.55,y:.96,w:3.47,h:.22,fontFace:KF,fontSize:F_SCORE,bold:true,color:'1E3A8A',align:'right'});
+  addTxt(`우선 개발 영역: ${COMP_NAMES[topIdx]} (+${topGap.gap})`,{x:3.55,y:1.2,w:3.47,h:.22,fontFace:KF,fontSize:F_SCORE,color:'DC2626',align:'right'});
 
-  s.addText('역량별 점수 현황',{x:.34,y:1.68,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
+  addTxt('역량별 점수 현황',{x:.34,y:1.68,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   const th=[
     {text:'역량',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11}},
     {text:'현재',options:{bold:true,fill:{color:'F8FAFC'},fontFace:KF,fontSize:11,align:'center'}},
@@ -2317,28 +2318,28 @@ function addExecutivePptSlide(pptx,emp){
   ]);
   s.addTable([th,...tr],{x:.34,y:2.0,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[1.53,.56,.56,.58,.56,.56]});
 
-  s.addText('레이더 분석',{x:4.86,y:2.0,w:2.1,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
+  addTxt('레이더 분석',{x:4.86,y:2.0,w:2.1,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   if(radarData)s.addImage({data:radarData,x:4.82,y:2.27,w:2.34,h:2.62});
-  s.addText('범례: 현재/목표/조직/전사',{x:4.84,y:4.82,w:2.28,h:.18,fontFace:KF,fontSize:9,color:'64748B',align:'center'});
-  s.addText(radarLine1,{x:4.84,y:5.0,w:2.28,h:.16,fontFace:KF,fontSize:8.8,color:'#334155',align:'center'});
-  s.addText(radarLine2,{x:4.84,y:5.15,w:2.28,h:.16,fontFace:KF,fontSize:8.8,color:'#334155',align:'center'});
+  addTxt('범례: 현재/목표/조직/전사',{x:4.84,y:4.82,w:2.28,h:.18,fontFace:KF,fontSize:8,color:'64748B',align:'center'});
+  addTxt(radarLine1,{x:4.84,y:5.0,w:2.28,h:.16,fontFace:KF,fontSize:7.8,color:'#334155',align:'center'});
+  addTxt(radarLine2,{x:4.84,y:5.15,w:2.28,h:.16,fontFace:KF,fontSize:7.8,color:'#334155',align:'center'});
 
-  s.addText('영역별 개발 포인트',{x:.34,y:5.34,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
+  addTxt('영역별 개발 포인트',{x:.34,y:5.34,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   areaPoints.forEach((p,i)=>{
     const x=(i%2===0)?.34:3.82;
     const y=5.62+Math.floor(i/2)*2.3;
     s.addShape(pptx.ShapeType.roundRect,{x,y,w:3.36,h:2.22,fill:{color:'FAFCFF'},line:{color:'E2E8F0',width:.6},radius:0.07});
-    s.addText(p.name,{x:x+.12,y:y+.12,w:1.5,h:.24,fontFace:KF,fontSize:F_AREA,bold:true,color:'0F172A'});
-    s.addText(p.scoreText,{x:x+.12,y:y+.46,w:3.12,h:.24,fontFace:KF,fontSize:F_SCORE,color:'1E40AF'});
-    s.addText(p.body,{x:x+.12,y:y+.8,w:3.12,h:1.3,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
+    addTxt(p.name,{x:x+.12,y:y+.12,w:1.5,h:.24,fontFace:KF,fontSize:F_AREA,bold:true,color:'0F172A'});
+    addTxt(p.scoreText,{x:x+.12,y:y+.46,w:3.12,h:.24,fontFace:KF,fontSize:F_SCORE,color:'1E40AF'});
+    addTxt(p.body,{x:x+.12,y:y+.8,w:3.12,h:1.3,fontFace:KF,fontSize:F_BODY,color:'334155',valign:'top'});
   });
 
-  s.addText('면담용 핵심 메모',{x:.34,y:10.44,w:2.8,h:.22,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
+  addTxt('면담용 핵심 메모',{x:.34,y:10.44,w:2.8,h:.22,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   s.addShape(pptx.ShapeType.roundRect,{x:.34,y:10.72,w:6.84,h:1.24,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:0.08});
-  s.addText(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:10.82,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'0F172A'});
-  s.addText(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:11.04,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'334155'});
-  s.addText(`• 본인 의견/변화과제(Global): ${qual.change?.globalConcern||'응답 없음'}`,{x:.5,y:11.26,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'334155'});
-  s.addText(`• 본인 의견/변화과제(AI): ${qual.change?.aiConcern||'응답 없음'}`,{x:.5,y:11.48,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'334155'});
+  addTxt(`• 우선 개발 과제: ${COMP_NAMES[topIdx]} (${emp.current[topGap.k]} → ${emp.target[topGap.k]}, GAP +${topGap.gap})`,{x:.5,y:10.82,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'0F172A'});
+  addTxt(`• 실행 권고: ${recs[0]} / ${recs[1]}`,{x:.5,y:11.04,w:6.52,h:.24,fontFace:KF,fontSize:F_BODY,color:'334155'});
+  addTxt(`• 본인 의견/변화과제(Global): ${qual.change?.globalConcern||'응답 없음'}`,{x:.5,y:11.26,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'334155'});
+  addTxt(`• 본인 의견/변화과제(AI): ${qual.change?.aiConcern||'응답 없음'}`,{x:.5,y:11.48,w:6.52,h:.22,fontFace:KF,fontSize:F_BODY,color:'334155'});
 
   s.addShape(pptx.ShapeType.line,{x:.34,y:12.12,w:6.84,h:0,line:{color:'E2E8F0',width:.6}});
   s.addImage({path:'/mysuni-competency/mysuni-logo-transparent.png',x:5.86,y:11.86,w:1.24,h:1.44});
