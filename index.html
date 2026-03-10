@@ -1125,6 +1125,34 @@ function highLowConcernRows(){
   }
   return rows;
 }
+function orgCharacteristicRows(){
+  const rows=[];
+  for(const org of ORG_LIST){
+    const emps=EMPLOYEES.filter(e=>e.org===org);
+    if(!emps.length)continue;
+    const oa=compAvgObj(emps),ta=tgtAvgObj(emps);
+    const curAvg=overallAvg(oa),tgtAvg=overallAvg(ta),gap=tgtAvg-curAvg;
+    const byCurrent=[...COMP_KEYS].map(k=>({k,v:oa[k]})).sort((a,b)=>b.v-a.v);
+    const byGap=[...COMP_KEYS].map(k=>({k,v:(ta[k]||0)-(oa[k]||0)})).sort((a,b)=>b.v-a.v);
+    const strong=byCurrent[0],weak=[...byCurrent].sort((a,b)=>a.v-b.v)[0],priority=byGap[0];
+    const pIdx=COMP_KEYS.indexOf(priority.k);
+    const lowPct=emps.length?emps.filter(e=>e.current[priority.k]<=2).length/emps.length*100:0;
+    const highPct=emps.length?emps.filter(e=>e.current[priority.k]>=4).length/emps.length*100:0;
+    const allTexts=emps.flatMap(e=>COMP_KEYS.flatMap(k=>qualTextsByComp(e,k)));
+    const kws=topKeywords(allTexts,5);
+    const devRec=DEV_RECS[priority.k]?.[Math.max(1,Math.min(4,Math.round(oa[priority.k]||3)))]||[];
+    const aiInterpret=`${org} 조직은 ${COMP_NAMES[COMP_KEYS.indexOf(strong.k)]}이 상대 강점(${strong.v.toFixed(2)})이며, ${COMP_NAMES[COMP_KEYS.indexOf(weak.k)]}은 보완이 필요합니다(${weak.v.toFixed(2)}). 특히 ${COMP_NAMES[pIdx]}의 목표 GAP이 +${priority.v.toFixed(2)}로 가장 크고, 하위비율(1~2점) ${lowPct.toFixed(1)}%로 집중 육성 대상이 확인됩니다.`;
+    const plan=`조직 차원에서는 ① ${devRec[0]||'핵심 과제 중심의 실습 체계 운영'} ② ${devRec[1]||'리더 코칭/피드백 루프 강화'} ③ 상위자원(4~5점, ${highPct.toFixed(1)}%)의 멘토링 참여를 결합한 실행형 육성 로드맵을 권장합니다.`;
+    rows.push({
+      org,count:emps.length,curAvg,tgtAvg,gap,
+      strong:COMP_NAMES[COMP_KEYS.indexOf(strong.k)],
+      priority:COMP_NAMES[pIdx],
+      keywords:kws.length?kws.join(', '):'-',
+      aiInterpret,plan
+    });
+  }
+  return rows;
+}
 
 // ══════════════════════════════════════════
 // INIT DATA
@@ -2851,6 +2879,16 @@ function renderCompanyReport(){
     <td>${escHtml(r.concernEx)}</td>
     <td>${escHtml(r.expectEx)}</td>
   </tr>`).join('');
+  const orgFeatureRows=orgCharacteristicRows().map(r=>`<tr>
+    <td><span class="otag">${r.org}</span></td>
+    <td class="text-center">${r.count}명</td>
+    <td class="text-center"><strong>${r.curAvg.toFixed(2)}</strong> / ${r.tgtAvg.toFixed(2)} (GAP +${r.gap.toFixed(2)})</td>
+    <td>${r.strong}</td>
+    <td>${r.priority}</td>
+    <td>${r.keywords}</td>
+    <td>${r.aiInterpret}</td>
+    <td>${r.plan}</td>
+  </tr>`).join('');
 
   document.getElementById('company-report-content').innerHTML=`
     <div class="report-header">
@@ -2913,7 +2951,24 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>5. 직책별 역량 특성</h2>
+      <h2>5. 조직별 특성 (세부 분석 · AI 해석 · 개발 계획)</h2>
+      <table>
+        <tr>
+          <th>조직</th>
+          <th class="text-center">인원</th>
+          <th class="text-center">현/목표 평균</th>
+          <th>강점 영역</th>
+          <th>우선 개발 영역</th>
+          <th>정성 키워드</th>
+          <th>AI 해석</th>
+          <th>조직 차원 개발 계획 제언</th>
+        </tr>
+        ${orgFeatureRows}
+      </table>
+    </div>
+
+    <div class="rep-sec">
+      <h2>6. 직책별 역량 특성</h2>
       <table>
         <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
         ${roleTraitRows}
@@ -2922,7 +2977,7 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>6. 연차별 역량 특성</h2>
+      <h2>7. 연차별 역량 특성</h2>
       <table>
         <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
         ${yearTraitRows}
@@ -2931,7 +2986,7 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>7. 연령별 역량 특성 (생년월일 기반)</h2>
+      <h2>8. 연령별 역량 특성 (생년월일 기반)</h2>
       <table>
         <tr><th>구분</th>${COMP_NAMES.map(n=>`<th class="text-center">${n}</th>`).join('')}<th class="text-center">평균</th></tr>
         ${ageTraitRows}
@@ -2941,7 +2996,7 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>8. 연차별 특성 및 정성의견 키워드</h2>
+      <h2>9. 연차별 특성 및 정성의견 키워드</h2>
       <table>
         <tr><th>연차 그룹</th><th class="text-center">인원</th><th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th><th class="text-center">주요 성장영역</th><th>정성의견 키워드(상위)</th></tr>
         ${yearRows}
@@ -2949,7 +3004,7 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>9. 응답 비율별 정성의견 특성 (점수구간 기준)</h2>
+      <h2>10. 응답 비율별 정성의견 특성 (점수구간 기준)</h2>
       <table>
         <tr><th>역량</th><th class="text-center">점수구간</th><th class="text-center">인원/비율</th><th class="text-center">정성 응답률</th><th>정성의견 키워드(상위)</th></tr>
         ${qualRows}
@@ -2958,7 +3013,7 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>10. 영역별 상·하위 응답자 우려/기대사항</h2>
+      <h2>11. 영역별 상·하위 응답자 우려/기대사항</h2>
       <table>
         <tr>
           <th>역량</th>
@@ -2974,7 +3029,7 @@ function renderCompanyReport(){
     </div>
 
     <div class="rep-sec">
-      <h2>11. 핵심 시사점 및 육성 방향</h2>
+      <h2>12. 핵심 시사점 및 육성 방향</h2>
       <div class="rep-box">
         <h3>① 성장 GAP 최대 전략 영역: ${COMP_NAMES[hiGapIdx]}</h3>
         <ul class="ins-list">
