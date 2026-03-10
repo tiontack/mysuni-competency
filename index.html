@@ -2249,7 +2249,7 @@ function addExecutivePptSlide(pptx,emp){
   const radarData=createRadarImageData(emp,orgAvg,ca);
   const focusQual=qual[topGap.k]||{};
   const today=new Date().toLocaleDateString('ko-KR');
-  const KF='Freesentation';
+  const KF='돋움';
   const F_NAME=18;
   const F_META=13;
   const F_SECTION=13;
@@ -2372,7 +2372,7 @@ function buildPptDocument(title){
   const pptx=new PptxGenJS();
   pptx.defineLayout({name:'A4P',width:7.5,height:13.333});
   pptx.layout='A4P';
-  pptx.theme={headFontFace:'Freesentation',bodyFontFace:'Freesentation',lang:'ko-KR'};
+  pptx.theme={headFontFace:'돋움',bodyFontFace:'돋움',lang:'ko-KR'};
   pptx.title=title;
   pptx.author='mySUNI';
   pptx.subject='mySUNI 4대 핵심역량 개인 레포트';
