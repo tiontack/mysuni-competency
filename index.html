@@ -571,6 +571,12 @@ select:focus{border-color:var(--blue)}
 .one-hist-card{border:1px solid #E2E8F0;border-radius:10px;padding:10px;background:#fff}
 .one-hist-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
 .one-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700}
+.one-subtabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.one-subtab{
+  border:1.5px solid var(--border-strong);background:#fff;color:var(--text-2);
+  border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer
+}
+.one-subtab.active{background:#EFF6FF;border-color:#93C5FD;color:#1E40AF}
 .one-inline-report{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:10px}
 .one-inline-report table{width:100%;border-collapse:collapse;margin:8px 0}
 .one-inline-report th,.one-inline-report td{border-bottom:1px solid #EEF2F7;padding:6px 4px;font-size:12px;text-align:center}
@@ -1340,6 +1346,8 @@ const ONEONONE_SESSION_KEY='mysuni_competency_1on1_session_v1';
 let ONEONONE_DATA={accounts:{},records:{}};
 let ONEONONE_SESSION={org:'',empId:null};
 let ONEONONE_LOGIN_CHANGE_OPEN=false;
+let ONEONONE_RECORD_TAB='discussed';
+let ONEONONE_RECORD_DRAFT={};
 const ADMIN_PASSWORD='1234';
 let ADMIN_UNLOCKED=false;
 function normalizeOneOnOneData(raw){
@@ -2169,7 +2177,22 @@ function oneOnOneLogout(){
 }
 function oneOnOneSelectEmp(empId){
   ONEONONE_SESSION.empId=empId;
+  ONEONONE_RECORD_TAB='discussed';
   persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneSetRecordTab(tab){
+  const empId=Number(ONEONONE_SESSION.empId);
+  if(Number.isFinite(empId)&&empId){
+    const d=ONEONONE_RECORD_DRAFT[empId]||{};
+    d.date=document.getElementById('one-h-date')?.value||d.date||fmtYmd(new Date());
+    d.discussed=document.getElementById('one-h-discussed')?.value||d.discussed||'';
+    d.coaching=document.getElementById('one-h-coaching')?.value||d.coaching||'';
+    d.next=document.getElementById('one-h-next')?.value||d.next||'';
+    d.misc=document.getElementById('one-h-misc')?.value||d.misc||'';
+    ONEONONE_RECORD_DRAFT[empId]=d;
+  }
+  ONEONONE_RECORD_TAB=tab;
   renderOneOnOneTab();
 }
 function oneOnOneSavePrep(empId){
@@ -2190,13 +2213,15 @@ function oneOnOneAddHistory(empId){
   const discussed=textOrEmpty(document.getElementById('one-h-discussed')?.value||'');
   const coaching=textOrEmpty(document.getElementById('one-h-coaching')?.value||'');
   const next=textOrEmpty(document.getElementById('one-h-next')?.value||'');
-  if(!discussed&&!coaching&&!next){alert('면담 내용을 입력해 주세요.');return;}
+  const misc=textOrEmpty(document.getElementById('one-h-misc')?.value||'');
+  if(!discussed&&!coaching&&!next&&!misc){alert('1on1 기록 내용을 입력해 주세요.');return;}
   const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
   rec.history.unshift({
     id:`h_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     date:date||fmtYmd(new Date()),
-    discussed,coaching,next,createdAt:new Date().toISOString()
+    discussed,coaching,next,misc,createdAt:new Date().toISOString()
   });
+  delete ONEONONE_RECORD_DRAFT[empId];
   persistOneOnOneData();
   renderOneOnOneTab();
 }
@@ -2337,6 +2362,8 @@ function renderOneOnOneTab(){
     if(!emp)return `<div class="one-empty">구성원을 선택해 주세요.</div>`;
     const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
     const history=[...rec.history].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    const tab=ONEONONE_RECORD_TAB;
+    const draft=ONEONONE_RECORD_DRAFT[emp.id]||{};
     return `
       <div class="one-panel">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
@@ -2366,11 +2393,18 @@ function renderOneOnOneTab(){
             <h4>1on1 기록 추가</h4>
             <div class="fgrp" style="margin:0 0 8px 0">
               <label class="flabel">면담 일자</label>
-              <input id="one-h-date" type="date" class="finput" value="${fmtYmd(new Date())}">
+              <input id="one-h-date" type="date" class="finput" value="${escHtml(draft.date||fmtYmd(new Date()))}">
             </div>
-            <textarea id="one-h-discussed" class="one-text" style="min-height:120px" placeholder="논의한 핵심 내용"></textarea>
-            <textarea id="one-h-coaching" class="one-text" style="min-height:120px;margin-top:8px" placeholder="임원 코칭/피드백"></textarea>
-            <textarea id="one-h-next" class="one-text" style="min-height:120px;margin-top:8px" placeholder="다음 액션/합의사항"></textarea>
+            <div class="one-subtabs">
+              <button class="one-subtab ${tab==='discussed'?'active':''}" onclick="oneOnOneSetRecordTab('discussed')">논의 내용</button>
+              <button class="one-subtab ${tab==='coaching'?'active':''}" onclick="oneOnOneSetRecordTab('coaching')">코칭/피드백</button>
+              <button class="one-subtab ${tab==='next'?'active':''}" onclick="oneOnOneSetRecordTab('next')">다음 액션</button>
+              <button class="one-subtab ${tab==='misc'?'active':''}" onclick="oneOnOneSetRecordTab('misc')">기타사항</button>
+            </div>
+            <textarea id="one-h-discussed" class="one-text" style="display:${tab==='discussed'?'block':'none'};min-height:120px" placeholder="논의한 핵심 내용">${escHtml(draft.discussed||'')}</textarea>
+            <textarea id="one-h-coaching" class="one-text" style="display:${tab==='coaching'?'block':'none'};min-height:120px" placeholder="임원 코칭/피드백">${escHtml(draft.coaching||'')}</textarea>
+            <textarea id="one-h-next" class="one-text" style="display:${tab==='next'?'block':'none'};min-height:120px" placeholder="다음 액션/합의사항">${escHtml(draft.next||'')}</textarea>
+            <textarea id="one-h-misc" class="one-text" style="display:${tab==='misc'?'block':'none'};min-height:120px" placeholder="기타사항">${escHtml(draft.misc||'')}</textarea>
             <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneAddHistory(${emp.id})">기록 저장</button></div>
           </div>
           <div class="one-sec">
@@ -2396,6 +2430,7 @@ function renderOneOnOneTab(){
                 <div class="qual-row"><b>논의:</b> ${escHtml(h.discussed||'-')}</div>
                 <div class="qual-row"><b>코칭:</b> ${escHtml(h.coaching||'-')}</div>
                 <div class="qual-row"><b>다음 액션:</b> ${escHtml(h.next||'-')}</div>
+                <div class="qual-row"><b>기타사항:</b> ${escHtml(h.misc||'-')}</div>
               </div>
             `).join(''):`<div class="one-empty">저장된 면담 이력이 없습니다.</div>`}
           </div>
