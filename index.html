@@ -2409,11 +2409,11 @@ function renderOneOnOneTab(){
           </div>
           <div class="one-sec">
             <h4>다음 1on1 사전 메모</h4>
-            <textarea id="one-prep" class="one-text" placeholder="다음 면담에서 확인할 항목, 질문, 피드백 포인트를 메모하세요">${escHtml(rec.prepMemo||'')}</textarea>
-            <div class="fgrp" style="margin:8px 0 0 0">
+            <div class="fgrp" style="margin:0 0 8px 0">
               <label class="flabel">다음 1on1 일정</label>
               <input id="one-next-meeting-at" type="datetime-local" class="finput" value="${escHtml(rec.nextMeetingAt||'')}">
             </div>
+            <textarea id="one-prep" class="one-text" placeholder="다음 면담에서 확인할 항목, 질문, 피드백 포인트를 메모하세요">${escHtml(rec.prepMemo||'')}</textarea>
             <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneSavePrep(${emp.id})">사전 메모 저장</button></div>
           </div>
         </div>
