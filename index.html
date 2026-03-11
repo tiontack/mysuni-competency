@@ -1367,6 +1367,7 @@ let ONEONONE_LOGIN_CHANGE_OPEN=false;
 let ONEONONE_RECORD_TAB='discussed';
 let ONEONONE_PROFILE_TAB='summary';
 let ONEONONE_RECORD_DRAFT={};
+let ONEONONE_EDITING_HISTORY={empId:null,hid:null};
 const ADMIN_PASSWORD='1234';
 let ADMIN_UNLOCKED=false;
 function normalizeOneOnOneData(raw){
@@ -2190,6 +2191,7 @@ function oneOnOneChangePasswordFromLogin(){
 }
 function oneOnOneLogout(){
   ONEONONE_LOGIN_CHANGE_OPEN=false;
+  ONEONONE_EDITING_HISTORY={empId:null,hid:null};
   ONEONONE_SESSION={org:'',empId:null};
   persistOneOnOneData();
   renderOneOnOneTab();
@@ -2198,6 +2200,7 @@ function oneOnOneSelectEmp(empId){
   ONEONONE_SESSION.empId=empId;
   ONEONONE_RECORD_TAB='discussed';
   ONEONONE_PROFILE_TAB='summary';
+  ONEONONE_EDITING_HISTORY={empId:null,hid:null};
   persistOneOnOneData();
   renderOneOnOneTab();
 }
@@ -2365,13 +2368,49 @@ function oneOnOneAddHistory(empId){
   const misc=textOrEmpty(document.getElementById('one-h-misc')?.value||'');
   if(!discussed&&!coaching&&!next&&!misc){alert('1on1 기록 내용을 입력해 주세요.');return;}
   const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
-  rec.history.unshift({
-    id:`h_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-    date:date||fmtYmd(new Date()),
-    discussed,coaching,next,misc,createdAt:new Date().toISOString()
-  });
+  if(ONEONONE_EDITING_HISTORY.empId===empId&&ONEONONE_EDITING_HISTORY.hid){
+    const target=rec.history.find(h=>h.id===ONEONONE_EDITING_HISTORY.hid);
+    if(target){
+      Object.assign(target,{date:date||fmtYmd(new Date()),discussed,coaching,next,misc,updatedAt:new Date().toISOString()});
+    }else{
+      rec.history.unshift({
+        id:`h_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+        date:date||fmtYmd(new Date()),
+        discussed,coaching,next,misc,createdAt:new Date().toISOString()
+      });
+    }
+  }else{
+    rec.history.unshift({
+      id:`h_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+      date:date||fmtYmd(new Date()),
+      discussed,coaching,next,misc,createdAt:new Date().toISOString()
+    });
+  }
+  ONEONONE_EDITING_HISTORY={empId:null,hid:null};
   delete ONEONONE_RECORD_DRAFT[empId];
   persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneEditHistory(empId,hid){
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+  const h=(rec.history||[]).find(v=>v.id===hid);
+  if(!h){alert('편집할 1on1 기록을 찾을 수 없습니다.');return;}
+  ONEONONE_RECORD_DRAFT[empId]={
+    date:fmtYmd(h.date||new Date()),
+    discussed:textOrEmpty(h.discussed),
+    coaching:textOrEmpty(h.coaching),
+    next:textOrEmpty(h.next),
+    misc:textOrEmpty(h.misc),
+  };
+  ONEONONE_EDITING_HISTORY={empId,hid};
+  ONEONONE_RECORD_TAB='discussed';
+  renderOneOnOneTab();
+}
+function oneOnOneCancelEdit(empId){
+  ONEONONE_EDITING_HISTORY={empId:null,hid:null};
+  delete ONEONONE_RECORD_DRAFT[empId];
+  ONEONONE_RECORD_TAB='discussed';
   renderOneOnOneTab();
 }
 function oneOnOneDeleteHistory(empId,hid){
@@ -2379,6 +2418,10 @@ function oneOnOneDeleteHistory(empId,hid){
   if(!emp)return;
   const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
   rec.history=rec.history.filter(h=>h.id!==hid);
+  if(ONEONONE_EDITING_HISTORY.empId===empId&&ONEONONE_EDITING_HISTORY.hid===hid){
+    ONEONONE_EDITING_HISTORY={empId:null,hid:null};
+    delete ONEONONE_RECORD_DRAFT[empId];
+  }
   persistOneOnOneData();
   renderOneOnOneTab();
 }
@@ -2515,6 +2558,7 @@ function renderOneOnOneTab(){
     const tab=ONEONONE_RECORD_TAB;
     const ptab=ONEONONE_PROFILE_TAB;
     const draft=ONEONONE_RECORD_DRAFT[emp.id]||{};
+    const isEditing=ONEONONE_EDITING_HISTORY.empId===emp.id&&!!ONEONONE_EDITING_HISTORY.hid;
     return `
       <div class="one-panel">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
@@ -2580,7 +2624,7 @@ function renderOneOnOneTab(){
 
         <div class="one-grid-2">
           <div class="one-sec">
-            <h4>1on1 기록 추가</h4>
+            <h4>${isEditing?'1on1 기록 편집':'1on1 기록 추가'}</h4>
             <div class="fgrp" style="margin:0 0 8px 0">
               <label class="flabel">면담 일자</label>
               <input id="one-h-date" type="date" class="finput" value="${escHtml(draft.date||fmtYmd(new Date()))}">
@@ -2596,7 +2640,8 @@ function renderOneOnOneTab(){
             <textarea id="one-h-next" class="one-text" style="display:${tab==='next'?'block':'none'};min-height:240px" placeholder="다음 액션/합의사항">${escHtml(draft.next||'')}</textarea>
             <textarea id="one-h-misc" class="one-text" style="display:${tab==='misc'?'block':'none'};min-height:240px" placeholder="기타사항">${escHtml(draft.misc||'')}</textarea>
             <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px">
-              <button class="btn btn-dark" onclick="oneOnOneAddHistory(${emp.id})">기록 저장</button>
+              ${isEditing?`<button class="btn btn-ghost" onclick="oneOnOneCancelEdit(${emp.id})">편집 취소</button>`:''}
+              <button class="btn btn-dark" onclick="oneOnOneAddHistory(${emp.id})">${isEditing?'수정 저장':'기록 저장'}</button>
             </div>
           </div>
           <div class="one-sec">
@@ -2620,6 +2665,7 @@ function renderOneOnOneTab(){
                 <div class="one-hist-top">
                   <div style="font-size:12px;font-weight:700;color:#1E3A8A">${escHtml(h.date||'날짜 없음')}</div>
                   <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                    <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="oneOnOneEditHistory(${emp.id},'${h.id}')">편집</button>
                     <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="exportOneOnOneHistoryItemPPT(${emp.id},'${h.id}')">PPT</button>
                     <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="printOneOnOneHistoryItem(${emp.id},'${h.id}')">출력</button>
                     <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px;border-color:#fecaca;color:#b91c1c" onclick="oneOnOneDeleteHistory(${emp.id},'${h.id}')">삭제</button>
