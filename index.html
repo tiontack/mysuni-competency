@@ -1366,11 +1366,12 @@ function ensureOneOnOneEmpRecord(period,org,empId){
   if(!ONEONONE_DATA.records[p])ONEONONE_DATA.records[p]={};
   if(!ONEONONE_DATA.records[p][o])ONEONONE_DATA.records[p][o]={};
   if(!ONEONONE_DATA.records[p][o][eid]){
-    ONEONONE_DATA.records[p][o][eid]={prepMemo:'',history:[]};
+    ONEONONE_DATA.records[p][o][eid]={prepMemo:'',nextMeetingAt:'',history:[]};
   }
   const rec=ONEONONE_DATA.records[p][o][eid];
   if(!Array.isArray(rec.history))rec.history=[];
   if(rec.prepMemo===undefined||rec.prepMemo===null)rec.prepMemo='';
+  if(rec.nextMeetingAt===undefined||rec.nextMeetingAt===null)rec.nextMeetingAt='';
   return rec;
 }
 function persistOneOnOneData(){
@@ -2175,10 +2176,12 @@ function oneOnOneSavePrep(empId){
   const emp=EMPLOYEES.find(e=>e.id===empId);
   if(!emp)return;
   const val=document.getElementById('one-prep')?.value||'';
+  const nextMeetingAt=document.getElementById('one-next-meeting-at')?.value||'';
   const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
   rec.prepMemo=val;
+  rec.nextMeetingAt=nextMeetingAt;
   persistOneOnOneData();
-  alert('사전 메모를 저장했습니다.');
+  alert('사전 메모와 다음 1on1 일정을 저장했습니다.');
 }
 function oneOnOneAddHistory(empId){
   const emp=EMPLOYEES.find(e=>e.id===empId);
@@ -2360,11 +2363,6 @@ function renderOneOnOneTab(){
 
         <div class="one-grid-2">
           <div class="one-sec">
-            <h4>다음 1on1 사전 메모</h4>
-            <textarea id="one-prep" class="one-text" placeholder="다음 면담에서 확인할 항목, 질문, 피드백 포인트를 메모하세요">${escHtml(rec.prepMemo||'')}</textarea>
-            <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneSavePrep(${emp.id})">사전 메모 저장</button></div>
-          </div>
-          <div class="one-sec">
             <h4>1on1 기록 추가</h4>
             <div class="fgrp" style="margin:0 0 8px 0">
               <label class="flabel">면담 일자</label>
@@ -2374,6 +2372,15 @@ function renderOneOnOneTab(){
             <textarea id="one-h-coaching" class="one-text" style="min-height:120px;margin-top:8px" placeholder="임원 코칭/피드백"></textarea>
             <textarea id="one-h-next" class="one-text" style="min-height:120px;margin-top:8px" placeholder="다음 액션/합의사항"></textarea>
             <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneAddHistory(${emp.id})">기록 저장</button></div>
+          </div>
+          <div class="one-sec">
+            <h4>다음 1on1 사전 메모</h4>
+            <textarea id="one-prep" class="one-text" placeholder="다음 면담에서 확인할 항목, 질문, 피드백 포인트를 메모하세요">${escHtml(rec.prepMemo||'')}</textarea>
+            <div class="fgrp" style="margin:8px 0 0 0">
+              <label class="flabel">다음 1on1 일정</label>
+              <input id="one-next-meeting-at" type="datetime-local" class="finput" value="${escHtml(rec.nextMeetingAt||'')}">
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn btn-dark" onclick="oneOnOneSavePrep(${emp.id})">사전 메모 저장</button></div>
           </div>
         </div>
 
