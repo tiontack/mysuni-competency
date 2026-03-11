@@ -561,7 +561,7 @@ select:focus{border-color:var(--blue)}
 .one-compare{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px;margin-top:10px}
 .one-compare-card{border:1px solid #DBEAFE;background:#F8FBFF;border-radius:10px;padding:8px 10px}
 .one-compare-card .nm{font-size:11px;color:#1E3A8A;font-weight:700}
-.one-compare-card .sc{font-size:14px;color:#0F172A;font-weight:800;margin-top:4px}
+.one-compare-card .sc{font-size:18px;color:#0F172A;font-weight:800;margin-top:4px}
 .one-compare-card .dg{font-size:11px;margin-top:2px}
 .one-compare-card .up{color:#059669}.one-compare-card .dn{color:#B91C1C}
 .one-pass-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-top:10px}
@@ -2308,6 +2308,9 @@ function renderOneOnOneTab(){
   const org=ONEONONE_SESSION.org;
   const acc=ensureOneOnOneAccount(org);
   const orgAvg=compAvgObj(EMPLOYEES.filter(e=>e.org===org));
+  const orgMembers=EMPLOYEES.filter(e=>e.org===org);
+  const orgLeadCount=orgMembers.filter(e=>e.role==='팀장').length;
+  const orgRfCount=orgMembers.filter(e=>e.role==='RF').length;
   const cmpHtml=COMP_KEYS.map((k,i)=>{
     const ov=orgAvg[k],cv=COMP_AVG[k],dg=ov-cv;
     const cls=dg>=0?'up':'dn';
@@ -2399,6 +2402,7 @@ function renderOneOnOneTab(){
         <div>
           <div class="card-title" style="margin-bottom:6px"><div class="ct-dot"></div>1on1 관리 · ${escHtml(org)}</div>
           <div style="font-size:12px;color:#64748B">담당 임원: <strong style="color:#0F172A">${escHtml(acc.execName||'미지정')}</strong> · ${displayPeriod(ACTIVE_PERIOD)} 기준</div>
+          <div style="font-size:13px;color:#334155;margin-top:4px;font-weight:700">조직 인원: 총 <strong>${orgMembers.length}명</strong> · 팀장 <strong>${orgLeadCount}명</strong> · RF <strong>${orgRfCount}명</strong></div>
         </div>
         <button class="btn btn-ghost" onclick="oneOnOneLogout()">로그아웃</button>
       </div>
