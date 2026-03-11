@@ -2893,7 +2893,18 @@ function addExecutivePptSlide(pptx,emp){
   s.addTable([th,...tr],{x:.34,y:2.0,w:4.35,rowH:.62,border:{pt:.5,color:'E2E8F0'},colW:[1.53,.56,.56,.58,.56,.56]});
 
   if(radarData)s.addImage({data:radarData,x:4.82,y:2.14,w:2.34,h:2.62});
-  addTxt('Domain 전문성 · AI 역량 · Global 역량 · 리더십',{x:4.74,y:4.82,w:2.5,h:.22,fontFace:KF,fontSize:8.5,color:'64748B',align:'center'});
+  const radarLegend=[
+    {label:'개인 현수준',color:'2563EB'},
+    {label:'개인 목표',color:'EA580C'},
+    {label:'조직 평균',color:'7C3AED'},
+    {label:'전사 평균',color:'94A3B8'}
+  ];
+  radarLegend.forEach((it,i)=>{
+    const x=4.74+(i%2)*1.22;
+    const y=4.78+Math.floor(i/2)*.16;
+    s.addShape(pptx.ShapeType.roundRect,{x,y,w:.08,h:.08,fill:{color:it.color},line:{color:it.color,width:.2},radius:.01});
+    addTxt(it.label,{x:x+.12,y:y-.01,w:1.02,h:.12,fontFace:KF,fontSize:8,color:'64748B',align:'left',valign:'mid'});
+  });
 
   addTxt('영역별 개발 포인트',{x:.34,y:5.34,w:2.8,h:.24,fontFace:KF,fontSize:F_SECTION,bold:true,color:'1E3A8A'});
   areaPoints.forEach((p,i)=>{
