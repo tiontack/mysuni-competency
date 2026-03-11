@@ -565,7 +565,7 @@ select:focus{border-color:var(--blue)}
 .one-compare-card .dg{font-size:11px;margin-top:2px}
 .one-compare-card .up{color:#059669}.one-compare-card .dn{color:#B91C1C}
 .one-pass-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-top:10px}
-.one-text{width:100%;min-height:130px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:12px;font-family:inherit;font-size:13.5px;line-height:1.7}
+.one-text{width:100%;min-height:260px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:12px;font-family:inherit;font-size:13.5px;line-height:1.7}
 .one-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .one-hist{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px;max-height:280px;overflow:auto}
 .one-hist-card{border:1px solid #E2E8F0;border-radius:10px;padding:10px;background:#fff}
@@ -2479,10 +2479,10 @@ function renderOneOnOneTab(){
               <button class="one-subtab ${tab==='next'?'active':''}" onclick="oneOnOneSetRecordTab('next')">다음 액션</button>
               <button class="one-subtab ${tab==='misc'?'active':''}" onclick="oneOnOneSetRecordTab('misc')">기타사항</button>
             </div>
-            <textarea id="one-h-discussed" class="one-text" style="display:${tab==='discussed'?'block':'none'};min-height:120px" placeholder="논의한 핵심 내용">${escHtml(draft.discussed||'')}</textarea>
-            <textarea id="one-h-coaching" class="one-text" style="display:${tab==='coaching'?'block':'none'};min-height:120px" placeholder="임원 코칭/피드백">${escHtml(draft.coaching||'')}</textarea>
-            <textarea id="one-h-next" class="one-text" style="display:${tab==='next'?'block':'none'};min-height:120px" placeholder="다음 액션/합의사항">${escHtml(draft.next||'')}</textarea>
-            <textarea id="one-h-misc" class="one-text" style="display:${tab==='misc'?'block':'none'};min-height:120px" placeholder="기타사항">${escHtml(draft.misc||'')}</textarea>
+            <textarea id="one-h-discussed" class="one-text" style="display:${tab==='discussed'?'block':'none'};min-height:240px" placeholder="논의한 핵심 내용">${escHtml(draft.discussed||'')}</textarea>
+            <textarea id="one-h-coaching" class="one-text" style="display:${tab==='coaching'?'block':'none'};min-height:240px" placeholder="임원 코칭/피드백">${escHtml(draft.coaching||'')}</textarea>
+            <textarea id="one-h-next" class="one-text" style="display:${tab==='next'?'block':'none'};min-height:240px" placeholder="다음 액션/합의사항">${escHtml(draft.next||'')}</textarea>
+            <textarea id="one-h-misc" class="one-text" style="display:${tab==='misc'?'block':'none'};min-height:240px" placeholder="기타사항">${escHtml(draft.misc||'')}</textarea>
             <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px">
               <button class="btn btn-ghost" onclick="exportOneOnOneDraftPPT(${emp.id})">⬇&nbsp; 1on1 준비내용 PPT</button>
               <button class="btn btn-ghost" onclick="printOneOnOneDraft(${emp.id})">⎙&nbsp; 1on1 준비내용 출력</button>
