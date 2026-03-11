@@ -1340,6 +1340,8 @@ const ONEONONE_SESSION_KEY='mysuni_competency_1on1_session_v1';
 let ONEONONE_DATA={accounts:{},records:{}};
 let ONEONONE_SESSION={org:'',empId:null};
 let ONEONONE_LOGIN_CHANGE_OPEN=false;
+const ADMIN_PASSWORD='1234';
+let ADMIN_UNLOCKED=false;
 function normalizeOneOnOneData(raw){
   const d=(raw&&typeof raw==='object')?raw:{};
   if(!d.accounts||typeof d.accounts!=='object')d.accounts={};
@@ -2414,7 +2416,53 @@ function renderOneOnOneTab(){
 // ══════════════════════════════════════════
 let adminSelectedId=null;
 function adminGetSelected(){return EMPLOYEES.find(e=>e.id===adminSelectedId)||null;}
+function adminSetSectionsVisible(visible){
+  const tab=document.getElementById('tab-admin');
+  if(!tab)return;
+  [...tab.querySelectorAll(':scope > .section')].forEach(sec=>sec.style.display=visible?'':'none');
+}
+function renderAdminLock(){
+  const tab=document.getElementById('tab-admin');
+  if(!tab)return;
+  adminSetSectionsVisible(false);
+  let box=document.getElementById('admin-lock-box');
+  if(!box){
+    box=document.createElement('div');
+    box.id='admin-lock-box';
+    box.className='section card';
+    tab.prepend(box);
+  }
+  box.style.display='';
+  box.innerHTML=`
+    <div class="card-title"><div class="ct-dot"></div>Admin 인증</div>
+    <div style="max-width:420px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end">
+      <div class="fgrp" style="margin:0">
+        <label class="flabel">비밀번호</label>
+        <input id="admin-pass-input" type="password" class="finput admin-pass" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')adminUnlock()">
+      </div>
+      <button class="btn btn-dark" onclick="adminUnlock()">입장</button>
+    </div>
+    <div id="admin-pass-msg" style="margin-top:8px;font-size:12px;min-height:18px;color:#B91C1C"></div>
+  `;
+}
+function adminUnlock(){
+  const v=document.getElementById('admin-pass-input')?.value||'';
+  const msg=document.getElementById('admin-pass-msg');
+  if(v!==ADMIN_PASSWORD){
+    if(msg)msg.textContent='비밀번호가 올바르지 않습니다.';
+    return;
+  }
+  ADMIN_UNLOCKED=true;
+  renderAdminTab();
+}
 function renderAdminTab(){
+  if(!ADMIN_UNLOCKED){
+    renderAdminLock();
+    return;
+  }
+  const lock=document.getElementById('admin-lock-box');
+  if(lock)lock.style.display='none';
+  adminSetSectionsVisible(true);
   renderAdminTable();
   renderAdminEditor();
   renderOneOnOneAdmin();
@@ -3699,7 +3747,10 @@ function switchTab(tab){
     renderOneOnOneTab();
   }
   else if(tab==='report')renderCompanyReport();
-  else if(tab==='admin')renderAdminTab();
+  else if(tab==='admin'){
+    ADMIN_UNLOCKED=false;
+    renderAdminTab();
+  }
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 document.getElementById('employee-file').addEventListener('change',handleEmployeeFile);
