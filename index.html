@@ -1372,6 +1372,7 @@ function updateDataModeUI(){
 const EMP_STORAGE_KEY='mysuni_competency_surveys_v3';
 const ACTIVE_PERIOD_KEY='mysuni_competency_active_period_v1';
 const ONEONONE_STORAGE_KEY='mysuni_competency_1on1_v1';
+const ONEONONE_STORAGE_BACKUP_KEY='mysuni_competency_1on1_v1_backup';
 const ONEONONE_SESSION_KEY='mysuni_competency_1on1_session_v1';
 let ONEONONE_DATA={accounts:{},records:{}};
 let ONEONONE_SESSION={org:'',empId:null};
@@ -1417,12 +1418,13 @@ function ensureOneOnOneEmpRecord(period,org,empId){
 function persistOneOnOneData(){
   try{
     localStorage.setItem(ONEONONE_STORAGE_KEY,JSON.stringify(ONEONONE_DATA));
+    localStorage.setItem(ONEONONE_STORAGE_BACKUP_KEY,JSON.stringify(ONEONONE_DATA));
     sessionStorage.setItem(ONEONONE_SESSION_KEY,JSON.stringify(ONEONONE_SESSION));
   }catch(_){}
 }
 function loadOneOnOneData(){
   try{
-    const raw=localStorage.getItem(ONEONONE_STORAGE_KEY);
+    const raw=localStorage.getItem(ONEONONE_STORAGE_KEY)||localStorage.getItem(ONEONONE_STORAGE_BACKUP_KEY);
     ONEONONE_DATA=normalizeOneOnOneData(raw?JSON.parse(raw):{accounts:{},records:{}});
   }catch(_){
     ONEONONE_DATA={accounts:{},records:{}};
@@ -4164,10 +4166,7 @@ function switchTab(tab){
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 document.getElementById('employee-file').addEventListener('change',handleEmployeeFile);
-try{
-  localStorage.removeItem(EMP_STORAGE_KEY);
-  localStorage.removeItem(ACTIVE_PERIOD_KEY);
-}catch(_){}
+loadPersistedEmployees();
 initFilters();
 loadOneOnOneData();
 updateDataModeUI();
