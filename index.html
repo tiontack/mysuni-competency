@@ -484,6 +484,14 @@ select:focus{border-color:var(--blue)}
 .rep-kpi-name{font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:6px;letter-spacing:.02em}
 .rep-kpi-val{font-size:26px;font-weight:800;color:var(--navy);line-height:1;margin-bottom:4px}
 .rep-kpi-gap{font-size:11px;color:#DC2626;font-weight:700}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.demo-card{border:1px solid var(--border);border-radius:10px;background:#fff;padding:12px}
+.demo-card h3{margin:0 0 10px 0;font-size:13px;color:var(--navy)}
+.demo-row{display:grid;grid-template-columns:120px 1fr 72px;gap:8px;align-items:center;margin:7px 0}
+.demo-lbl{font-size:12px;color:#334155;font-weight:700}
+.demo-bar{height:10px;background:#EEF2FF;border-radius:999px;overflow:hidden}
+.demo-fill{height:100%;background:linear-gradient(90deg,#2563EB,#60A5FA)}
+.demo-val{font-size:11px;color:#475569;text-align:right;font-weight:700}
 .ins-list{list-style:none;padding:0}
 .ins-list li{
   padding:9px 0 9px 22px;position:relative;
@@ -518,6 +526,8 @@ select:focus{border-color:var(--blue)}
   .ind-report-top{grid-template-columns:1fr}
   .score-grid{min-width:620px}
   .report-page{padding:16px}
+  .demo-grid{grid-template-columns:1fr}
+  .demo-row{grid-template-columns:90px 1fr 64px}
   .report-header{display:block}
   .report-logo{margin-top:10px;display:inline-flex}
   .admin-layout{grid-template-columns:1fr}
@@ -3712,12 +3722,24 @@ function renderCompanyReport(){
     <td>${r.aiInterpret}</td>
     <td>${r.plan}</td>
   </tr>`).join('');
-  const demoRows=demographicProfileRows().map(r=>`<tr>
-    <td>${r.groupType}</td>
-    <td>${r.label}</td>
-    <td class="text-center">${r.count}명</td>
-    <td class="text-center"><strong>${r.ratio.toFixed(1)}%</strong></td>
-  </tr>`).join('');
+  const demoProfiles=demographicProfileRows();
+  const demoOrder=['연령','mySUNI 연차','직책','조직'];
+  const groupedDemo=demoOrder.map(type=>({
+    type,
+    rows:demoProfiles.filter(r=>r.groupType===type)
+  })).filter(g=>g.rows.length);
+  const demoGraphHtml=groupedDemo.map(g=>`
+    <div class="demo-card">
+      <h3>${g.type} 분포</h3>
+      ${g.rows.map(r=>`
+        <div class="demo-row">
+          <div class="demo-lbl">${r.label}</div>
+          <div class="demo-bar"><div class="demo-fill" style="width:${Math.max(2,Math.min(100,r.ratio))}%"></div></div>
+          <div class="demo-val">${r.count}명 · ${r.ratio.toFixed(1)}%</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
 
   document.getElementById('company-report-content').innerHTML=`
     <div class="report-header">
@@ -3895,15 +3917,9 @@ function renderCompanyReport(){
 
     <div class="rep-sec">
       <h2>13. Demo 특성 (응답자 구성 분포)</h2>
-      <table>
-        <tr>
-          <th>구분</th>
-          <th>세그먼트</th>
-          <th class="text-center">인원</th>
-          <th class="text-center">구성 비율</th>
-        </tr>
-        ${demoRows}
-      </table>
+      <div class="demo-grid">
+        ${demoGraphHtml}
+      </div>
       <p style="font-size:11px;color:#64748B;margin-top:8px">본 섹션은 설문 결과 해석이 아니라 설문 응답자 데모그래픽(연령/연차/직책/조직) 분포 현황입니다.</p>
     </div>
 
