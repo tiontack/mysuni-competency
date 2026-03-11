@@ -645,6 +645,7 @@ function checkPassword(){
   const v=document.getElementById('lock-input').value;
   if(v==='mysuni1234'){
     sessionStorage.setItem('msAuth','ok');
+    if(typeof switchTab==='function')switchTab('overview');
     const o=document.getElementById('lock-overlay');
     o.style.transition='opacity .4s';o.style.opacity='0';
     setTimeout(()=>o.style.display='none',400);
