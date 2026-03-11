@@ -564,7 +564,7 @@ select:focus{border-color:var(--blue)}
 .one-compare-card .sc{font-size:14px;color:#0F172A;font-weight:800;margin-top:4px}
 .one-compare-card .dg{font-size:11px;margin-top:2px}
 .one-compare-card .up{color:#059669}.one-compare-card .dn{color:#B91C1C}
-.one-pass-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-top:10px}
+.one-pass-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-top:10px}
 .one-text{width:100%;min-height:130px;resize:vertical;border:1px solid var(--border-strong);border-radius:10px;padding:12px;font-family:inherit;font-size:13.5px;line-height:1.7}
 .one-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .one-hist{margin-top:10px;display:grid;grid-template-columns:1fr;gap:8px;max-height:280px;overflow:auto}
@@ -1339,6 +1339,7 @@ const ONEONONE_STORAGE_KEY='mysuni_competency_1on1_v1';
 const ONEONONE_SESSION_KEY='mysuni_competency_1on1_session_v1';
 let ONEONONE_DATA={accounts:{},records:{}};
 let ONEONONE_SESSION={org:'',empId:null};
+let ONEONONE_LOGIN_CHANGE_OPEN=false;
 function normalizeOneOnOneData(raw){
   const d=(raw&&typeof raw==='object')?raw:{};
   if(!d.accounts||typeof d.accounts!=='object')d.accounts={};
@@ -1347,9 +1348,12 @@ function normalizeOneOnOneData(raw){
 }
 function ensureOneOnOneAccount(org){
   const key=textOrEmpty(org);
-  if(!key)return{execName:'',password:''};
+  if(!key)return{execName:'',password:'1234'};
   if(!ONEONONE_DATA.accounts[key]){
-    ONEONONE_DATA.accounts[key]={execName:'',password:''};
+    ONEONONE_DATA.accounts[key]={execName:'',password:'1234'};
+  }else{
+    if(!textOrEmpty(ONEONONE_DATA.accounts[key].password))ONEONONE_DATA.accounts[key].password='1234';
+    if(ONEONONE_DATA.accounts[key].execName===undefined||ONEONONE_DATA.accounts[key].execName===null)ONEONONE_DATA.accounts[key].execName='';
   }
   return ONEONONE_DATA.accounts[key];
 }
@@ -2126,14 +2130,18 @@ function oneOnOneLogin(){
   const err=document.getElementById('one-login-err');
   const acc=ensureOneOnOneAccount(org);
   if(!org){if(err)err.textContent='조직을 선택해 주세요.';return;}
-  if(!acc.password){if(err)err.textContent='해당 조직 비밀번호가 설정되지 않았습니다. Admin에서 먼저 설정해 주세요.';return;}
   if(pw!==acc.password){if(err)err.textContent='비밀번호가 올바르지 않습니다.';return;}
+  ONEONONE_LOGIN_CHANGE_OPEN=false;
   ONEONONE_SESSION={org,empId:null};
   persistOneOnOneData();
   renderOneOnOneTab();
 }
+function oneOnOneTogglePwdChange(){
+  ONEONONE_LOGIN_CHANGE_OPEN=!ONEONONE_LOGIN_CHANGE_OPEN;
+  renderOneOnOneTab();
+}
 function oneOnOneChangePasswordFromLogin(){
-  const org=document.getElementById('one-login-org')?.value||'';
+  const org=document.getElementById('one-login-change-org')?.value||'';
   const cur=document.getElementById('one-login-cur-pass')?.value||'';
   const next=document.getElementById('one-login-new-pass')?.value||'';
   const confirm=document.getElementById('one-login-new-pass-confirm')?.value||'';
@@ -2151,27 +2159,10 @@ function oneOnOneChangePasswordFromLogin(){
   ok('비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.');
 }
 function oneOnOneLogout(){
+  ONEONONE_LOGIN_CHANGE_OPEN=false;
   ONEONONE_SESSION={org:'',empId:null};
   persistOneOnOneData();
   renderOneOnOneTab();
-}
-function oneOnOneChangePassword(){
-  const org=textOrEmpty(ONEONONE_SESSION.org);
-  if(!org)return;
-  const acc=ensureOneOnOneAccount(org);
-  const cur=document.getElementById('one-pass-current')?.value||'';
-  const next=document.getElementById('one-pass-new')?.value||'';
-  const confirm=document.getElementById('one-pass-confirm')?.value||'';
-  const msg=document.getElementById('one-pass-msg');
-  const fail=txt=>{if(msg){msg.textContent=txt;msg.style.color='#B91C1C';}};
-  const ok=txt=>{if(msg){msg.textContent=txt;msg.style.color='#065F46';}};
-  if(cur!==acc.password){fail('현재 비밀번호가 올바르지 않습니다.');return;}
-  if(next.length<4){fail('새 비밀번호는 4자 이상으로 입력해 주세요.');return;}
-  if(next!==confirm){fail('새 비밀번호와 확인 값이 일치하지 않습니다.');return;}
-  acc.password=next;
-  persistOneOnOneData();
-  ['one-pass-current','one-pass-new','one-pass-confirm'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ok('비밀번호가 변경되었습니다.');
 }
 function oneOnOneSelectEmp(empId){
   ONEONONE_SESSION.empId=empId;
@@ -2276,26 +2267,38 @@ function renderOneOnOneTab(){
           <button class="btn btn-dark" onclick="oneOnOneLogin()">로그인</button>
         </div>
         <div id="one-login-err" style="margin-top:8px;color:#B91C1C;font-size:12px;min-height:18px"></div>
-        <div style="margin-top:10px;font-size:12px;color:#64748B">조직별 비밀번호는 Admin 탭에서 설정할 수 있습니다.</div>
-        <div class="one-sec" style="margin-top:12px">
-          <h4>비밀번호 변경</h4>
-          <div class="one-pass-grid" style="margin-top:0">
-            <div class="fgrp" style="margin:0">
-              <label class="flabel">현재 비밀번호</label>
-              <input id="one-login-cur-pass" type="password" class="finput admin-pass" placeholder="현재 비밀번호">
-            </div>
-            <div class="fgrp" style="margin:0">
-              <label class="flabel">새 비밀번호</label>
-              <input id="one-login-new-pass" type="password" class="finput admin-pass" placeholder="새 비밀번호(4자 이상)">
-            </div>
-            <div class="fgrp" style="margin:0">
-              <label class="flabel">새 비밀번호 확인</label>
-              <input id="one-login-new-pass-confirm" type="password" class="finput admin-pass" placeholder="새 비밀번호 확인">
-            </div>
-            <button class="btn btn-dark" onclick="oneOnOneChangePasswordFromLogin()">비밀번호 변경</button>
-          </div>
-          <div id="one-login-pass-msg" style="margin-top:6px;font-size:12px;min-height:18px;color:#64748B"></div>
+        <div style="margin-top:10px;font-size:12px;color:#64748B">기본 비밀번호는 조직별 <strong>1234</strong>입니다. 필요 시 아래 버튼으로 변경할 수 있습니다.</div>
+        <div style="margin-top:8px">
+          <button class="btn btn-ghost" onclick="oneOnOneTogglePwdChange()">${ONEONONE_LOGIN_CHANGE_OPEN?'비밀번호 변경 닫기':'비밀번호 변경'}</button>
         </div>
+        ${ONEONONE_LOGIN_CHANGE_OPEN?`
+          <div class="one-sec" style="margin-top:12px">
+            <h4>비밀번호 변경</h4>
+            <div class="one-pass-grid" style="margin-top:0">
+              <div class="fgrp" style="margin:0">
+                <label class="flabel">조직</label>
+                <select id="one-login-change-org" class="finput">
+                  <option value="">조직 선택</option>
+                  ${ORG_LIST.map(org=>`<option value="${escHtml(org)}">${escHtml(org)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="fgrp" style="margin:0">
+                <label class="flabel">현재 비밀번호</label>
+                <input id="one-login-cur-pass" type="password" class="finput admin-pass" placeholder="현재 비밀번호">
+              </div>
+              <div class="fgrp" style="margin:0">
+                <label class="flabel">새 비밀번호</label>
+                <input id="one-login-new-pass" type="password" class="finput admin-pass" placeholder="새 비밀번호(4자 이상)">
+              </div>
+              <div class="fgrp" style="margin:0">
+                <label class="flabel">새 비밀번호 확인</label>
+                <input id="one-login-new-pass-confirm" type="password" class="finput admin-pass" placeholder="새 비밀번호 확인">
+              </div>
+              <button class="btn btn-dark" onclick="oneOnOneChangePasswordFromLogin()">비밀번호 변경</button>
+            </div>
+            <div id="one-login-pass-msg" style="margin-top:6px;font-size:12px;min-height:18px;color:#64748B"></div>
+          </div>
+        `:''}
       </div>
     `;
     return;
@@ -2397,22 +2400,6 @@ function renderOneOnOneTab(){
         </div>
         <button class="btn btn-ghost" onclick="oneOnOneLogout()">로그아웃</button>
       </div>
-      <div class="one-pass-grid">
-        <div class="fgrp" style="margin:0">
-          <label class="flabel">현재 비밀번호</label>
-          <input id="one-pass-current" type="password" class="finput admin-pass" placeholder="현재 비밀번호">
-        </div>
-        <div class="fgrp" style="margin:0">
-          <label class="flabel">새 비밀번호</label>
-          <input id="one-pass-new" type="password" class="finput admin-pass" placeholder="새 비밀번호(4자 이상)">
-        </div>
-        <div class="fgrp" style="margin:0">
-          <label class="flabel">새 비밀번호 확인</label>
-          <input id="one-pass-confirm" type="password" class="finput admin-pass" placeholder="새 비밀번호 확인">
-        </div>
-        <button class="btn btn-dark" onclick="oneOnOneChangePassword()">비밀번호 변경</button>
-      </div>
-      <div id="one-pass-msg" style="margin-top:6px;font-size:12px;min-height:18px;color:#64748B"></div>
       <div class="one-compare">${cmpHtml}</div>
     </div>
     <div class="one-layout">
@@ -2572,24 +2559,27 @@ function renderOneOnOneAdmin(){
         <tr>
           <th>조직</th>
           <th>담당 임원명</th>
-          <th>조직 비밀번호</th>
+          <th>비밀번호 상태</th>
+          <th>초기화</th>
         </tr>
       </thead>
       <tbody>
         ${ORG_LIST.map((org,idx)=>{
           const acc=ensureOneOnOneAccount(org);
+          const status=acc.password==='1234'?'기본값(1234)':'사용자 변경됨';
           return`
             <tr>
               <td>${escHtml(org)}</td>
               <td><input id="o1-exec-${idx}" class="finput" value="${escHtml(acc.execName||'')}" placeholder="담당 임원명"></td>
-              <td><input id="o1-pass-${idx}" class="finput admin-pass" value="${escHtml(acc.password||'')}" placeholder="조직 비밀번호"></td>
+              <td class="text-center">${status}</td>
+              <td class="text-center"><button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="adminResetOneOnOnePassword('${escHtml(org)}')">1234로 초기화</button></td>
             </tr>
           `;
         }).join('')}
       </tbody>
     </table>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
-      <div style="font-size:12px;color:#64748B">비밀번호는 조직별 1on1 관리 탭 로그인에 사용됩니다.</div>
+      <div style="font-size:12px;color:#64748B">관리자는 조직 비밀번호를 직접 입력해 변경할 수 없고, 필요 시 초기화(1234)만 가능합니다.</div>
       <button class="btn btn-dark" onclick="adminSaveOneOnOneAccounts()">1on1 계정 저장</button>
     </div>
   `;
@@ -2597,12 +2587,22 @@ function renderOneOnOneAdmin(){
 function adminSaveOneOnOneAccounts(){
   ORG_LIST.forEach((org,idx)=>{
     const execName=textOrEmpty(document.getElementById(`o1-exec-${idx}`)?.value||'');
-    const password=textOrEmpty(document.getElementById(`o1-pass-${idx}`)?.value||'');
-    ONEONONE_DATA.accounts[org]={execName,password};
+    const account=ensureOneOnOneAccount(org);
+    ONEONONE_DATA.accounts[org]={execName,password:account.password||'1234'};
   });
   persistOneOnOneData();
   if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
-  alert('1on1 계정 정보를 저장했습니다.');
+  alert('1on1 계정 정보(담당 임원명)를 저장했습니다.');
+}
+function adminResetOneOnOnePassword(org){
+  const key=textOrEmpty(org);
+  if(!key)return;
+  const account=ensureOneOnOneAccount(key);
+  account.password='1234';
+  persistOneOnOneData();
+  renderOneOnOneAdmin();
+  if(document.getElementById('tab-oneonone').classList.contains('active'))renderOneOnOneTab();
+  alert(`${key} 조직 비밀번호를 1234로 초기화했습니다.`);
 }
 
 // ══════════════════════════════════════════
