@@ -1940,6 +1940,12 @@ function renderOrgTable(){
 // TAB 3 : INDIVIDUAL
 // ══════════════════════════════════════════
 let filteredEmps=[...EMPLOYEES],selectedEmp=null;
+function compareEmployeeListOrder(a,b){
+  const rank=r=>r==='팀장'?0:r==='RF'?1:2;
+  const rr=rank(a.role)-rank(b.role);
+  if(rr!==0)return rr;
+  return String(a.name||'').localeCompare(String(b.name||''),'ko');
+}
 function filterEmployees(){
   const q=document.getElementById('emp-search').value.trim().toLowerCase();
   const org=document.getElementById('emp-org-filter').value;
@@ -1952,10 +1958,12 @@ function filterEmployees(){
     if(yr){if(yr==='1~2년'&&e.years>2)return false;if(yr==='3~4년'&&(e.years<3||e.years>4))return false;if(yr==='5년이상'&&e.years<5)return false;}
     return true;
   });
+  filteredEmps.sort(compareEmployeeListOrder);
   renderEmpList();
 }
 function renderEmpList(){
   const list=document.getElementById('emp-list');
+  filteredEmps.sort(compareEmployeeListOrder);
   document.getElementById('emp-count').textContent=`(${filteredEmps.length}명)`;
   list.innerHTML='';
   for(const e of filteredEmps){
@@ -2122,7 +2130,9 @@ function fmtYmd(v){
 }
 function oneOnOneOrgEmployees(){
   if(!ONEONONE_SESSION.org)return [];
-  return EMPLOYEES.filter(e=>e.org===ONEONONE_SESSION.org).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  return EMPLOYEES
+    .filter(e=>e.org===ONEONONE_SESSION.org)
+    .sort(compareEmployeeListOrder);
 }
 function oneOnOneSelectedEmp(){
   const list=oneOnOneOrgEmployees();
