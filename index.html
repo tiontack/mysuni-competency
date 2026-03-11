@@ -2419,7 +2419,13 @@ function renderOneOnOneTab(){
         </div>
 
         <div class="one-sec">
-          <h4>1on1 히스토리</h4>
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+            <h4 style="margin:0">1on1 히스토리</h4>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost" onclick="exportOneOnOneHistoryPPT(${emp.id})">⬇&nbsp; 1on1 기록 PPT 내보내기</button>
+              <button class="btn btn-dark" onclick="printOneOnOneHistory(${emp.id})">⎙&nbsp; 1on1 기록 출력</button>
+            </div>
+          </div>
           <div class="one-hist">
             ${history.length?history.map(h=>`
               <div class="one-hist-card">
@@ -3061,6 +3067,85 @@ async function exportAllPPT(){
   const list=[...EMPLOYEES].sort((a,b)=>`${a.org}${a.name}`.localeCompare(`${b.org}${b.name}`,'ko'));
   list.forEach(emp=>addExecutivePptSlide(pptx,emp));
   await pptx.writeFile({fileName:`mySUNI_전체구성원_핵심 역량 레포트_${ACTIVE_PERIOD}.pptx`});
+}
+function addOneOnOneHistorySlide(pptx,emp,rec,chunk,idx,total){
+  const KF='Pretendard';
+  const s=pptx.addSlide();
+  s.background={color:'FFFFFF'};
+  s.addShape(pptx.ShapeType.rect,{x:0,y:0,w:7.5,h:.16,fill:{color:'0A1628'},line:{color:'0A1628',width:0}});
+  s.addText('mySUNI 1on1 히스토리 레포트',{x:.34,y:.24,w:4.6,h:.34,fontFace:KF,fontSize:16,bold:true,color:'0A1628'});
+  s.addText(`${emp.name} · ${emp.org} · ${emp.role} · ${emp.years}년차`,{x:.34,y:.57,w:4.9,h:.2,fontFace:KF,fontSize:10,color:'475569'});
+  s.addText(`${displayPeriod(ACTIVE_PERIOD)} · ${idx}/${total}`,{x:5.3,y:.57,w:1.86,h:.2,fontFace:KF,fontSize:8,color:'64748B',align:'right'});
+  s.addShape(pptx.ShapeType.roundRect,{x:.34,y:.86,w:6.84,h:1.12,fill:{color:'F8FAFC'},line:{color:'E2E8F0',width:.6},radius:.08});
+  s.addText(`다음 1on1 일정: ${textOrEmpty(rec.nextMeetingAt)||'미정'}`,{x:.5,y:1.02,w:6.52,h:.2,fontFace:KF,fontSize:9,bold:true,color:'1E3A8A'});
+  const prep=wrapTextForPpt(textOrEmpty(rec.prepMemo)||'사전 메모 없음',76).slice(0,3).join('\n');
+  s.addText(`사전 메모: ${prep}`,{x:.5,y:1.25,w:6.52,h:.6,fontFace:KF,fontSize:8.5,color:'334155',valign:'top'});
+  chunk.forEach((h,i)=>{
+    const y=2.18+i*5.3;
+    s.addShape(pptx.ShapeType.roundRect,{x:.34,y,w:6.84,h:5.0,fill:{color:'FFFFFF'},line:{color:'CBD5E1',width:.8},radius:.08});
+    s.addText(`일자 ${h.date||'미입력'}`,{x:.5,y:y+.12,w:2.0,h:.2,fontFace:KF,fontSize:10,bold:true,color:'1E3A8A'});
+    const rows=[
+      ['논의',h.discussed],
+      ['코칭',h.coaching],
+      ['다음 액션',h.next],
+      ['기타사항',h.misc],
+    ];
+    rows.forEach((row,j)=>{
+      const yy=y+.46+j*1.15;
+      const txt=wrapTextForPpt(textOrEmpty(row[1])||'-',70).slice(0,3).join('\n');
+      s.addText(`${row[0]}:`,{x:.5,y:yy,w:.9,h:.2,fontFace:KF,fontSize:9,bold:true,color:'0F172A'});
+      s.addText(txt,{x:1.34,y:yy,w:5.74,h:.95,fontFace:KF,fontSize:8.5,color:'334155',valign:'top'});
+    });
+  });
+}
+async function exportOneOnOneHistoryPPT(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+  const history=[...(rec.history||[])].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const pptx=buildPptDocument(`${emp.name} 1on1 히스토리`);
+  if(!history.length){
+    addOneOnOneHistorySlide(pptx,emp,rec,[{date:'-',discussed:'저장된 1on1 기록이 없습니다.',coaching:'-',next:'-',misc:'-'}],1,1);
+  }else{
+    const perSlide=1;
+    const total=Math.ceil(history.length/perSlide);
+    for(let i=0;i<total;i++){
+      const chunk=history.slice(i*perSlide,(i+1)*perSlide);
+      addOneOnOneHistorySlide(pptx,emp,rec,chunk,i+1,total);
+    }
+  }
+  await pptx.writeFile({fileName:`${emp.name}_mySUNI_1on1_히스토리_${ACTIVE_PERIOD}.pptx`});
+}
+function printOneOnOneHistory(empId){
+  const emp=EMPLOYEES.find(e=>e.id===empId);if(!emp)return;
+  const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+  const history=[...(rec.history||[])].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const today=new Date().toLocaleDateString('ko-KR');
+  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${emp.name} 1on1 히스토리</title>
+  <style>
+  body{font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#F8FAFC;margin:0;padding:16px;color:#0F172A}
+  .paper{max-width:920px;margin:0 auto;background:#fff;border:1px solid #DCE3EE;border-radius:12px;padding:18px}
+  .hd{border-bottom:2px solid #0A1628;padding-bottom:10px;margin-bottom:12px}
+  .t{font-size:20px;font-weight:800}.s{font-size:12px;color:#64748B;margin-top:3px}
+  .info{font-size:12px;line-height:1.7;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:10px;margin-bottom:10px}
+  .card{border:1px solid #E2E8F0;border-radius:10px;padding:10px;margin-bottom:8px}
+  .d{font-size:12px;font-weight:700;color:#1E3A8A;margin-bottom:6px}
+  .r{font-size:12px;line-height:1.72;margin:2px 0}
+  @page{size:A4 portrait;margin:10mm}
+  </style></head><body><div class="paper">
+  <div class="hd"><div class="t">mySUNI 1on1 히스토리 레포트</div><div class="s">${emp.name} · ${emp.org} · ${emp.role} · ${emp.years}년차 · ${displayPeriod(ACTIVE_PERIOD)} · 출력 ${today}</div></div>
+  <div class="info"><strong>다음 1on1 일정:</strong> ${escHtml(textOrEmpty(rec.nextMeetingAt)||'미정')}<br><strong>사전 메모:</strong> ${escHtml(textOrEmpty(rec.prepMemo)||'없음')}</div>
+  ${history.length?history.map(h=>`<div class="card">
+    <div class="d">일자: ${escHtml(h.date||'-')}</div>
+    <div class="r"><b>논의:</b> ${escHtml(h.discussed||'-')}</div>
+    <div class="r"><b>코칭:</b> ${escHtml(h.coaching||'-')}</div>
+    <div class="r"><b>다음 액션:</b> ${escHtml(h.next||'-')}</div>
+    <div class="r"><b>기타사항:</b> ${escHtml(h.misc||'-')}</div>
+  </div>`).join(''):'<div class="card">저장된 1on1 기록이 없습니다.</div>'}
+  </div></body></html>`;
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>w.print(),350);
 }
 
 // ══════════════════════════════════════════
