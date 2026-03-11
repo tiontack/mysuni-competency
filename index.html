@@ -1361,6 +1361,7 @@ let ONEONONE_DATA={accounts:{},records:{}};
 let ONEONONE_SESSION={org:'',empId:null};
 let ONEONONE_LOGIN_CHANGE_OPEN=false;
 let ONEONONE_RECORD_TAB='discussed';
+let ONEONONE_PROFILE_TAB='summary';
 let ONEONONE_RECORD_DRAFT={};
 const ADMIN_PASSWORD='1234';
 let ADMIN_UNLOCKED=false;
@@ -2192,7 +2193,12 @@ function oneOnOneLogout(){
 function oneOnOneSelectEmp(empId){
   ONEONONE_SESSION.empId=empId;
   ONEONONE_RECORD_TAB='discussed';
+  ONEONONE_PROFILE_TAB='summary';
   persistOneOnOneData();
+  renderOneOnOneTab();
+}
+function oneOnOneSetProfileTab(tab){
+  ONEONONE_PROFILE_TAB=tab;
   renderOneOnOneTab();
 }
 function oneOnOneSetRecordTab(tab){
@@ -2450,8 +2456,10 @@ function renderOneOnOneTab(){
   const rightHtml=(()=>{
     if(!emp)return `<div class="one-empty">구성원을 선택해 주세요.</div>`;
     const rec=ensureOneOnOneEmpRecord(ACTIVE_PERIOD,emp.org,emp.id);
+    const qual=decodedQualitative(emp.qualitative||blankQualitative());
     const history=[...rec.history].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
     const tab=ONEONONE_RECORD_TAB;
+    const ptab=ONEONONE_PROFILE_TAB;
     const draft=ONEONONE_RECORD_DRAFT[emp.id]||{};
     return `
       <div class="one-panel">
@@ -2469,7 +2477,46 @@ function renderOneOnOneTab(){
 
         <div class="one-sec">
           <h4>개인 레포트</h4>
-          ${oneOnOneInlineReportHtml(emp)}
+          <div class="ind-tab-nav" style="margin:0 0 10px 0">
+            <button class="ind-tab-btn ${ptab==='summary'?'active':''}" onclick="oneOnOneSetProfileTab('summary')">요약</button>
+            <button class="ind-tab-btn ${ptab==='full'?'active':''}" onclick="oneOnOneSetProfileTab('full')">설문 응답 결과 정리</button>
+          </div>
+          ${ptab==='summary'?oneOnOneInlineReportHtml(emp):`
+            <div class="qual-grid">
+              ${COMP_KEYS.map((k,i)=>{
+                const q=qual[k]||{};
+                return `<div class="qual-card">
+                  <div class="qual-title">${COMP_NAMES[i]}</div>
+                  <div class="qual-row"><b>현재:</b> ${escHtml(q.current||'응답 없음')}</div>
+                  <div class="qual-row"><b>향후:</b> ${escHtml(q.plan||'응답 없음')}</div>
+                  <div class="qual-row"><b>지원요청:</b> ${escHtml(q.support||'응답 없음')}</div>
+                </div>`;
+              }).join('')}
+            </div>
+            <div class="divider"></div>
+            <div class="qual-grid">
+              <div class="qual-card">
+                <div class="qual-title">변화과제 의견 (Global)</div>
+                <div class="qual-row"><b>우려:</b> ${escHtml(qual.change?.globalConcern||'응답 없음')}</div>
+                <div class="qual-row"><b>필요지원:</b> ${escHtml(qual.change?.globalSupport||'응답 없음')}</div>
+              </div>
+              <div class="qual-card">
+                <div class="qual-title">변화과제 의견 (AI)</div>
+                <div class="qual-row"><b>우려:</b> ${escHtml(qual.change?.aiConcern||'응답 없음')}</div>
+                <div class="qual-row"><b>필요지원:</b> ${escHtml(qual.change?.aiSupport||'응답 없음')}</div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="card-title" style="margin-bottom:10px"><div class="ct-dot"></div>설문 전체 응답 원문</div>
+            ${Array.isArray(emp.survey?.items)&&emp.survey.items.length?`
+              <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                ${emp.survey.items.map((it,ix)=>`<div class="qual-card">
+                  <div class="qual-title">${escHtml(it.label||it.code||`Q${ix+1}`)}</div>
+                  <div class="qual-row">${escHtml(decodeSurveyAnswerByCode(it.code,it.answer)||'응답 없음')}</div>
+                </div>`).join('')}
+              </div>
+            `:'<div class="qual-row" style="padding:6px 0;color:var(--text-3)">원문 응답 데이터가 없습니다.</div>'}
+          `}
         </div>
 
         <div class="one-sec">
