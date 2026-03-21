@@ -520,6 +520,8 @@ select:focus{border-color:var(--blue)}
 .comp-box{border:1px solid #E2E8F0;border-radius:12px;background:#FAFCFF;padding:12px}
 .comp-box h4{margin:0 0 8px 0;font-size:13px;color:#0F172A}
 .comp-box p{margin:0;font-size:12.5px;line-height:1.75;color:#334155}
+.comp-kpi-link{margin-top:8px;font-size:12px;font-weight:700;color:#1E40AF;cursor:pointer;text-decoration:none}
+.comp-kpi-link:hover{text-decoration:underline}
 .comp-dist-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .comp-dist-item{border:1px solid #DBEAFE;border-radius:10px;background:#fff;padding:10px;text-align:center}
 .comp-dist-score{font-size:12px;font-weight:800;color:#1E3A8A}
@@ -1725,6 +1727,13 @@ function competencyAIText(r,rank){
   const pos=r.highPct>=30?'상위(4~5점) 인력을 코치 풀로 활용하기 좋습니다.':'상위 인력 풀 확대를 위한 심화 과제 배치가 필요합니다.';
   return `우선개발지수 순위 ${rank}위입니다. ${riskText} ${spreadText} 현재 ${r.cur.toFixed(2)}점에서 목표 ${r.tgt.toFixed(2)}점까지 +${r.gap.toFixed(2)}점 성장이 필요하며, ${pressure} 또한 상위비율 ${r.highPct.toFixed(1)}% 기준으로 ${pos}`;
 }
+let COMPETENCY_DETAIL_KEY='';
+function openCompetencyDetail(compKey){
+  COMPETENCY_DETAIL_KEY=compKey;
+  renderCompetencyTab();
+  const deep=document.getElementById('comp-deep-dive');
+  if(deep)deep.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function competencyDistHtml(compKey){
   const total=EMPLOYEES.length||1;
   const currentDist=[1,2,3,4,5].map(score=>{
@@ -1790,7 +1799,7 @@ function competencyKeywordBlock(compKey){
     </div>
   `;
 }
-function competencyDeepDiveHtml(){
+function competencyDeepDiveHtml(compKey){
   const ageOrder=['29세 이하','30~34세','35~39세','40~44세','45세 이상','미확인'];
   const yearGroups=[
     {label:'1~2년차',emps:EMPLOYEES.filter(e=>e.years<=2)},
@@ -1802,8 +1811,9 @@ function competencyDeepDiveHtml(){
     {label:'RF',emps:EMPLOYEES.filter(e=>e.role==='RF')},
   ];
   const ageGroups=ageOrder.map(label=>({label,emps:EMPLOYEES.filter(e=>ageBandLabel(calcAge(e.birth))===label)}));
-  return COMP_KEYS.map((compKey,idx)=>{
-    const name=COMP_NAMES[idx];
+  const idx=COMP_KEYS.indexOf(compKey);
+  if(idx<0)return '';
+  const name=COMP_NAMES[idx];
     const currentAvg=avg(EMPLOYEES.map(e=>e.current[compKey]));
     const targetAvg=avg(EMPLOYEES.map(e=>e.target[compKey]));
     const gap=targetAvg-currentAvg;
@@ -1818,7 +1828,7 @@ function competencyDeepDiveHtml(){
     const topOrg=orgRows[0];
     const lowOrg=orgRows[orgRows.length-1];
     const summary=`${name}의 현수준 평균은 ${currentAvg.toFixed(2)}점, 목표수준 평균은 ${targetAvg.toFixed(2)}점으로 GAP은 +${gap.toFixed(2)}점입니다. 현수준에서는 ${mostCurrent}점 응답이 가장 많고, 목표수준에서는 ${mostTarget}점 응답이 가장 많습니다. 조직 기준으로는 ${topOrg?`${topOrg.label}이 현수준 최고(${topOrg.cur.toFixed(2)}점)`:'-'}이며 ${lowOrg?`${lowOrg.label}이 상대적으로 낮은 편(${lowOrg.cur.toFixed(2)}점)`:'-'}입니다.`;
-    return `
+  return `
       <div class="comp-detail-card">
         <div class="comp-detail-top">
           <div>
@@ -1847,7 +1857,6 @@ function competencyDeepDiveHtml(){
         </div>
       </div>
     `;
-  }).join('');
 }
 function renderCompetencyTab(){
   const rows=getCompetencyInsightRows();
@@ -1859,6 +1868,7 @@ function renderCompetencyTab(){
         <div class="kpi-body">
           <div class="kpi-label">${r.name}</div>
           <div class="kpi-val">${r.cur.toFixed(2)}<span>목표 ${r.tgt.toFixed(2)}</span></div>
+          <div class="comp-kpi-link" onclick="openCompetencyDetail('${r.key}')">자세히 보기&gt;</div>
         </div>
       </div>
     `).join('');
@@ -1893,7 +1903,10 @@ function renderCompetencyTab(){
     `).join('');
   }
   const deep=document.getElementById('comp-deep-dive');
-  if(deep)deep.innerHTML=competencyDeepDiveHtml();
+  if(deep){
+    deep.innerHTML=COMPETENCY_DETAIL_KEY?competencyDeepDiveHtml(COMPETENCY_DETAIL_KEY):'';
+    deep.style.display=COMPETENCY_DETAIL_KEY?'grid':'none';
+  }
   destroyChart('chart-comp-insight');
   const ctx=document.getElementById('chart-comp-insight')?.getContext('2d');
   if(!ctx)return;
