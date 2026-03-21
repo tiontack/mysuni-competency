@@ -523,6 +523,12 @@ select:focus{border-color:var(--blue)}
 .comp-kpi-link{margin-top:8px;font-size:12px;font-weight:700;color:#1E40AF;cursor:pointer;text-decoration:none}
 .comp-kpi-link:hover{text-decoration:underline}
 .comp-kpi-active{box-shadow:0 0 0 2px rgba(37,99,235,.28),0 10px 24px rgba(37,99,235,.12)!important;transform:translateY(-1px)}
+.comp-top-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.comp-top-kpis .kpi-body{padding:18px 18px 16px}
+.comp-top-kpis .kpi-label{font-size:11px}
+.comp-top-kpis .kpi-val{font-size:28px}
+.comp-top-kpis .kpi-sub{font-size:11px}
+.comp-top-kpis .comp-kpi-link{font-size:11.5px}
 .comp-focus{box-shadow:0 0 0 2px rgba(37,99,235,.22),0 12px 28px rgba(37,99,235,.10);border-color:#93C5FD!important;background:linear-gradient(180deg,#FFFFFF 0%,#F8FBFF 100%)}
 .comp-dist-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .comp-dist-item{border:1px solid #DBEAFE;border-radius:10px;background:#fff;padding:10px;text-align:center}
@@ -562,6 +568,9 @@ select:focus{border-color:var(--blue)}
   .hdr-badge{display:none}
   .tab-nav-inner{padding:0 10px}
   .report-page{padding:26px}
+  .comp-top-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+  .comp-top-kpis .kpi-body{padding:16px 14px 14px}
+  .comp-top-kpis .kpi-val{font-size:25px}
 }
 
 @media (max-width: 768px){
@@ -577,6 +586,7 @@ select:focus{border-color:var(--blue)}
   .demo-row{grid-template-columns:90px 1fr 64px}
   .comp-detail-grid{grid-template-columns:1fr}
   .comp-dist-grid{grid-template-columns:repeat(3,1fr)}
+  .comp-top-kpis{grid-template-columns:1fr 1fr}
   .report-header{display:block}
   .report-logo{margin-top:10px;display:inline-flex}
   .admin-layout{grid-template-columns:1fr}
@@ -811,7 +821,7 @@ function showLoginScreen(){
 
 <!-- ══ TAB 3 : COMPETENCY INSIGHT ══ -->
 <div id="tab-competency" class="tab-pane">
-  <div class="section kpi-grid" id="comp-top-kpis"></div>
+  <div class="section kpi-grid comp-top-kpis" id="comp-top-kpis"></div>
   <div class="section card" id="comp-summary-section">
     <div class="card-title"><div class="ct-dot"></div>역량별 통계 인사이트 요약</div>
     <div class="chart-wrap h380"><canvas id="chart-comp-insight"></canvas></div>
