@@ -522,6 +522,8 @@ select:focus{border-color:var(--blue)}
 .comp-box p{margin:0;font-size:12.5px;line-height:1.75;color:#334155}
 .comp-kpi-link{margin-top:8px;font-size:12px;font-weight:700;color:#1E40AF;cursor:pointer;text-decoration:none}
 .comp-kpi-link:hover{text-decoration:underline}
+.comp-kpi-active{box-shadow:0 0 0 2px rgba(37,99,235,.28),0 10px 24px rgba(37,99,235,.12)!important;transform:translateY(-1px)}
+.comp-focus{box-shadow:0 0 0 2px rgba(37,99,235,.22),0 12px 28px rgba(37,99,235,.10);border-color:#93C5FD!important;background:linear-gradient(180deg,#FFFFFF 0%,#F8FBFF 100%)}
 .comp-dist-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .comp-dist-item{border:1px solid #DBEAFE;border-radius:10px;background:#fff;padding:10px;text-align:center}
 .comp-dist-score{font-size:12px;font-weight:800;color:#1E3A8A}
@@ -802,11 +804,11 @@ function showLoginScreen(){
 <!-- ══ TAB 3 : COMPETENCY INSIGHT ══ -->
 <div id="tab-competency" class="tab-pane">
   <div class="section kpi-grid" id="comp-top-kpis"></div>
-  <div class="section card">
+  <div class="section card" id="comp-summary-section">
     <div class="card-title"><div class="ct-dot"></div>역량별 통계 인사이트 요약</div>
     <div class="chart-wrap h380"><canvas id="chart-comp-insight"></canvas></div>
   </div>
-  <div class="section card">
+  <div class="section card" id="comp-metrics-section">
     <div class="card-title"><div class="ct-dot"></div>역량별 핵심 지표 (통계)</div>
     <table>
       <thead><tr>
@@ -1727,7 +1729,7 @@ function competencyAIText(r,rank){
   const pos=r.highPct>=30?'상위(4~5점) 인력을 코치 풀로 활용하기 좋습니다.':'상위 인력 풀 확대를 위한 심화 과제 배치가 필요합니다.';
   return `우선개발지수 순위 ${rank}위입니다. ${riskText} ${spreadText} 현재 ${r.cur.toFixed(2)}점에서 목표 ${r.tgt.toFixed(2)}점까지 +${r.gap.toFixed(2)}점 성장이 필요하며, ${pressure} 또한 상위비율 ${r.highPct.toFixed(1)}% 기준으로 ${pos}`;
 }
-let COMPETENCY_DETAIL_KEY='';
+let COMPETENCY_DETAIL_KEY='all';
 function openCompetencyDetail(compKey){
   COMPETENCY_DETAIL_KEY=compKey;
   renderCompetencyTab();
@@ -1860,10 +1862,22 @@ function competencyDeepDiveHtml(compKey){
 }
 function renderCompetencyTab(){
   const rows=getCompetencyInsightRows();
+  const isAll=COMPETENCY_DETAIL_KEY==='all';
   const top=document.getElementById('comp-top-kpis');
   if(top){
-    top.innerHTML=rows.map((r,idx)=>`
-      <div class="kpi ${idx%4===0?'kpi-blue':idx%4===1?'kpi-orange':idx%4===2?'kpi-green':'kpi-purple'}">
+    const overallCur=avg(rows.map(r=>r.cur));
+    const overallTgt=avg(rows.map(r=>r.tgt));
+    top.innerHTML=`
+      <div class="kpi kpi-blue ${isAll?'comp-kpi-active':''}">
+        <div class="kpi-top"></div>
+        <div class="kpi-body">
+          <div class="kpi-label">전체</div>
+          <div class="kpi-val">${overallCur.toFixed(2)}<span>목표 ${overallTgt.toFixed(2)}</span></div>
+          <div class="comp-kpi-link" onclick="openCompetencyDetail('all')">자세히 보기&gt;</div>
+        </div>
+      </div>
+      ${rows.map((r,idx)=>`
+      <div class="kpi ${idx%4===0?'kpi-blue':idx%4===1?'kpi-orange':idx%4===2?'kpi-green':'kpi-purple'} ${COMPETENCY_DETAIL_KEY===r.key?'comp-kpi-active':''}">
         <div class="kpi-top"></div>
         <div class="kpi-body">
           <div class="kpi-label">${r.name}</div>
@@ -1871,12 +1885,12 @@ function renderCompetencyTab(){
           <div class="comp-kpi-link" onclick="openCompetencyDetail('${r.key}')">자세히 보기&gt;</div>
         </div>
       </div>
-    `).join('');
+    `).join('')}`;
   }
   const tb=document.getElementById('comp-insight-tbody');
   if(tb){
     tb.innerHTML=rows.map(r=>`<tr>
-      <td><strong>${r.name}</strong></td>
+      <td style="${COMPETENCY_DETAIL_KEY===r.key&&!isAll?'background:#EFF6FF':''}"><strong>${r.name}</strong></td>
       <td class="text-center">${r.cur.toFixed(2)}</td>
       <td class="text-center">${r.tgt.toFixed(2)}</td>
       <td class="text-center"><span class="gap-val">+${r.gap.toFixed(2)}</span></td>
@@ -1889,7 +1903,7 @@ function renderCompetencyTab(){
   const cardWrap=document.getElementById('comp-ai-cards');
   if(cardWrap){
     cardWrap.innerHTML=rows.map((r,idx)=>`
-      <div class="card">
+      <div class="card ${COMPETENCY_DETAIL_KEY===r.key&&!isAll?'comp-focus':''}">
         <div class="card-title"><div class="ct-dot"></div>${r.name}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
           <span class="info-chip chip-blue">현수준 ${r.cur.toFixed(2)}</span>
@@ -1902,9 +1916,14 @@ function renderCompetencyTab(){
       </div>
     `).join('');
   }
+  const summarySec=document.getElementById('comp-summary-section');
+  const metricsSec=document.getElementById('comp-metrics-section');
+  if(summarySec)summarySec.classList.toggle('comp-focus',!isAll&&!!COMPETENCY_DETAIL_KEY);
+  if(metricsSec)metricsSec.classList.toggle('comp-focus',!isAll&&!!COMPETENCY_DETAIL_KEY);
+  if(cardWrap)cardWrap.classList.toggle('comp-focus',!isAll&&!!COMPETENCY_DETAIL_KEY);
   const deep=document.getElementById('comp-deep-dive');
   if(deep){
-    deep.innerHTML=COMPETENCY_DETAIL_KEY?competencyDeepDiveHtml(COMPETENCY_DETAIL_KEY):'';
+    deep.innerHTML=isAll?COMP_KEYS.map(k=>competencyDeepDiveHtml(k)).join(''):competencyDeepDiveHtml(COMPETENCY_DETAIL_KEY);
     deep.style.display=COMPETENCY_DETAIL_KEY?'grid':'none';
   }
   destroyChart('chart-comp-insight');
