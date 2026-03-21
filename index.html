@@ -508,6 +508,25 @@ select:focus{border-color:var(--blue)}
 .demo-bar{height:10px;background:#EEF2FF;border-radius:999px;overflow:hidden}
 .demo-fill{height:100%;background:linear-gradient(90deg,#2563EB,#60A5FA)}
 .demo-val{font-size:11px;color:#475569;text-align:right;font-weight:700}
+.comp-detail-stack{display:grid;grid-template-columns:1fr;gap:16px}
+.comp-detail-card{border:1px solid var(--border);border-radius:14px;background:#fff;padding:16px}
+.comp-detail-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.comp-detail-name{font-size:20px;font-weight:800;color:var(--navy)}
+.comp-detail-sub{font-size:13px;line-height:1.75;color:#334155}
+.comp-mini-chips{display:flex;gap:8px;flex-wrap:wrap}
+.comp-mini-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#EFF6FF;color:#1E40AF;font-size:12px;font-weight:700}
+.comp-detail-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:12px}
+.comp-detail-col{display:grid;grid-template-columns:1fr;gap:12px}
+.comp-box{border:1px solid #E2E8F0;border-radius:12px;background:#FAFCFF;padding:12px}
+.comp-box h4{margin:0 0 8px 0;font-size:13px;color:#0F172A}
+.comp-box p{margin:0;font-size:12.5px;line-height:1.75;color:#334155}
+.comp-dist-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.comp-dist-item{border:1px solid #DBEAFE;border-radius:10px;background:#fff;padding:10px;text-align:center}
+.comp-dist-score{font-size:12px;font-weight:800;color:#1E3A8A}
+.comp-dist-count{font-size:20px;font-weight:800;color:#0F172A;margin-top:4px}
+.comp-dist-ratio{font-size:11px;color:#64748B;margin-top:2px}
+.comp-keywords{display:flex;flex-wrap:wrap;gap:7px}
+.comp-keyword{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:#F8FAFC;border:1px solid #E2E8F0;font-size:12px;color:#334155;font-weight:700}
 .ins-list{list-style:none;padding:0}
 .ins-list li{
   padding:9px 0 9px 22px;position:relative;
@@ -544,6 +563,8 @@ select:focus{border-color:var(--blue)}
   .report-page{padding:16px}
   .demo-grid{grid-template-columns:1fr}
   .demo-row{grid-template-columns:90px 1fr 64px}
+  .comp-detail-grid{grid-template-columns:1fr}
+  .comp-dist-grid{grid-template-columns:repeat(3,1fr)}
   .report-header{display:block}
   .report-logo{margin-top:10px;display:inline-flex}
   .admin-layout{grid-template-columns:1fr}
@@ -800,6 +821,7 @@ function showLoginScreen(){
     </table>
   </div>
   <div class="section grid-2" id="comp-ai-cards"></div>
+  <div class="section comp-detail-stack" id="comp-deep-dive"></div>
 </div>
 
 <!-- ══ TAB 3 : INDIVIDUAL ══ -->
@@ -1703,6 +1725,130 @@ function competencyAIText(r,rank){
   const pos=r.highPct>=30?'상위(4~5점) 인력을 코치 풀로 활용하기 좋습니다.':'상위 인력 풀 확대를 위한 심화 과제 배치가 필요합니다.';
   return `우선개발지수 순위 ${rank}위입니다. ${riskText} ${spreadText} 현재 ${r.cur.toFixed(2)}점에서 목표 ${r.tgt.toFixed(2)}점까지 +${r.gap.toFixed(2)}점 성장이 필요하며, ${pressure} 또한 상위비율 ${r.highPct.toFixed(1)}% 기준으로 ${pos}`;
 }
+function competencyDistHtml(compKey){
+  const total=EMPLOYEES.length||1;
+  const currentDist=[1,2,3,4,5].map(score=>{
+    const count=EMPLOYEES.filter(e=>e.current[compKey]===score).length;
+    return `<div class="comp-dist-item"><div class="comp-dist-score">${score}점 현재</div><div class="comp-dist-count">${count}</div><div class="comp-dist-ratio">${(count/total*100).toFixed(1)}%</div></div>`;
+  }).join('');
+  const targetDist=[1,2,3,4,5].map(score=>{
+    const count=EMPLOYEES.filter(e=>e.target[compKey]===score).length;
+    return `<div class="comp-dist-item"><div class="comp-dist-score">${score}점 목표</div><div class="comp-dist-count">${count}</div><div class="comp-dist-ratio">${(count/total*100).toFixed(1)}%</div></div>`;
+  }).join('');
+  return `
+    <div class="comp-box">
+      <h4>현수준 분포 (1~5점)</h4>
+      <div class="comp-dist-grid">${currentDist}</div>
+    </div>
+    <div class="comp-box">
+      <h4>목표수준 분포 (1~5점)</h4>
+      <div class="comp-dist-grid">${targetDist}</div>
+    </div>
+  `;
+}
+function competencyBreakdownRows(compKey, groups){
+  return groups.map(g=>{
+    const emps=g.emps||[];
+    const cur=avg(emps.map(e=>e.current[compKey]));
+    const tgt=avg(emps.map(e=>e.target[compKey]));
+    return {
+      label:g.label,
+      count:emps.length,
+      cur,
+      tgt,
+      gap:tgt-cur
+    };
+  }).filter(r=>r.count>0);
+}
+function competencyBreakdownTable(title, rows){
+  return `
+    <div class="comp-box">
+      <h4>${title}</h4>
+      <table>
+        <thead><tr><th>구분</th><th class="text-center">인원</th><th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th><th class="text-center">GAP</th></tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr><td><strong>${r.label}</strong></td><td class="text-center">${r.count}명</td><td class="text-center">${r.cur.toFixed(2)}</td><td class="text-center">${r.tgt.toFixed(2)}</td><td class="text-center"><span class="gap-val">+${r.gap.toFixed(2)}</span></td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+function competencyKeywordBlock(compKey){
+  const currentKw=topKeywords(EMPLOYEES.flatMap(e=>qualTextsByComp(e,compKey)),8);
+  const concernKw=topKeywords(EMPLOYEES.flatMap(e=>concernTextsByComp(e,compKey)),8);
+  const supportKw=topKeywords(EMPLOYEES.flatMap(e=>expectationTextsByComp(e,compKey)),8);
+  const chips=arr=>arr.length?arr.map(v=>`<span class="comp-keyword">${v}</span>`).join(''):'<span class="comp-keyword">의견 데이터 부족</span>';
+  return `
+    <div class="comp-box">
+      <h4>정성 의견 키워드</h4>
+      <p style="margin-bottom:8px"><strong>영역 관련 전반 키워드</strong></p>
+      <div class="comp-keywords" style="margin-bottom:10px">${chips(currentKw)}</div>
+      <p style="margin-bottom:8px"><strong>우려/애로 키워드</strong></p>
+      <div class="comp-keywords" style="margin-bottom:10px">${chips(concernKw)}</div>
+      <p style="margin-bottom:8px"><strong>필요 지원/기대 키워드</strong></p>
+      <div class="comp-keywords">${chips(supportKw)}</div>
+    </div>
+  `;
+}
+function competencyDeepDiveHtml(){
+  const ageOrder=['29세 이하','30~34세','35~39세','40~44세','45세 이상','미확인'];
+  const yearGroups=[
+    {label:'1~2년차',emps:EMPLOYEES.filter(e=>e.years<=2)},
+    {label:'3~4년차',emps:EMPLOYEES.filter(e=>e.years>=3&&e.years<=4)},
+    {label:'5년 이상',emps:EMPLOYEES.filter(e=>e.years>=5)},
+  ];
+  const roleGroups=[
+    {label:'팀장',emps:EMPLOYEES.filter(e=>e.role==='팀장')},
+    {label:'RF',emps:EMPLOYEES.filter(e=>e.role==='RF')},
+  ];
+  const ageGroups=ageOrder.map(label=>({label,emps:EMPLOYEES.filter(e=>ageBandLabel(calcAge(e.birth))===label)}));
+  return COMP_KEYS.map((compKey,idx)=>{
+    const name=COMP_NAMES[idx];
+    const currentAvg=avg(EMPLOYEES.map(e=>e.current[compKey]));
+    const targetAvg=avg(EMPLOYEES.map(e=>e.target[compKey]));
+    const gap=targetAvg-currentAvg;
+    const currentDist=[1,2,3,4,5].map(s=>EMPLOYEES.filter(e=>e.current[compKey]===s).length);
+    const targetDist=[1,2,3,4,5].map(s=>EMPLOYEES.filter(e=>e.target[compKey]===s).length);
+    const mostCurrent=currentDist.indexOf(Math.max(...currentDist))+1;
+    const mostTarget=targetDist.indexOf(Math.max(...targetDist))+1;
+    const orgRows=competencyBreakdownRows(compKey, ORG_LIST.map(org=>({label:org,emps:EMPLOYEES.filter(e=>e.org===org)}))).sort((a,b)=>b.cur-a.cur);
+    const roleRows=competencyBreakdownRows(compKey, roleGroups);
+    const yearRows=competencyBreakdownRows(compKey, yearGroups);
+    const ageRows=competencyBreakdownRows(compKey, ageGroups);
+    const topOrg=orgRows[0];
+    const lowOrg=orgRows[orgRows.length-1];
+    const summary=`${name}의 현수준 평균은 ${currentAvg.toFixed(2)}점, 목표수준 평균은 ${targetAvg.toFixed(2)}점으로 GAP은 +${gap.toFixed(2)}점입니다. 현수준에서는 ${mostCurrent}점 응답이 가장 많고, 목표수준에서는 ${mostTarget}점 응답이 가장 많습니다. 조직 기준으로는 ${topOrg?`${topOrg.label}이 현수준 최고(${topOrg.cur.toFixed(2)}점)`:'-'}이며 ${lowOrg?`${lowOrg.label}이 상대적으로 낮은 편(${lowOrg.cur.toFixed(2)}점)`:'-'}입니다.`;
+    return `
+      <div class="comp-detail-card">
+        <div class="comp-detail-top">
+          <div>
+            <div class="comp-detail-name">${name}</div>
+            <div class="comp-detail-sub">${summary}</div>
+          </div>
+          <div class="comp-mini-chips">
+            <span class="comp-mini-chip">현수준 ${currentAvg.toFixed(2)}</span>
+            <span class="comp-mini-chip">목표 ${targetAvg.toFixed(2)}</span>
+            <span class="comp-mini-chip">GAP +${gap.toFixed(2)}</span>
+            <span class="comp-mini-chip">최빈 현재 ${mostCurrent}점</span>
+            <span class="comp-mini-chip">최빈 목표 ${mostTarget}점</span>
+          </div>
+        </div>
+        <div class="comp-detail-grid">
+          <div class="comp-detail-col">
+            ${competencyDistHtml(compKey)}
+            ${competencyBreakdownTable('조직별 평균 비교', orgRows)}
+            ${competencyKeywordBlock(compKey)}
+          </div>
+          <div class="comp-detail-col">
+            ${competencyBreakdownTable('직책별 평균 비교', roleRows)}
+            ${competencyBreakdownTable('mySUNI 연차별 평균 비교', yearRows)}
+            ${competencyBreakdownTable('연령 구간별 평균 비교', ageRows)}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 function renderCompetencyTab(){
   const rows=getCompetencyInsightRows();
   const top=document.getElementById('comp-top-kpis');
@@ -1746,6 +1892,8 @@ function renderCompetencyTab(){
       </div>
     `).join('');
   }
+  const deep=document.getElementById('comp-deep-dive');
+  if(deep)deep.innerHTML=competencyDeepDiveHtml();
   destroyChart('chart-comp-insight');
   const ctx=document.getElementById('chart-comp-insight')?.getContext('2d');
   if(!ctx)return;
