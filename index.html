@@ -529,6 +529,14 @@ select:focus{border-color:var(--blue)}
 .comp-dist-score{font-size:12px;font-weight:800;color:#1E3A8A}
 .comp-dist-count{font-size:20px;font-weight:800;color:#0F172A;margin-top:4px}
 .comp-dist-ratio{font-size:11px;color:#64748B;margin-top:2px}
+.comp-bars{display:grid;grid-template-columns:1fr;gap:10px}
+.comp-bar-row{display:grid;grid-template-columns:88px 1fr;gap:10px;align-items:center}
+.comp-bar-label{font-size:12px;font-weight:800;color:#334155}
+.comp-bar-wrap{display:grid;grid-template-columns:1fr;gap:6px}
+.comp-bar-track{position:relative;height:14px;border-radius:999px;background:#E5E7EB;overflow:hidden}
+.comp-bar-fill-cur{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2563EB,#60A5FA);border-radius:999px}
+.comp-bar-fill-tgt{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#F97316,#FDBA74);border-radius:999px;opacity:.78}
+.comp-bar-meta{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:#475569;font-weight:700}
 .comp-keywords{display:flex;flex-wrap:wrap;gap:7px}
 .comp-keyword{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;background:#F8FAFC;border:1px solid #E2E8F0;font-size:12px;color:#334155;font-weight:700}
 .ins-list{list-style:none;padding:0}
@@ -1772,15 +1780,27 @@ function competencyBreakdownRows(compKey, groups){
   }).filter(r=>r.count>0);
 }
 function competencyBreakdownTable(title, rows){
+  const max=Math.max(5,...rows.map(r=>Math.max(r.cur,r.tgt)));
   return `
     <div class="comp-box">
       <h4>${title}</h4>
-      <table>
-        <thead><tr><th>구분</th><th class="text-center">인원</th><th class="text-center">현수준 평균</th><th class="text-center">목표 평균</th><th class="text-center">GAP</th></tr></thead>
-        <tbody>
-          ${rows.map(r=>`<tr><td><strong>${r.label}</strong></td><td class="text-center">${r.count}명</td><td class="text-center">${r.cur.toFixed(2)}</td><td class="text-center">${r.tgt.toFixed(2)}</td><td class="text-center"><span class="gap-val">+${r.gap.toFixed(2)}</span></td></tr>`).join('')}
-        </tbody>
-      </table>
+      <div class="comp-bars">
+        ${rows.map(r=>`
+          <div class="comp-bar-row">
+            <div class="comp-bar-label">${r.label}</div>
+            <div class="comp-bar-wrap">
+              <div class="comp-bar-track">
+                <div class="comp-bar-fill-tgt" style="width:${Math.max(2,(r.tgt/max)*100)}%"></div>
+                <div class="comp-bar-fill-cur" style="width:${Math.max(2,(r.cur/max)*100)}%"></div>
+              </div>
+              <div class="comp-bar-meta">
+                <span>${r.count}명</span>
+                <span>현수준 ${r.cur.toFixed(2)} / 목표 ${r.tgt.toFixed(2)} / GAP +${r.gap.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `;
 }
