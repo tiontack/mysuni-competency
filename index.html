@@ -522,14 +522,28 @@ select:focus{border-color:var(--blue)}
 .comp-box p{margin:0;font-size:12.5px;line-height:1.75;color:#334155}
 .comp-kpi-link{margin-top:8px;font-size:12px;font-weight:700;color:#1E40AF;cursor:pointer;text-decoration:none}
 .comp-kpi-link:hover{text-decoration:underline}
-.comp-kpi-active{box-shadow:0 0 0 2px rgba(37,99,235,.28),0 10px 24px rgba(37,99,235,.12)!important;transform:translateY(-1px)}
+.comp-kpi-active{box-shadow:0 0 0 3px rgba(37,99,235,.30),0 18px 36px rgba(37,99,235,.18)!important;transform:translateY(-2px) scale(1.01);border-color:rgba(37,99,235,.42)!important}
+.comp-top-kpis .kpi.comp-kpi-active.kpi-blue{background:linear-gradient(180deg,#2563EB 0%,#1D4ED8 100%)}
+.comp-top-kpis .kpi.comp-kpi-active.kpi-orange{background:linear-gradient(180deg,#F97316 0%,#EA580C 100%)}
+.comp-top-kpis .kpi.comp-kpi-active.kpi-green{background:linear-gradient(180deg,#10B981 0%,#059669 100%)}
+.comp-top-kpis .kpi.comp-kpi-active.kpi-purple{background:linear-gradient(180deg,#8B5CF6 0%,#7C3AED 100%)}
+.comp-top-kpis .kpi.comp-kpi-active .kpi-top{opacity:.9}
+.comp-top-kpis .kpi.comp-kpi-active .kpi-label,
+.comp-top-kpis .kpi.comp-kpi-active .kpi-val,
+.comp-top-kpis .kpi.comp-kpi-active .kpi-sub,
+.comp-top-kpis .kpi.comp-kpi-active .kpi-val span,
+.comp-top-kpis .kpi.comp-kpi-active .comp-kpi-link{color:#fff}
 .comp-top-kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .comp-top-kpis .kpi-body{padding:18px 18px 16px}
 .comp-top-kpis .kpi-label{font-size:11px}
 .comp-top-kpis .kpi-val{font-size:28px}
 .comp-top-kpis .kpi-sub{font-size:11px}
 .comp-top-kpis .comp-kpi-link{font-size:11.5px}
-.comp-focus{box-shadow:0 0 0 2px rgba(37,99,235,.22),0 12px 28px rgba(37,99,235,.10);border-color:#93C5FD!important;background:linear-gradient(180deg,#FFFFFF 0%,#F8FBFF 100%)}
+.comp-focus{box-shadow:0 0 0 3px rgba(37,99,235,.26),0 16px 34px rgba(37,99,235,.14);border-color:#60A5FA!important;background:linear-gradient(180deg,#F8FBFF 0%,#EAF3FF 100%)}
+.comp-insight-row-active td{background:#DBEAFE!important;color:#0F172A;font-weight:800}
+.comp-insight-row-active td:first-child{box-shadow:inset 4px 0 0 #2563EB}
+.comp-card-active{background:linear-gradient(180deg,#F8FBFF 0%,#E7F0FF 100%);border-color:#60A5FA!important;box-shadow:0 0 0 3px rgba(37,99,235,.18),0 16px 32px rgba(37,99,235,.12)}
+.comp-card-dim{opacity:.62;filter:saturate(.82)}
 .comp-dist-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .comp-dist-item{border:1px solid #DBEAFE;border-radius:10px;background:#fff;padding:10px;text-align:center}
 .comp-dist-score{font-size:12px;font-weight:800;color:#1E3A8A}
@@ -1919,8 +1933,8 @@ function renderCompetencyTab(){
   }
   const tb=document.getElementById('comp-insight-tbody');
   if(tb){
-    tb.innerHTML=rows.map(r=>`<tr>
-      <td style="${COMPETENCY_DETAIL_KEY===r.key&&!isAll?'background:#EFF6FF':''}"><strong>${r.name}</strong></td>
+    tb.innerHTML=rows.map(r=>`<tr class="${COMPETENCY_DETAIL_KEY===r.key&&!isAll?'comp-insight-row-active':''}">
+      <td><strong>${r.name}</strong></td>
       <td class="text-center">${r.cur.toFixed(2)}</td>
       <td class="text-center">${r.tgt.toFixed(2)}</td>
       <td class="text-center"><span class="gap-val">+${r.gap.toFixed(2)}</span></td>
@@ -1933,7 +1947,7 @@ function renderCompetencyTab(){
   const cardWrap=document.getElementById('comp-ai-cards');
   if(cardWrap){
     cardWrap.innerHTML=rows.map((r,idx)=>`
-      <div class="card ${COMPETENCY_DETAIL_KEY===r.key&&!isAll?'comp-focus':''}">
+      <div class="card ${COMPETENCY_DETAIL_KEY===r.key&&!isAll?'comp-focus comp-card-active':''} ${!isAll&&COMPETENCY_DETAIL_KEY!==r.key?'comp-card-dim':''}">
         <div class="card-title"><div class="ct-dot"></div>${r.name}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
           <span class="info-chip chip-blue">현수준 ${r.cur.toFixed(2)}</span>
@@ -1959,14 +1973,53 @@ function renderCompetencyTab(){
   destroyChart('chart-comp-insight');
   const ctx=document.getElementById('chart-comp-insight')?.getContext('2d');
   if(!ctx)return;
+  const selectedIdx=!isAll?rows.findIndex(r=>r.key===COMPETENCY_DETAIL_KEY):-1;
   CHARTS['chart-comp-insight']=new Chart(ctx,{
     data:{
       labels:rows.map(r=>r.name),
       datasets:[
-        {type:'bar',label:'현수준 평균',data:rows.map(r=>+r.cur.toFixed(2)),backgroundColor:'rgba(37,99,235,.75)',borderRadius:6},
-        {type:'bar',label:'목표 평균',data:rows.map(r=>+r.tgt.toFixed(2)),backgroundColor:'rgba(234,88,12,.65)',borderRadius:6},
-        {type:'line',label:'하위비율(1~2점, %)',data:rows.map(r=>+r.lowPct.toFixed(1)),yAxisID:'y1',borderColor:'#DC2626',backgroundColor:'#DC2626',pointRadius:4,tension:.3},
-        {type:'line',label:'상위비율(4~5점, %)',data:rows.map(r=>+r.highPct.toFixed(1)),yAxisID:'y1',borderColor:'#2563EB',backgroundColor:'#2563EB',pointRadius:4,tension:.3}
+        {
+          type:'bar',
+          label:'현수준 평균',
+          data:rows.map(r=>+r.cur.toFixed(2)),
+          backgroundColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'rgba(37,99,235,.85)':'rgba(37,99,235,.28)'),
+          borderColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'rgba(29,78,216,1)':'rgba(37,99,235,.20)'),
+          borderWidth:rows.map((r,idx)=>selectedIdx>=0&&idx===selectedIdx?2:0),
+          borderRadius:6
+        },
+        {
+          type:'bar',
+          label:'목표 평균',
+          data:rows.map(r=>+r.tgt.toFixed(2)),
+          backgroundColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'rgba(234,88,12,.78)':'rgba(234,88,12,.24)'),
+          borderColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'rgba(194,65,12,1)':'rgba(234,88,12,.18)'),
+          borderWidth:rows.map((r,idx)=>selectedIdx>=0&&idx===selectedIdx?2:0),
+          borderRadius:6
+        },
+        {
+          type:'line',
+          label:'하위비율(1~2점, %)',
+          data:rows.map(r=>+r.lowPct.toFixed(1)),
+          yAxisID:'y1',
+          borderColor:'#DC2626',
+          backgroundColor:'#DC2626',
+          pointBackgroundColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'#DC2626':'rgba(220,38,38,.28)'),
+          pointBorderColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'#DC2626':'rgba(220,38,38,.28)'),
+          pointRadius:rows.map((r,idx)=>selectedIdx>=0&&idx===selectedIdx?5:3),
+          tension:.3
+        },
+        {
+          type:'line',
+          label:'상위비율(4~5점, %)',
+          data:rows.map(r=>+r.highPct.toFixed(1)),
+          yAxisID:'y1',
+          borderColor:'#2563EB',
+          backgroundColor:'#2563EB',
+          pointBackgroundColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'#2563EB':'rgba(37,99,235,.28)'),
+          pointBorderColor:rows.map((r,idx)=>selectedIdx<0||idx===selectedIdx?'#2563EB':'rgba(37,99,235,.28)'),
+          pointRadius:rows.map((r,idx)=>selectedIdx>=0&&idx===selectedIdx?5:3),
+          tension:.3
+        }
       ]
     },
     options:{
